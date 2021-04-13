@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Storage Device Monitor</title>
+    <!-- JQuery -->
+    <script type="text/javascript" src="../JQuery/jquery-3.3.1.min.js"></script>
+    <!-- popper 用于下拉框 -->
+    <script type="text/javascript" src="../popper/popper.min.js"></script>
+    <!-- BootStrap -->
+    <link rel="stylesheet" href= "../bootstrap-4.3.1-dist/css/bootstrap.min.css" >
+    <script type="text/javascript" src="../bootstrap-4.3.1-dist/js/bootstrap.js"></script>
+
+
+    <!-- ECharts -->
+    <script type="text/javascript" src="../echarts/echarts.min.js"></script>
+    <!-- functionLibrary -->
+    <script type="text/javascript" src="../js/functionLibrary.js"></script>
+    <script type="text/javascript" src="../js/DataRequest.js"></script>
+    <script type="text/javascript" src="../js/WidgetDisplay.js"></script>
+</head>
+
+
+
+<body>
+    <!-- 顶部导航项 -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <a id="Title" class="navbar-brand col-sm-3 col-md-2 mr-0" href="/"></a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNavDropdown">
+            <ul class="navbar-nav">
+                <li class="nav-item active">
+                    <a id="Navbar1" class="nav-link" href="/"></a>
+                </li>
+                <!--
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        Dropdown link
+                    </a>
+                    <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                        <a class="dropdown-item" href="#">Action</a>
+                        <a class="dropdown-item" href="#">Another action</a>
+                        <a class="dropdown-item" href="#">Something else here</a>
+                    </div>
+                </li>
+                -->
+            </ul>
+        </div>
+    </nav>
+
+    <!-- 主要内容 -->
+    <div class="container-fluid">
+        <div class="row">
+            <!-- 左侧导航项 -->
+            <nav class="col-md-2 d-none d-md-block bg-light sidebar">
+                <div class="sidebar-sticky">
+                    <ul class="nav flex-column">
+                        <!-- 导航项 -->
+                        <li class="nav-item">
+                            <a id="NavItem1" class="nav-link"  href="#">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-home"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                                总览 <span class="sr-only">(current)</span>
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a id="NavItem2" class="nav-link" href="#">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-bar-chart-2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+                                主机信息
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a id="NavItem3" class="nav-link" href="#">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-file"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><polyline points="13 2 13 9 20 9"></polyline></svg>
+                                进程IO信息
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a id="NavItem4" class="nav-link" href="#">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-file"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><polyline points="13 2 13 9 20 9"></polyline></svg>
+                                磁盘故障预测
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a id="NavItem5" class="nav-link" href="#">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-file"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><polyline points="13 2 13 9 20 9"></polyline></svg>
+                                IO测试
+                            </a>
+                        </li>
+                    </ul>
+
+                    <!-- 节点列表 -->
+                    <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
+                        <span>主机列表</span>
+                    </h6>
+                    <ul class="nav flex-column mb-2" id = "HostIpList" >
+                        <!--<li class="nav-item">
+                            <a class="nav-link" href="#">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-layers"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
+                                39.105.123.116
+                            </a>
+                        </li>-->
+                    </ul>
+                </div>
+            </nav>
+
+            <main role="main" class="col-md-9 ml-sm-auto col-lg-10 pt-3 px-4">
+                <div class="chartjs-size-monitor" style="position: absolute; inset: 0px; overflow: hidden; pointer-events: none; visibility: hidden; z-index: -1;">
+                    <div class="chartjs-size-monitor-expand" style="position:absolute;left:0;top:0;right:0;bottom:0;overflow:hidden;pointer-events:none;visibility:hidden;z-index:-1;">
+                        <div style="position:absolute;width:1000000px;height:1000000px;left:0;top:0">
+                        </div>
+                    </div>
+                    <div class="chartjs-size-monitor-shrink" style="position:absolute;left:0;top:0;right:0;bottom:0;overflow:hidden;pointer-events:none;visibility:hidden;z-index:-1;">
+                        <div style="position:absolute;width:200%;height:200%;left:0; top:0">
+                        </div>
+                    </div>
+                </div>
+
+
+                <!-- 资源使用-标题-->
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
+                    <h2 class="h2">实时资源利用率</h2>
+                </div>
+                <!-- 资源使用-表格 -->
+                <div class="table-responsive">
+                    <table class="table table-striped table-sm">
+                        <thead>
+                            <tr>
+                                <th scope="col">IP</th>
+                                <th scope="col">CPU</th>
+                                <th scope="col">内存</th>
+                                <th scope="col">存储容量</th>
+                                <th scope="col">iops</th>
+                                <th scope="col">并发数</th>
+                                <th scope="col">网络接受数据</th>
+                                <th scope="col">网络发送数据</th>
+                                <th scope="col">温度</th>
+                            </tr>
+                        </thead>
+                        <tbody id ="HostInfoListTable">
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- CPU利用率标题-->
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
+                    <h2 class="h2">总览</h2>
+                </div>
+                <!-- CPU利用率图表-->
+                <div id="OverviewChart" style="width: 100%;height: 800px; -webkit-tap-highlight-color: transparent; user-select: none; position: relative;" >
+                    <div style="position: relative; cursor: default; ">
+                        <canvas data-zr-dom-id="zr_0"  style=" position: absolute;  user-select: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">
+                        </canvas>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+</body>
+
+
+<script >
+    //更新间隔
+    var refreshInterval = FGetRefreshInterval("state");
+    //主机信息表
+    var hostInfoListTable = document.getElementById("HostInfoListTable");
+
+    //下拉菜单-当前选择的host index
+    var currentHostIpIndex = 0;
+
+    //总览表
+    var overviewChart;
+    var overviewData = [[],[],[],[]];
+
+
+    //页面加载完成后执行
+    window.onload=function (){
+        //设置左侧导航栏当前选中的导航项
+        setCurrentNavItem(1);
+
+        //初始化左侧导航栏HostIP列表
+        FInitHostIpList();
+        //定时任务:更新HostState
+        window.setInterval (FInitHostIpList,FGetRefreshInterval("state"));
+
+
+
+        //FInitOverviewData();
+
+        //初始化表格
+        overviewChart = echarts.init(document.getElementById("OverviewChart"));
+        FInitOverviewTable(overviewChart,overviewData,["CPU利用率","内存利用率","网络接受数据","网络发送数据"],["%","%","Kb/s","Kb/s"]);
+
+        //定时刷新数据
+        FGetHostRealTimeInfo(FRefreshHostRealTimeInfoCallback);
+        window.setInterval (FGetHostRealTimeInfo,refreshInterval,FRefreshHostRealTimeInfoCallback);
+    }
+
+    function FInitOverviewData(){
+        //todo
+        var timeInterval = 60;
+        var hostIpList = FGetHostIpList();
+        for(var i=0;i<hostIpList.length;i++){
+            var jsonData = FGetRecentHostInfoList(i,timeInterval);
+
+        }
+    }
+
+    //添加总览数据
+    function FAddOverviewData(jsonData){
+        var overviewTempData = [0,0,0,0];
+        //!(overviewData[0].length != 0 && overviewData[1][overviewData[1].length -1 ][0] == date)
+        for(var i=0;i< jsonData.length;i++){
+            overviewTempData[0] += jsonData[i]["cpuUsage"];
+            overviewTempData[1] += jsonData[i]["memoryUsage"];
+            overviewTempData[2] += jsonData[i]["receiveBW"];
+            overviewTempData[3] += jsonData[i]["transmitBW"];
+        }
+        var date = FGetDateTime(jsonData[1]["timestamp"]);
+        for(var i=0;i< overviewTempData.length;i++){
+            overviewData[i].push([ date,(overviewTempData[i]/jsonData.length).toFixed(2)]  );
+            //overviewData[i].shift();
+        }
+        FRefreshOverviewData();
+    }
+
+    //[定时]刷新Host实时信息
+    function FRefreshHostRealTimeInfoCallback(jsonData){
+        if(jsonData != null){
+            var HostIpListHtml = ""
+            FAddOverviewData(jsonData);
+            for(var i=0;i< jsonData.length;i++){
+                var cpuUsage = FAddDataUnitLabel(jsonData[i]["cpuUsage"],"%");
+                var memoryUsage = FAddDataUnitLabel(jsonData[i]["memoryUsage"],"%");
+                var diskUsage = FAddDataUnitLabel(jsonData[i]["diskUsage"],"%");
+                var receiveBW = FAddDataUnitLabel(jsonData[i]["receiveBW"]," Kb/s");
+                var transmitBW = FAddDataUnitLabel(jsonData[i]["transmitBW"]," Kb/s");
+
+                HostIpListHtml +=   '<tr>' +
+                    '  <th scope="row">'+jsonData[i]["ip"]  +'</th>' +
+                    '  <td>'+
+                    '      <div class="progress" style="width: 100px;height: 25px;text-align: center;">\n' +
+                    '      <div style="width: '+ jsonData[i]["cpuUsage"] +'%" class="progress-bar progress-bar-striped progress-bar-animated bg-info" role="progressbar" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100" ></div>\n' +
+                    '      <h6 style="margin-top:2px;width: 100px;"> ' + cpuUsage+'</h6>' +
+                    '  </div></td>' +
+
+                    '  <td>'+
+                    '      <div class="progress" style="width: 130px;height: 25px;text-align: center;">\n' +
+                    '      <div style="width: '+ jsonData[i]["memoryUsage"] +'%" class="progress-bar progress-bar-striped progress-bar-animated bg-info" role="progressbar" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100" ></div>\n' +
+                    '      <h6 style="margin-top:2px;width: 130px;"> ' + memoryUsage+'</h6>' +
+                    '  </div></td>' +
+
+                    '  <td>'+
+                    '      <div class="progress" style="width: 130px;height: 25px;text-align: center;">\n' +
+                    '      <div style="width: '+ 0 +'%" class="progress-bar progress-bar-striped progress-bar-animated bg-info" role="progressbar" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100" ></div>\n' +
+                    '      <h6 style="margin-top:2px;width: 130px;"> ' + '0/0 GB' +'</h6>' +
+                    '  </div></td>' +
+
+                    '  <td>'+ "--"  +'</td>' +
+                    '  <td>'+ "--"  +'</td>' +
+                    '  <td>'+receiveBW   +'</td>' +
+                    '  <td>'+transmitBW   +'</td>' +
+                    '  <td>'+ "--"  +'</td>' +
+                    '</tr>';
+            }
+            hostInfoListTable.innerHTML = HostIpListHtml;
+        }
+        //设置主机IP列表
+        FSetHostIpList("HostIpList");
+    }
+
+    //初始化图表
+    function FInitOverviewTable(currentChart,currentData,seriesName,unitLabel){
+        var option = {
+            title: [
+                {
+                    text:seriesName[0],
+                    left: '0%',
+                    top: '0px',
+                },
+                {
+                    text:seriesName[1],
+                    left: '50%',
+                    top: '0px',
+                },
+                {
+                    text:seriesName[2],
+                    left: '0%',
+                    top: '370px',
+                },
+                {
+                    text:seriesName[3],
+                    left: '50%',
+                    top: '370px',
+                },
+            ],
+            grid: [
+                {
+                    left: '1%',
+                    right: '51%',
+                    top: '50px',
+                    height:'300px',
+                    containLabel: true
+                },
+                {
+                    left: '51%',
+                    right: '1%',
+                    top: '50px',
+                    height:'300px',
+                    containLabel: true
+                },
+                {
+                    left: '1%',
+                    right: '51%',
+                    top: '420px',
+                    height:'300px',
+                    containLabel: true
+                },
+                {
+                    left: '51%',
+                    right: '1%',
+                    top: '420px',
+                    height:'300px',
+                    containLabel: true
+                },
+            ],
+            tooltip: {
+                trigger: 'axis',
+                formatter: function(params){
+                    var returnTxt = "时间: "+params[0].value[0] +"<br/>";
+                    for(var i =0; i< params.length; i++){
+                        returnTxt += params[i].marker+" "+params[i].seriesName+ " "+params[i].value[1] + unitLabel[params[i].axisIndex] + "<br/>";
+                    }
+                    return returnTxt;
+                }
+            },
+            xAxis: [],
+            yAxis: [],
+            series: [],
+        };
+
+        option["series"] = [];
+        option["xAxis"] = [];
+        option["yAxis"] = [];
+        for(var i=0;i<seriesName.length;i++){
+            option["series"].push({
+                name: seriesName[i],
+                type: 'line',
+                showSymbol: false,
+                hoverAnimation: false,
+                data: currentData[i],
+            });
+            option["xAxis"].push({
+                type: 'time',
+                splitLine: {
+                    show: false
+                },
+                axisLabel: {
+                    formatter: {
+                        year: '{yyyy}年',
+                        month: '{MM}月',
+                        day: '{MM}月{dd}日',
+                        hour: '{HH}:{mm}',
+                        minute: '{HH}:{mm}',
+                        second: '{HH}:{mm}:{ss}',
+                        millisecond: '{HH}:{mm}:{ss} ',
+                        none: '{yyyy}-{MM}-{dd} {HH}:{mm}:{ss}'
+                    }
+                },
+                gridIndex: i,
+            });
+            option["yAxis"].push({
+                type: 'value',
+                boundaryGap: [0, '100%'],
+                splitLine: {
+                    show: true
+                },
+                axisLabel: {
+                    formatter: '{value}'+ unitLabel[i]
+                },
+                gridIndex: i,
+            });
+        }
+
+
+        if (option && typeof option === 'object') {
+            currentChart.setOption(option);
+        }
+    }
+
+    function FRefreshOverviewData(){
+        var option = {
+            series: []
+        };
+        for(var i=0;i<overviewData.length;i++){
+            option["series"].push({
+                data:overviewData[i],
+                xAxisIndex: i,
+                yAxisIndex: i,
+            })
+        }
+        overviewChart.setOption(option);
+    }
+</script>
+</html>

@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Storage Device Monitor</title>
+
+
+    <!-- JQuery -->
+    <script type="text/javascript" src="../JQuery/jquery-3.3.1.min.js"></script>
+    <!-- popper 用于下拉框 -->
+    <script type="text/javascript" src="../popper/popper.min.js"></script>
+    <!-- BootStrap -->
+    <link rel="stylesheet" href= "../bootstrap-4.3.1-dist/css/bootstrap.min.css" >
+    <script type="text/javascript" src="../bootstrap-4.3.1-dist/js/bootstrap.js"></script>
+
+    <!-- ECharts -->
+    <script type="text/javascript" src="../echarts/echarts.min.js"></script>
+    <!-- functionLibrary -->
+    <script type="text/javascript" src="../js/functionLibrary.js"></script>
+    <script type="text/javascript" src="../js/DataRequest.js"></script>
+    <script type="text/javascript" src="../js/WidgetDisplay.js"></script>
+</head>
+
+<body>
+    <!-- 顶部导航项 -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <a id="Title" class="navbar-brand col-sm-3 col-md-2 mr-0" href="/"></a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNavDropdown">
+            <ul class="navbar-nav">
+                <li class="nav-item active">
+                    <a id="Navbar1" class="nav-link" href="/"></a>
+                </li>
+                <!--
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        Dropdown link
+                    </a>
+                    <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                        <a class="dropdown-item" href="#">Action</a>
+                        <a class="dropdown-item" href="#">Another action</a>
+                        <a class="dropdown-item" href="#">Something else here</a>
+                    </div>
+                </li>
+                -->
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- 左侧导航项 -->
+            <nav class="col-md-2 d-none d-md-block bg-light sidebar">
+                <div class="sidebar-sticky">
+                    <ul class="nav flex-column">
+                        <!-- 导航项 -->
+                        <li class="nav-item">
+                            <a id="NavItem1" class="nav-link"  href="#">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-home"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                                总览 <span class="sr-only">(current)</span>
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a id="NavItem2" class="nav-link" href="#">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-bar-chart-2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+                                主机信息
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a id="NavItem3" class="nav-link" href="#">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-file"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><polyline points="13 2 13 9 20 9"></polyline></svg>
+                                进程IO信息
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a id="NavItem4" class="nav-link" href="#">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-file"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><polyline points="13 2 13 9 20 9"></polyline></svg>
+                                磁盘故障预测
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a id="NavItem5" class="nav-link" href="#">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-file"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><polyline points="13 2 13 9 20 9"></polyline></svg>
+                                IO测试
+                            </a>
+                        </li>
+                    </ul>
+
+                    <!-- 节点列表 -->
+                    <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
+                        <span>主机列表</span>
+                    </h6>
+                    <ul class="nav flex-column mb-2" id = "HostIpList" >
+                        <!--<li class="nav-item">
+                            <a class="nav-link" href="#">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-layers"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
+                                39.105.123.116
+                            </a>
+                        </li>-->
+                    </ul>
+                </div>
+            </nav>
+
+            <main role="main" class="col-md-9 ml-sm-auto col-lg-10 pt-3 px-4">
+                <div class="chartjs-size-monitor" style="position: absolute; inset: 0px; overflow: hidden; pointer-events: none; visibility: hidden; z-index: -1;">
+                    <div class="chartjs-size-monitor-expand" style="position:absolute;left:0;top:0;right:0;bottom:0;overflow:hidden;pointer-events:none;visibility:hidden;z-index:-1;">
+                        <div style="position:absolute;width:1000000px;height:1000000px;left:0;top:0">
+                        </div>
+                    </div>
+                    <div class="chartjs-size-monitor-shrink" style="position:absolute;left:0;top:0;right:0;bottom:0;overflow:hidden;pointer-events:none;visibility:hidden;z-index:-1;">
+                        <div style="position:absolute;width:200%;height:200%;left:0; top:0">
+                        </div>
+                    </div>
+                </div>
+
+
+                <!-- 故障预测 - 标题-->
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
+                    <h2 class="h2">故障预测</h2>
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <h5 id = "predictTimeInfo" class="h5" style="margin-bottom:-10px;margin-right: 40px;">预测时间段：2021.1.1 - 2021.2.1</h5>
+                        <h5 id = "predictInterval" class="h5" style="margin-bottom:-10px;">精度: x天</h5>
+                    </div>
+
+                </div>
+
+                <!-- 磁盘故障信息-表格 -->
+                <div class="table-responsive">
+                    <table class="table table-striped table-sm">
+                        <thead>
+                        <tr>
+                            <th scope="col" style="min-width: 150px;">主机</th>
+                            <th scope="col" style="min-width: 100px;">磁盘</th>
+                            <th scope="col" style="min-width: 100px;">损坏概率</th>
+                        </tr>
+                        </thead>
+                        <tbody id ="DiskFailureInfoList">
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- 故障趋势 - 标题-->
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
+                    <h2 class="h2">故障趋势</h2>
+                    <div class="btn-toolbar mb-3" role="toolbar">
+                        <div class="btn-toolbar mb-2 mb-md-0" style="margin-right: 20px;">
+                            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="HostIpDropDownBtn" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                0.0.0.0
+                            </button>
+                            <div id="HostIpDropDownMenu" class="dropdown-menu" aria-labelledby="HostIpDropDownBtn">
+                                <a class="dropdown-item" href="#" onclick="FSelectHost(0)"> 0.0.0.0</a>
+                            </div>
+                        </div>
+
+                        <div class="btn-toolbar mb-2 mb-md-0">
+                            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="DiskDropDownBtn" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                磁盘0
+                            </button>
+                            <div id="DiskDropDownMenu" class="dropdown-menu" aria-labelledby="HostIpDropDownBtn">
+                                <a class="dropdown-item" href="#" onclick="FSelectHost(0)"> 磁盘0</a>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- 图表-->
+                <div id="predictProbabilityChart" style="width: 100%;height: 350px;"></div>
+            </main>
+        </div>
+    </div>
+</body>
+
+<script >
+    //磁盘故障预测时间信息
+    var predictTimeInfo = document.getElementById("predictTimeInfo");
+    var predictInterval = document.getElementById("predictInterval");
+    //磁盘故障信息
+    var diskFailureInfoList = document.getElementById("DiskFailureInfoList");
+    //下拉菜单-当前选择的host index
+    var currentHostIpIndex = -1;
+    var currentDiskIndex = -1;
+
+    var predictProbabilityChart = echarts.init(document.getElementById("predictProbabilityChart"));
+
+
+
+
+    var predictProbabilityData = [];
+    //磁盘故障预测数据
+    var diskFailurePredictData = {
+            beginTime:0,
+            endTime:1,
+            intervalDays:5,
+            predictInfo:[
+                {
+                    host: " 1.0.0.0",
+                    disk: [
+                        {
+                            diskName: "aa",
+                            probability: 80,
+                        },
+                        {
+                            diskName: "bb",
+                            probability: 30,
+                        },
+                    ],
+                },
+                {
+                    host: " 2.0.0.0",
+                        disk: [
+                    {
+                        diskName: "cc",
+                        probability: 30,
+                    },
+                    {
+                        diskName: "dd",
+                        probability: 48,
+                    },
+                ],
+                },
+            ],
+        }
+
+    //页面加载完成后执行
+    window.onload=function (){
+        //设置左侧导航栏当前选中的导航项
+        setCurrentNavItem(4);
+        //初始化左侧导航栏HostIP列表
+        FInitHostIpList();
+        //定时任务:更新HostState
+        window.setInterval (FInitHostIpList,FGetRefreshInterval("state"));
+
+        //初始化HostIp下拉菜单
+        FInitHostIpDropDownMenu("FHostIpSelectBtnCallback",0);
+        FHostIpSelectBtnCallback(0);
+        //设备配置信息
+        FRefreshDiskFailureInfoList();
+
+        //-----初始化表格
+        FInitTable(predictProbabilityChart,predictProbabilityData,["概率"],"%");
+        //alert("!!");
+    }
+
+    //磁盘故障信息刷新
+    function FRefreshDiskFailureInfoList(){
+        if(diskFailurePredictData != null){
+            predictTimeInfo.innerText = "预测时间段："+
+                FGetDateTime(diskFailurePredictData["beginTime"]) + " - " + FGetDateTime(diskFailurePredictData["endTime"]);
+            predictInterval.innerText = "精度："+ diskFailurePredictData["intervalDays"] +" 天";
+            var html = "";
+            for(var i=0;i<diskFailurePredictData["predictInfo"].length;i++){
+                for(var j=0;j<diskFailurePredictData["predictInfo"][i]["disk"].length;j++){
+                    html += '<tr><th scope="row" style="min-width: 150px;">'+diskFailurePredictData["predictInfo"][i]["host"] +
+                        '</th><td>' + diskFailurePredictData["predictInfo"][i]["disk"][j]["diskName"] +
+                        '</td><td>' + diskFailurePredictData["predictInfo"][i]["disk"][j]["probability"] +'%</td></tr>';
+                }
+            }
+            diskFailureInfoList.innerHTML = html;
+        }
+    }
+
+    //下拉菜单选项回调
+    function FHostIpSelectBtnCallback(index){
+        if(currentHostIpIndex !== index){
+            currentHostIpIndex = index;
+            FRefreshDiskFailureInfoList();
+            currentDiskIndex = -1;
+            FSelectDisk(0);
+            FRefreshDiskDropDownMenu();
+        }
+    }
+
+    //刷新磁盘下拉菜单
+    function FRefreshDiskDropDownMenu(){
+        //设置下拉选项
+        var jsonData = diskFailurePredictData["predictInfo"][currentHostIpIndex]["disk"];
+        var diskDropDownMenuHtml = ""
+        for(var i=0;i< jsonData.length;i++){
+            diskDropDownMenuHtml +=
+                "<a class=\"dropdown-item\" href=\"#\" onclick=\"FSelectDisk(" + i + ")\">" + jsonData[i]["diskName"] +"</a>"
+        }
+        var diskDropDownMenu = document.getElementById("DiskDropDownMenu");
+        diskDropDownMenu.innerHTML = diskDropDownMenuHtml;
+        //下拉按钮当前显示Txt
+        var diskDropDownBtn = document.getElementById("DiskDropDownBtn");
+        diskDropDownBtn.innerText = jsonData[currentDiskIndex]["diskName"];
+    }
+
+    //磁盘菜单选项回调
+    function FSelectDisk(diskIndex){
+        if(diskIndex !== currentDiskIndex){
+            currentDiskIndex = diskIndex;
+            var jsonData = diskFailurePredictData["predictInfo"][currentHostIpIndex]["disk"];
+
+            var diskDropDownBtn = document.getElementById("DiskDropDownBtn");
+            diskDropDownBtn.innerText = jsonData[currentDiskIndex]["diskName"];
+        }
+    }
+
+
+</script>
+</html>
