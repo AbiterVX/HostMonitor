@@ -16,5 +16,8 @@ public class DataSampleController {
         return "nacos registry, serverPort: "+ serverPort+"\t id"+id;
     }
 
-
+    @GetMapping(value = "/test_2")
+    public String test(){
+        return "test Result";
+    }
 }

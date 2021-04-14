@@ -1,9 +1,10 @@
 server:
   port: 80
 
+
 spring:
   application:
-    name: hostmonitor_web_80
+    name: hostmonitor-web-80
   cloud:
     nacos:
       discovery:
@@ -15,3 +16,5 @@ management:
       exposure:
         include: '*'
 
+service-url:
+  data_collector_service: http://hostmonitor-data-collector-9000

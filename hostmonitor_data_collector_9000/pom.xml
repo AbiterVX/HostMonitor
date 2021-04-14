@@ -89,4 +89,25 @@
             <version>6.0.6</version>
         </dependency>
     </dependencies>
+
+    <build>
+        <finalName>HostMonitor_DataCollector</finalName>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>2.4.4</version>
+                <configuration>
+                    <mainClass>com.hust.hostmonitor_data_collector.HostMonitorDataCollector</mainClass>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 </project>
