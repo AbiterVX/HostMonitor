@@ -16,9 +16,9 @@ SpringCloud项目。
 
 **（2）模块**
 
-hostmonitor_data_collector_9000：对host采样，数据库CRUD。
+hostmonitor_data_collector_9000：对host采样，数据库CRUD。位于9000端口
 
-hostmonitor_web_80：显示web界面
+hostmonitor_web_80：显示web界面，位于80端口（从而可直接输入域名/ip直接访问页面）
 
 **（3）外部依赖**
 
@@ -56,13 +56,16 @@ github：https://github.com/alibaba/nacos/tree/develop
 startup.cmd -m standalone
 ```
 
-**（2）运行所有子项目。**
+**（2）运行所有子项目**
 
 ```
-java -jar xxxx.jar
+java -jar HostMonitor_DataCollector.jar
+java -jar HostMonitor_Web.jar
 ```
 
-**（3）查看配置中心内的环境**
+需要确保ConfigData及内部配置文件在HostMonitor_DataCollector.jar相同目录中。
+
+**（3）查看配置中心内的服务项**
 
 进入nacos默认网页。默认账户：nacos，密码：nacos。
 
