@@ -80,23 +80,7 @@ function FHostStateCallback(hostIpList,hostStateList){
     }
 }
 
-//获取服务器状态
-function FGetHostState(callbackFunc){
-    $.ajax({
-        type:"post",
-        dataType:"json",
-        url:"/getHostState",
-        processData :false,
-        contentType:"application/json",
-        async:true,
-        success:function (resultJsonData) {
-            var hostIpList = FGetHostIpList();
-            callbackFunc(hostIpList,resultJsonData);
-        },
-        error: function (err) {
-        }
-    });
-}
+
 
 
 //初始化HostIp下拉菜单
@@ -162,8 +146,25 @@ function FSetCheckHostInfoJumpIndex(index){
 }
 
 
+//获取Host状态
+function FGetHostState(callbackFunc){
+    $.ajax({
+        type:"get",
+        dataType:"json",
+        url:"/getHostState",
+        processData :false,
+        contentType:"application/json",
+        async:true,
+        success:function (resultJsonData) {
+            var hostIpList = FGetHostIpList();
+            callbackFunc(hostIpList,resultJsonData);
+        },
+        error: function (err) {
+        }
+    });
+}
 
-//主机IP
+//获取Host IP
 function FGetHostIpList(){
     var jsonData = null;
 
@@ -173,9 +174,9 @@ function FGetHostIpList(){
     }
     else{
         $.ajax({
-            type:"post",
+            type:"get",
             dataType:"json",
-            url:"/getHostIpList",
+            url:"/getHostIp",
             processData :false,
             contentType:"application/json",
             async:false,
@@ -192,24 +193,7 @@ function FGetHostIpList(){
     return jsonData;
 }
 
-//[定时更新]获取主机信息
-function FGetHostRealTimeInfo(callBackFunc) {
-    $.ajax({
-        type:"post",
-        dataType:"json",
-        url:"/getHostInfoList",
-        processData :false,
-        contentType:"application/json",
-        async:true,
-        success:function (resultJsonData) {
-            callBackFunc(resultJsonData);
-        },
-        error: function (err) {
-        }
-    });
-}
-
-//获取host硬件信息
+//获取Host 硬件 数据
 function FGetHostHardWareInfo(callBackFunc){
     var sessionJsonData = window.sessionStorage.getItem("HostHardWareInfo");
     if(sessionJsonData != null){
@@ -218,9 +202,9 @@ function FGetHostHardWareInfo(callBackFunc){
     }
     else{
         $.ajax({
-            type:"post",
+            type:"get",
             dataType:"json",
-            url:"/getHostHardWareList",
+            url:"/getHostHardWareInfo",
             processData :false,
             contentType:"application/json",
             async:true,
@@ -234,6 +218,48 @@ function FGetHostHardWareInfo(callBackFunc){
     }
 
 }
+
+
+//[定时更新]获取Host 数据
+function FGetHostRealTimeInfo(callBackFunc) {
+    $.ajax({
+        type:"get",
+        dataType:"json",
+        url:"/getHostInfo",
+        processData :false,
+        contentType:"application/json",
+        async:true,
+        success:function (resultJsonData) {
+            callBackFunc(resultJsonData);
+        },
+        error: function (err) {
+        }
+    });
+}
+
+//获取某一时段主机信息
+function FGetRecentHostInfoList(hostIndex,_dateInterval) {
+    var requestUrl = "/getHostInfoRecent/"+ hostIndex +"/" + _dateInterval;
+    var jsonData = null;
+    $.ajax({
+        type:"get",
+        dataType:"json",
+        url:requestUrl,
+        processData :false,
+        contentType:"application/json",
+        async:false,
+        success:function (resultJsonData) {
+            jsonData = resultJsonData;
+        },
+        error: function (err) {
+        }
+    });
+    return jsonData;
+}
+
+
+
+
 
 //时间戳转换
 function FGetDateTime(currentDate){
@@ -263,47 +289,7 @@ function FAddDataUnitLabel(data,unitlabel){
 }
 
 
-//获取某一时段主机信息
-function FGetRecentHostInfoList(hostIndex,_dateInterval) {
-    var parameterData = '{"index": ' + hostIndex+  ',"dateInterval":' + _dateInterval +'}';
-    var jsonData = null;
-    $.ajax({
-        type:"post",
-        dataType:"json",
-        url:"/getRecentHostInfoList",
-        data:parameterData,
-        processData :false,
-        contentType:"application/json",
-        async:false,
-        success:function (resultJsonData) {
-            jsonData = resultJsonData;
-        },
-        error: function (err) {
-        }
-    });
-    return jsonData;
-}
 
-//磁盘故障信息
-function FGetDiskFailureList(hostIndex){
-    var parameterData = '{"index": ' + hostIndex+'}';
-    var jsonData = null;
-    $.ajax({
-        type:"post",
-        dataType:"json",
-        url:"/getDiskFailureList",
-        processData :false,
-        data:parameterData,
-        contentType:"application/json",
-        async:false,
-        success:function (resultJsonData) {
-            jsonData = resultJsonData;
-        },
-        error: function (err) {
-        }
-    });
-    return jsonData;
-}
 
 
 

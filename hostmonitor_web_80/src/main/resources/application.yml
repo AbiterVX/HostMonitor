@@ -4,7 +4,7 @@ server:
 
 spring:
   application:
-    name: hostmonitor-web-80
+    name: hostmonitor-web
   cloud:
     nacos:
       discovery:
@@ -17,4 +17,5 @@ management:
         include: '*'
 
 service-url:
-  data_collector_service: http://hostmonitor-data-collector-9000
+  data_collector_service: http://hostmonitor-data-collector  #http://localhost:9000  #
+  web_service: http://hostmonitor-web

@@ -13,6 +13,4 @@ public class HostMonitorWeb {
     public static void main(String[] args) {
         SpringApplication.run(HostMonitorWeb.class,args);
     }
-
-
 }

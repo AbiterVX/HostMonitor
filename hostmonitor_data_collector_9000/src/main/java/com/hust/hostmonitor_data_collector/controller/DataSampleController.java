@@ -1,12 +1,19 @@
 package com.hust.hostmonitor_data_collector.controller;
 
+import com.hust.hostmonitor_data_collector.dao.entity.FieldType;
+import com.hust.hostmonitor_data_collector.service.Service_Implementation;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
+
 
 @RestController
 public class DataSampleController {
+    @Autowired
+    Service_Implementation service_implementation;
+
     @Value("${server.port}")
     private String serverPort;
 
@@ -16,8 +23,54 @@ public class DataSampleController {
         return "nacos registry, serverPort: "+ serverPort+"\t id"+id;
     }
 
-    @GetMapping(value = "/test_2")
-    public String test(){
-        return "test Result";
+
+    //获取Host状态
+    @GetMapping(value="/getHostState")
+    public String getHostState(){
+        String result=service_implementation.getHostState();
+        return result;
     }
+
+    //获取Host IP
+    @GetMapping(value = "/getHostIp")
+    public String getHostIp(){
+        String result = service_implementation.getHostIpList();
+        return result;
+    }
+
+    //获取Host 硬件 数据
+    @GetMapping(value = "/getHostHardWareInfo")
+    public String getHostHardwareInfo(){
+        String result = service_implementation.getHostHardwareInfoListOutputData();
+        return result;
+    }
+
+
+    //----------获取Host 数据----------
+    //获取Host 数据
+    @GetMapping(value = "/getHostInfo")
+    public String getHostInfo(){
+        String result = service_implementation.getHostInfoListOutputData();
+        return result;
+    }
+
+    //获取Host 数据 近段时间内
+    @GetMapping(value = "/getHostInfoRecent/{index}/{dateInterval}")
+    public String getHostInfoRecent(@PathVariable Map<String,String> map){
+        int index= Integer.parseInt(map.get("index"));
+        int minute= Integer.parseInt(map.get("dateInterval"));
+        String result = service_implementation.getFullRecordsByIP(service_implementation.getHostIp(index),minute);
+        return result;
+    }
+
+    //获取Host 数据 某一类别
+    @GetMapping(value="/getHostInfoField/{index}/{dateInterval}/{field}")
+    public String getHostInfoField(@PathVariable Map<String,String> map) {
+        int index = Integer.parseInt(map.get("index"));
+        int hour=Integer.parseInt(map.get("dateInterval"));
+        String field = map.get("field");
+        String result = service_implementation.getRecentInfoByIp(service_implementation.getHostIp(index), hour, FieldType.fromString(field));
+        return result;
+    }
+
 }

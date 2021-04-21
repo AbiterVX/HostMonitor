@@ -3,7 +3,7 @@ server:
 
 spring:
   application:
-    name: hostmonitor-data-collector-9000
+    name: hostmonitor-data-collector
   cloud:
     nacos:
       discovery:

@@ -3,10 +3,48 @@
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
+
+    <!-- JQuery -->
+    <script type="text/javascript" src="../JQuery/jquery-3.3.1.min.js"></script>
 </head>
 <body>
     <div>
-        For Test!
+        For Test___
+        <div id="content">
+
+        </div>
     </div>
 </body>
+
+<script>
+    window.onload=function getData(){
+        var index = window.sessionStorage.get("index");
+        var dateInterval = window.sessionStorage.getItem()
+
+
+        var content = document.getElementById("content");
+        content.innerText = index + "," + dateInterval;
+
+    }
+
+
+/*
+    window.onload=function getData(){
+        //            processData :false,
+        //contentType:"application/json",
+        //dataType:"json",
+
+        $.ajax({
+            type:"get",
+            url:"/getHostInfoList/Recent/123/666",
+            async:false,
+            success:function (resultJsonData) {
+                alert(resultJsonData);
+            },
+            error: function (err) {
+            }
+        });
+    }*/
+
+</script>
 </html>
