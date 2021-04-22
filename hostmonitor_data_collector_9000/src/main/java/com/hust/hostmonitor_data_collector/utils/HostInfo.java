@@ -8,6 +8,7 @@ import java.util.Map;
 /**
  * Host各个数值相关信息
  */
+@Deprecated
 public class HostInfo {
     public HostInfo(String _ip){
         ip = _ip;

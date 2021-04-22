@@ -53,8 +53,8 @@ public class JschSSHManager implements SSHManager{
                 sessionMap.put(hostConfigInfo.ip,currentSession);
             }
         } catch (Exception e) {
-            e.printStackTrace();
-            //System.out.println("GetJSCHSession Error, IP:"+ hostConfigInfo.ip);
+            //e.printStackTrace();
+            System.out.println("JSCHSession Error, IP:"+ hostConfigInfo.ip);
             handleException(currentSession,hostConfigInfo.ip);
             currentSession = null;
         }

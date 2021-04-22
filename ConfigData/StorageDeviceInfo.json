@@ -17,6 +17,118 @@
       "proxyIp": "222.20.95.235",
       "proxyPort": 9001
     }
-  ]
+  ],
+
+
+  "SampleDataFormat": {
+    "NetReceive": {
+      "value": 0,
+      "unit": "B",
+      "valid": false
+    },
+    "NetSend": {
+      "value": 0,
+      "unit": "B",
+      "valid": false
+    },
+    "MemTotal": {
+      "value": 0,
+      "unit": "Kb",
+      "valid": false
+    },
+    "MemFree": {
+      "value": 0,
+      "unit": "Kb",
+      "valid": false
+    },
+    "MemAvailable": {
+      "value": 0,
+      "unit": "Kb",
+      "valid": false
+    },
+    "Buffers": {
+      "value": 0,
+      "unit": "Kb",
+      "valid": false
+    },
+    "Cached": {
+      "value": 0,
+      "unit": "Kb",
+      "valid": false
+    },
+    "TcpEstablished": {
+      "value": 0,
+      "unit": "Number",
+      "valid": false
+    },
+    "DiskTotalSize": {
+      "value": 0,
+      "unit": "M",
+      "valid": false
+    },
+    "DiskTotalUsage": {
+      "value": 0,
+      "unit": "%",
+      "valid": false
+    },
+    "CpuIdle": {
+      "value": 0,
+      "unit": "%",
+      "valid": false
+    },
+    "Power": {
+      "value": 0,
+      "unit": "W",
+      "valid": false
+    },
+    "CpuType": {
+      "value": "",
+      "unit": "",
+      "valid": false
+    },
+    "OS": {
+      "value": "",
+      "unit": "",
+      "valid": false
+    },
+    "Disk": {
+      "value": {},
+      "unit": "",
+      "valid": false
+    },
+    "Temperature": {
+      "value": {},
+      "unit": "°C",
+      "valid": false
+    }
+
+  },
+  "TemperatureSampleDataFormat": {
+    "value": "",
+    "valid": false
+  },
+
+  "DiskSampleDataFormat": {
+    "Iops": {
+      "value": 0,
+      "unit": "tps",
+      "valid": false
+    },
+    "Type": {
+      "value": 0,
+      "unit": "",
+      "valid": false
+    },
+    "Read": {
+      "value": 0,
+      "unit": "Kbps",
+      "valid": false
+    },
+    "Write": {
+      "value": 0,
+      "unit": "Kbps",
+      "valid": false
+    }
+  }
 
 }

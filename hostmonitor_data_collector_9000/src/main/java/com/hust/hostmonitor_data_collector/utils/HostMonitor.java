@@ -12,6 +12,7 @@ import java.util.Map;
 /**
  * 主机监控 -main class
  */
+@Deprecated
 public class HostMonitor implements Runnable {
     //---------成员
     SSHManager sshManager;
@@ -31,6 +32,8 @@ public class HostMonitor implements Runnable {
 
     //线程
     private Thread newThread;
+
+
     //线程开始
     public boolean threadStart;
     private boolean isDataHasBeenWritten=true;
@@ -66,7 +69,7 @@ public class HostMonitor implements Runnable {
         //配置信息
         configInfo = new Config();
         //主机配置信息
-        hostConfigInfoList = configInfo.getStorageDeviceHost();
+        hostConfigInfoList = configInfo.getHostConfigInfoList();
         //主机返回信息
         hostInfoList =new ArrayList<>();
         for(int i=0;i<hostConfigInfoList.size();i++){
@@ -94,6 +97,7 @@ public class HostMonitor implements Runnable {
 
     //--------- 采样
     //全部采样
+    @Deprecated
     public void sampleAll(){
         sampleNetBindWidth();
         sampleCpuUsage();
@@ -101,6 +105,7 @@ public class HostMonitor implements Runnable {
         sampleDisk();
     }
     //[网络带宽]采样
+    @Deprecated
     public void sampleNetBindWidth(){
         String command = "cat /proc/net/dev";
         for(int i=0;i<hostConfigInfoList.size();i++){
@@ -127,6 +132,7 @@ public class HostMonitor implements Runnable {
 
     }
     //[CPU利用率]采样
+    @Deprecated
     public void sampleCpuUsage(){
         String command = "cat /proc/stat";
         for(int i=0;i<hostConfigInfoList.size();i++){
@@ -153,6 +159,7 @@ public class HostMonitor implements Runnable {
         }
     }
     //[内存]采样
+    @Deprecated
     public void sampleMemory(){
         String command = "head -n 5 /proc/meminfo";
         for(int i=0;i<hostConfigInfoList.size();i++){
@@ -168,6 +175,7 @@ public class HostMonitor implements Runnable {
         }
     }
     //[磁盘]采样
+    @Deprecated
     public void sampleDisk(){
         String command = "cat /proc/diskstats";
         for(int i=0;i<hostConfigInfoList.size();i++){
@@ -192,10 +200,12 @@ public class HostMonitor implements Runnable {
     }
 
     //[]采样
+    @Deprecated
     public void sampleMulti(){
 
     }
     //---------获得Host设备信息
+    @Deprecated
     public String getHostInfoListOutputData(){
         JSONArray jsonArray = new JSONArray();
         for(HostInfo hostInfo:hostInfoList){
@@ -205,9 +215,12 @@ public class HostMonitor implements Runnable {
         }
         return jsonArray.toJSONString();
     }
+
     public String getHostIp(int index){
         return hostConfigInfoList.get(index).ip;
     }
+
+    @Deprecated
     public Map<String, Object> getHostHardWareInfo(int index){
         Map<String, Object> result = new HashMap<>();
         HostInfo hostInfo = hostInfoList.get(index);
@@ -218,6 +231,8 @@ public class HostMonitor implements Runnable {
         result.put("MemorySize",hostInfo.memorySize);
         return result;
     }
+
+    @Deprecated
     public String getHostHardWareInfoListOutputData(){
         JSONArray jsonArray = new JSONArray();
         for(int i=0;i<hostInfoList.size();i++){
@@ -239,6 +254,7 @@ public class HostMonitor implements Runnable {
         getMemorySize();
     }
     //获取操作系统类型
+    @Deprecated
     public void getOSType() {
         String command = "head -n 1 /etc/issue";
         for (int i = 0; i < hostConfigInfoList.size(); i++) {
@@ -253,6 +269,7 @@ public class HostMonitor implements Runnable {
         }
     }
     //获取CPU类型
+    @Deprecated
     public void getCpuType() {
         String command = "cat /proc/cpuinfo | grep \"model name\"";
         for (int i = 0; i < hostConfigInfoList.size(); i++) {
@@ -267,6 +284,7 @@ public class HostMonitor implements Runnable {
         }
     }
     //获取内存类型
+    @Deprecated
     public void getMemoryType() {
         String command = "grep MemTotal /proc/meminfo";
         for (int i = 0; i < hostConfigInfoList.size(); i++) {
@@ -281,6 +299,7 @@ public class HostMonitor implements Runnable {
         }
     }
     //获取内存大小
+    @Deprecated
     public void getMemorySize() {
         String command = "grep MemTotal /proc/meminfo";
         for (int i = 0; i < hostConfigInfoList.size(); i++) {
@@ -295,6 +314,7 @@ public class HostMonitor implements Runnable {
         }
     }
     //获取磁盘类型
+    @Deprecated
     public void getDiskType() {
         String command = "fdisk -l | grep \"Disk /dev\"   ";
         for (int i = 0; i < hostConfigInfoList.size(); i++) {
