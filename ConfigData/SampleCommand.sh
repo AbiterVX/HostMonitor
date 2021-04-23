@@ -26,10 +26,10 @@ diskTotalSize=$(echo "$diskTotalInfo" | awk '{print $2}')
 diskTotalUsage=$(echo "$diskTotalInfo" | awk '{print $5}')
 diskTotalUsage=${diskTotalUsage//%/}
 echo "DiskTotalSize:""$diskTotalSize"
-echo "DiskTotalUsage:""$diskTotalUsage"
+echo "DiskOccupancyUsage:""$diskTotalUsage"
 
 #[iostat]
-iostatCommand=$(iostat)
+iostatCommand=$(iostat -x)
 
 #[cpu]
 cpuIdle=$(echo "$iostatCommand" | sed -n '4p' | awk '{print $6}')
@@ -42,12 +42,18 @@ for i in "$iopsInfo"
 do
        #[iops]
        tempDiskName=$(echo "$i" | awk '{print $1}') 
-       tempTps=$(echo "$i" | awk '{print $2}')
+       tempReadIOPS=$(echo "$i" | awk '{print $2}')
+       tempWriteIOPS=$(echo "$i" | awk '{print $8}')
+       tempTps=$(echo "$tempReadIOPS+$tempWriteIOPS" | bc -l )
+
        tempRead=$(echo "$i" | awk '{print $3}')
-       tempWrite=$(echo "$i" | awk '{print $4}')
+       tempWrite=$(echo "$i" | awk '{print $9}')
+       tempUtil=$(echo "$i" | awk '{print $21}')
+
        echo "Disk_Iops_""$tempDiskName:""$tempTps"
        echo "Disk_Read_""$tempDiskName:""$tempRead"
        echo "Disk_Write_""$tempDiskName:""$tempWrite"
+       echo "Disk_Util_""$tempDiskName:""$tempUtil"
 
        #[disk type]
               diskType=$(smartctl --all "/dev/"$tempDiskName  | grep "Device Model" | awk '{$1="";$2="";print $0}' | awk '$1=$1')
@@ -57,20 +63,20 @@ done
 
 #[sensors]
 sensorsCommand=$(sensors);
-power=$(echo "$sensorsCommand" | grep '^power[0-9]')
-temperature=$(echo "$sensorsCommand" | grep '^Package id [0-9]' | awk '{print $4}')
-index=1
-for i in "$iopsInfo"
+power=$(echo "$sensorsCommand" | grep '^power[0-9]' | awk '{print $2}')
+temperature=$(echo "$sensorsCommand" | grep '^Package id [0-9]'| awk '{print $3$4}' ) #
+for i in $temperature
 do
-       indexTxt="$index"
-       echo "Temperature_"$indexTxt":""$temperature"
-       index=index+1
+       data=(${i//:/ })
+       packageId=${data[0]}
+       currentTemperature=$(echo ${data[1]%??})
+       echo "Temperature_"$packageId":""$currentTemperature"
 done
 echo "Power:""$power"
 
 
 #[cpu type]
-cpuType=$(cat /proc/cpuinfo | grep "model name" | awk '{$1="";$2="";$3="";print $0}' | awk '$1=$1' )
+cpuType=$(cat /proc/cpuinfo | grep "model name" | awk '{$1="";$2="";$3="";print $0}' | awk '$1=$1' | head -n 1  )
 
 echo "CpuType:""$cpuType"
 

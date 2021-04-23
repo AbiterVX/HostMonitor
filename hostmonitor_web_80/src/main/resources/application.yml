@@ -17,5 +17,8 @@ management:
         include: '*'
 
 service-url:
-  data_collector_service: http://hostmonitor-data-collector  #http://localhost:9000  #
+  #不使用Nacos，需改为：http://localhost:9000
+  #使用Nacos，需改为： http://hostmonitor-data-collector
+  #若不使用Nacos需关闭ApplicationContextBean.RestTemplate.LoadBalanced，反之要打开。
+  data_collector_service: http://localhost:9000
   web_service: http://hostmonitor-web

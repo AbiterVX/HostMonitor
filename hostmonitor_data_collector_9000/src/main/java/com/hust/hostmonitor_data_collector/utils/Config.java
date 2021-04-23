@@ -28,7 +28,7 @@ public class Config {
             jsonObject = JSONObject.parseObject(configFileContent);
 
             //采样指令
-            File sampleCommandFile = new File(path,"ConfigData/SampleCommand.sh");
+            File sampleCommandFile = new File(path,"ConfigData/SampleCommand.sh"); //test
             sampleCommands = FileUtils.readFileToString(sampleCommandFile, "UTF-8");
         }
         catch (IOException e) {

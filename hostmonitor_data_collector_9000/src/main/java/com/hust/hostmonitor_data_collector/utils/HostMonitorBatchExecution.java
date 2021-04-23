@@ -74,7 +74,8 @@ public class HostMonitorBatchExecution implements Runnable{
         for(int i=0;i<hostConfigInfoList.size();i++){
             //采样返回结果
             List<String> commandResult = sshManager.runCommand(command, hostConfigInfoList.get(i));
-            //
+            //System.out.println(commandResult);
+
             HostSampleData currentHostSampleData = hostSampleDataList.get(i);
             //更新连接状态
             currentHostSampleData.sessionConnected = (commandResult.size()!=0);

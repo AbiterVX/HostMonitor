@@ -58,9 +58,9 @@ public class DataSampleController_Remote {
 
     //----------获取Host 数据----------
     //获取Host 数据
-    @GetMapping(value = "/getHostInfo")
-    public String getHostInfo(){
-        String result= restTemplate.getForObject(dataCollectorUrl+ "/getHostInfo",String.class);
+    @GetMapping(value = "/getHostInfoRealTime")
+    public String getHostInfoRealTime(){
+        String result= restTemplate.getForObject(dataCollectorUrl+ "/getHostInfoRealTime",String.class);
         System.out.println("【请求】:"+result);
         return result;
     }

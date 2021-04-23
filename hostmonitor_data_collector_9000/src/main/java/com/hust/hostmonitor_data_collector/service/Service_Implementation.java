@@ -16,8 +16,7 @@ import org.springframework.stereotype.Service;
 import java.sql.Timestamp;
 import java.util.*;
 
-@Service
-@Order(value=1)
+
 public class Service_Implementation implements Service_Interface, ApplicationRunner {
     @Autowired
     private Dao_record dao_record;

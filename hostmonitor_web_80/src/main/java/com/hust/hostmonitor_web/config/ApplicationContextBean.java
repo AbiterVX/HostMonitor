@@ -9,7 +9,7 @@ import org.springframework.web.client.RestTemplate;
 @Configuration
 public class ApplicationContextBean {
     @Bean
-    @LoadBalanced
+    //@LoadBalanced  //若不使用Nacos需关闭ApplicationContextBean.RestTemplate.LoadBalanced
     public RestTemplate getRestTemplate()
     {
         return new RestTemplate();
