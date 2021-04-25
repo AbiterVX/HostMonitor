@@ -4,6 +4,7 @@ import com.hust.hostmonitor_data_collector.dao.entity.*;
 
 import java.sql.Timestamp;
 
+@Deprecated
 public interface Service_Interface {
 
     void insertNewRecord(String ip, Timestamp timestamp, float receiveBW, float transmitBW, float cpuUsage, float memoryUsage,

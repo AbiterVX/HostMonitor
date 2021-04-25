@@ -2,12 +2,15 @@ package com.hust.hostmonitor_data_collector.utils;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import org.springframework.scheduling.annotation.Async;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
-public class HostMonitorBatchExecution implements Runnable{
+public class HostMonitorBatchExecution{
     //---------- 配置信息
     //Config配置信息
     private Config configInfo;
@@ -21,9 +24,9 @@ public class HostMonitorBatchExecution implements Runnable{
     private List<HostSampleData> hostSampleDataList;
     //采样间隔
     private int interval_ms;
-    //线程
-    private Thread newThread;
 
+    //线程池
+    ExecutorService executor;
 
     //Init 单例
     private volatile static HostMonitorBatchExecution hostMonitor;
@@ -64,71 +67,89 @@ public class HostMonitorBatchExecution implements Runnable{
             newHostSampleData.setAllValueInvalid();
             hostSampleDataList.add(newHostSampleData);
         }
+
+        //线程池大小设为Host个数
+        executor= Executors.newFixedThreadPool(hostConfigInfoList.size());
     }
 
     //对所有Host采样
     public void sample(){
-        //指令
-        String command = configInfo.getSampleCommands();
-        //遍历所有Host
+        //对所有Host异步采样
         for(int i=0;i<hostConfigInfoList.size();i++){
-            //采样返回结果
-            List<String> commandResult = sshManager.runCommand(command, hostConfigInfoList.get(i));
-            //System.out.println(commandResult);
+            int index = i;
+            executor.submit(() -> {
+                sampleHost(index);
+            });
+        }
+    }
 
-            HostSampleData currentHostSampleData = hostSampleDataList.get(i);
-            //更新连接状态
-            currentHostSampleData.sessionConnected = (commandResult.size()!=0);
-            //设置所有字段无效
-            currentHostSampleData.setAllValueInvalid();
-            //遍历返回结果的字段并更新
-            for(int j=0;j<commandResult.size();j++){
-                //按格式拆分
-                String currentResult = commandResult.get(j);
-                String[] pair = currentResult.split(":");
-                if(pair.length ==2){
-                    String key = pair[0];
-                    String value = pair[1];
-                    //System.out.println("Key:"+key+",Value:"+value);
-                    if(key.contains("Disk_")){
-                        String[] segments = key.split("_");
-                        //子key / 二级key
-                        String subKey = segments[1];
-                        //磁盘名称
-                        String diskName = segments[2];
-                        currentHostSampleData.sampleData.getJSONObject("Disk").put("valid",true);
-                        JSONObject diskValueObject = currentHostSampleData.sampleData.getJSONObject("Disk").getJSONObject("value");
-                        //若不存在则创建
-                        if(!diskValueObject.containsKey(diskName)){
-                            diskValueObject.put(diskName,configInfo.getDiskSampleDataFormat());
-                        }
-                        //更新值并设为有效
-                        diskValueObject.getJSONObject(diskName).getJSONObject(subKey).put("value",value);
-                        diskValueObject.getJSONObject(diskName).getJSONObject(subKey).put("valid",true);
+    //对一个Host采样
+    public void sampleHost(int index){
+        //采样返回结果
+        List<String> commandResult = sshManager.runCommand(configInfo.getSampleCommands(), hostConfigInfoList.get(index));
+        //System.out.println("Index:"+index);
+        //System.out.println(commandResult);
+
+        HostSampleData currentHostSampleData = hostSampleDataList.get(index);
+        //更新连接状态
+        currentHostSampleData.sessionConnected = (commandResult.size()!=0);
+        //设置所有字段无效
+        currentHostSampleData.setAllValueInvalid();
+        //遍历返回结果的字段并更新
+        for(int j=0;j<commandResult.size();j++){
+            //按格式拆分
+            String currentResult = commandResult.get(j);
+            String[] pair = currentResult.split(":");
+            if(pair.length ==2){
+                String key = pair[0];
+                String value = pair[1];
+                //System.out.println("Key:"+key+",Value:"+value);
+                if(key.contains("Disk_")){
+                    String[] segments = key.split("_");
+                    //子key / 二级key
+                    String subKey = segments[1];
+                    //磁盘名称
+                    String diskName = segments[2];
+                    currentHostSampleData.sampleData.getJSONObject("Disk").put("valid",true);
+                    JSONObject diskValueObject = currentHostSampleData.sampleData.getJSONObject("Disk").getJSONObject("value");
+                    //若不存在则创建
+                    if(!diskValueObject.containsKey(diskName)){
+                        diskValueObject.put(diskName,configInfo.getDiskSampleDataFormat());
                     }
-                    else if(key.contains("Temperature_")){
-                        String[] segments = key.split("_");
-                        //子key / 二级key
-                        String subKey = segments[1];
-                        currentHostSampleData.sampleData.getJSONObject("Temperature").put("valid",true);
-                        JSONObject temperatureObject = currentHostSampleData.sampleData.getJSONObject("Temperature").getJSONObject("value");
-                        //若不存在则创建
-                        if(!temperatureObject.containsKey(subKey)){
-                            temperatureObject.put(subKey,configInfo.getTemperatureSampleDataFormat());
-                        }
-                        //更新值并设为有效
-                        temperatureObject.getJSONObject(subKey).put("value",value);
-                        temperatureObject.getJSONObject(subKey).put("valid",true);
+                    //更新值并设为有效
+                    diskValueObject.getJSONObject(diskName).getJSONObject(subKey).put("value",value);
+                    diskValueObject.getJSONObject(diskName).getJSONObject(subKey).put("valid",true);
+                }
+                else if(key.contains("Temperature_")){
+                    String[] segments = key.split("_");
+                    //子key / 二级key
+                    String subKey = segments[1];
+                    currentHostSampleData.sampleData.getJSONObject("Temperature").put("valid",true);
+                    JSONObject temperatureObject = currentHostSampleData.sampleData.getJSONObject("Temperature").getJSONObject("value");
+                    //若不存在则创建
+                    if(!temperatureObject.containsKey(subKey)){
+                        temperatureObject.put(subKey,configInfo.getTemperatureSampleDataFormat());
                     }
-                    else{
-                        JSONObject currentJSONObject = currentHostSampleData.sampleData.getJSONObject(key);
-                        currentJSONObject.put("value",value);
-                        currentJSONObject.put("valid",true);
-                    }
+                    //更新值并设为有效
+                    temperatureObject.getJSONObject(subKey).put("value",value);
+                    temperatureObject.getJSONObject(subKey).put("valid",true);
+                }
+                else{
+                    JSONObject currentJSONObject = currentHostSampleData.sampleData.getJSONObject(key);
+                    currentJSONObject.put("value",value);
+                    currentJSONObject.put("valid",true);
                 }
             }
         }
     }
+
+    //采样测试
+    public void sampleTest(int index){
+        List<String> commandResult = sshManager.runCommand(configInfo.getSampleCommands(), hostConfigInfoList.get(index));
+        System.out.println("Index:"+index);
+        System.out.println(commandResult);
+    }
+
 
     //获取Host IP (Index)
     public String getHostIp(int index){
@@ -162,54 +183,11 @@ public class HostMonitorBatchExecution implements Runnable{
         return arrayList;
     }
 
-    //---------多线程执行
-    //多线程运行
-    @Override
-    public void run() {
-        //硬件设备信息
-        while(true){
-            //采样
-            sample();
-            try {
-                Thread.sleep(interval_ms);
-            }
-            catch (InterruptedException e) {
-                e.printStackTrace();
-                if(newThread != null){
-                    newThread.interrupt();
-                    newThread = null;
-                }
-                break;
-            }
-        }
 
-    }
-    //开始线程
-    public void startThread(){
-        if(newThread == null){
-            newThread = new Thread(this,"HostMonitor—thread");
-            newThread.start();
-        }
-    }
-    //终止线程
-    public void stopThread(){
-        try {
-            Thread.sleep(interval_ms*2);
-        }
-        catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        finally {
-            if(newThread != null){
-                newThread.interrupt();
-                newThread = null;
-            }
-        }
-    }
 
     public static void main(String[] args) {
         HostMonitorBatchExecution hostMonitorBatchExecution = HostMonitorBatchExecution.getInstance();
         hostMonitorBatchExecution.sample();
-        System.out.println(hostMonitorBatchExecution.getHostSampleInfo());
+        //System.out.println(hostMonitorBatchExecution.getHostSampleInfo());
     }
 }

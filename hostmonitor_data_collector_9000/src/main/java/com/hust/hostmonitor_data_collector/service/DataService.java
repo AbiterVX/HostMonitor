@@ -24,13 +24,39 @@ public interface DataService {
 
     /**
      * 功能：获取所有Host的硬件信息
-     * 格式：[{},{},...]
+     * 格式：[{"os":"Ubuntu...",
+     *        "MemorySize":2048,
+     *        "CpuType":"xx type",
+     *        "DiskTotalSize":1024000,},
+     *       {},...]
      */
     String getHostHardwareInfo();
 
     /**
      * 功能：获取Host信息-实时
-     * 格式：[{"ip":"0.0.0.0",...},{"ip":"0.0.0.1",...},...]
+     * 格式：[{"CpuUsage":10,
+     *        "MemoryUsage":11,
+     *        "DiskOccupancyUsage":12,
+     *        "MemoryUsage":11,
+     *        "Disk":{
+     *            "vda":{
+     *                "Util":44
+     *                "Iops":5.1
+     *                "Read":89.2
+     *                "Write":22.5
+     *            },
+     *            ...
+     *        },
+     *        "NetSend":200,
+     *        "NetReceive":300,
+     *        "TcpEstablished":16,
+     *        "Temperature":{
+     *            "1": 66,
+     *            ...
+     *        },
+     *        "Power":178,
+     *       },
+     *       ...]
      */
     String getHostInfoRealTime();
 
@@ -39,7 +65,30 @@ public interface DataService {
      * 参数：
      *      index：配置文件中对应ip的索引，从0开始。
      *      hour：小时数
-     * 格式：[{"ip":"0.0.0.0",...},{"ip":"0.0.0.1",...},...]
+     * 格式：[{"TimeStamp":1619319687,
+     *        "CpuUsage":10,
+     *        "MemoryUsage":11,
+     *        "DiskOccupancyUsage":12,
+     *        "MemoryUsage":11,
+     *        "Disk":{
+     *            "vda":{
+     *                "Util":44
+     *                "Iops":5.1
+     *                "Read":89.2
+     *                "Write":22.5
+     *            },
+     *            ...
+     *        },
+     *        "NetSend":200,
+     *        "NetReceive":300,
+     *        "TcpEstablished":16,
+     *        "Temperature":{
+     *            "1": 66,
+     *            ...
+     *        },
+     *        "Power":178,
+     *       },
+     *       ...]
      */
     String getHostInfoRecent(int index,int hour);
 
@@ -49,7 +98,11 @@ public interface DataService {
      *      index：配置文件中对应ip的索引，从0开始。
      *      hour：小时数
      *      field：查询字段
-     * 格式：[{"ip":"0.0.0.0",...},{"ip":"0.0.0.1",...},...]
+     * 格式：[{"TimeStamp":1619319687,
+     *        "CpuUsage":10,
+     *        "某字段": xxx,
+     *       },
+     *       ...]
      */
     String getHostInfoField(int index,int hour,HostInfoFieldType field);
 

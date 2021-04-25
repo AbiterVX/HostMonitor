@@ -225,7 +225,7 @@ function FGetHostRealTimeInfo(callBackFunc) {
     $.ajax({
         type:"get",
         dataType:"json",
-        url:"/getHostInfo",
+        url:"/getHostInfoRealTime",
         processData :false,
         contentType:"application/json",
         async:true,
@@ -256,6 +256,27 @@ function FGetRecentHostInfoList(hostIndex,_dateInterval) {
     });
     return jsonData;
 }
+
+//获取某一时段主机信息
+function FGetFieldHostInfoList(hostIndex,_dateInterval,field) {
+    var requestUrl = "/getHostInfoField/"+ hostIndex +"/" + _dateInterval+"/" +field;
+    var jsonData = null;
+    $.ajax({
+        type:"get",
+        dataType:"json",
+        url:requestUrl,
+        processData :false,
+        contentType:"application/json",
+        async:false,
+        success:function (resultJsonData) {
+            jsonData = resultJsonData;
+        },
+        error: function (err) {
+        }
+    });
+    return jsonData;
+}
+
 
 
 
