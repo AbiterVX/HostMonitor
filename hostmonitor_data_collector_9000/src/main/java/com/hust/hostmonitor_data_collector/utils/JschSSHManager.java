@@ -54,7 +54,7 @@ public class JschSSHManager implements SSHManager{
             }
         } catch (Exception e) {
             //e.printStackTrace();
-            System.out.println("JSCHSession Error, IP:"+ hostConfigInfo.ip);
+            System.out.println("        JschSSHManager->getJSCHSession,Error, IP:"+ hostConfigInfo.ip);
             handleException(currentSession,hostConfigInfo.ip);
             currentSession = null;
         }
@@ -69,7 +69,7 @@ public class JschSSHManager implements SSHManager{
         Session session = getJSCHSession(hostConfigInfo);
         ChannelExec channelExec = null;
         if(session == null){
-            System.out.println("Session null: " + hostConfigInfo.ip);
+            System.out.println("        JschSSHManager->runCommand,Session null: " + hostConfigInfo.ip);
             return result;
         }
         try {

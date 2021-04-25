@@ -17,6 +17,7 @@ public class Config {
     private JSONObject jsonObject;
     private final String path = System.getProperty("user.dir");
     private String sampleCommands;
+    private String processSampleCommand;
 
     //Init
     public Config() {
@@ -30,6 +31,10 @@ public class Config {
             //采样指令
             File sampleCommandFile = new File(path,"ConfigData/SampleCommand.sh"); //test  //SampleCommand
             sampleCommands = FileUtils.readFileToString(sampleCommandFile, "UTF-8");
+
+            //进程采样指令
+            File processSampleCommandFile = new File(path,"ConfigData/ProcessSampleCommand.sh"); //test  //SampleCommand
+            processSampleCommand = FileUtils.readFileToString(processSampleCommandFile, "UTF-8");
         }
         catch (IOException e) {
             e.printStackTrace();
@@ -57,6 +62,10 @@ public class Config {
         return sampleCommands;
     }
 
+    //获取进程采样指令
+    public String getProcessSampleCommand(){
+        return processSampleCommand;
+    }
     //获取Host配置信息
     public List<HostConfigInfo> getHostConfigInfoList() {
         List<HostConfigInfo> hostConfigInfoList = new ArrayList<>();

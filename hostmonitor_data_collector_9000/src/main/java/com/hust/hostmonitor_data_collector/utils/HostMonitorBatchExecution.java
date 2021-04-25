@@ -7,6 +7,7 @@ import org.springframework.scheduling.annotation.Async;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Vector;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -22,8 +23,10 @@ public class HostMonitorBatchExecution{
     private SSHManager sshManager;
     //Host 信息
     private List<HostSampleData> hostSampleDataList;
-    //采样间隔
-    private int interval_ms;
+
+    //Host Process 信息
+    private Vector<Vector<HostProcessSampleData>> hostProcessSampleDataList;
+
 
     //线程池
     ExecutorService executor;
@@ -40,17 +43,11 @@ public class HostMonitorBatchExecution{
         }
         return hostMonitor;
     }
+
     //Init
-    private HostMonitorBatchExecution(){
-        //延迟时间默认为10 * 1000，单位：ms
-        this(10 * 1000);
-    }
-    //Init
-    public HostMonitorBatchExecution(int _interval_ms){
+    public HostMonitorBatchExecution(){
         //配置信息
         configInfo = new Config();
-        //延迟时间 单位：ms
-        interval_ms = _interval_ms;
         //SSH默认连接方式为JSCH。
         sshManager = new JschSSHManager();
 
@@ -59,6 +56,7 @@ public class HostMonitorBatchExecution{
 
         //Host 信息 init
         hostSampleDataList = new ArrayList<>();
+        hostProcessSampleDataList = new Vector<>();
         JSONObject sampleDataFormat = configInfo.getSampleDataFormat();
 
 
@@ -66,10 +64,13 @@ public class HostMonitorBatchExecution{
             HostSampleData newHostSampleData = new HostSampleData(hostConfigInfoList.get(i).ip,sampleDataFormat);
             newHostSampleData.setAllValueInvalid();
             hostSampleDataList.add(newHostSampleData);
+
+            Vector<HostProcessSampleData> tempList = new Vector<>();
+            hostProcessSampleDataList.add(tempList);
         }
 
-        //线程池大小设为Host个数
-        executor= Executors.newFixedThreadPool(hostConfigInfoList.size());
+        //线程池大小设为Host个数*2
+        executor= Executors.newFixedThreadPool(hostConfigInfoList.size()*2);
     }
 
     //对所有Host采样
@@ -82,6 +83,50 @@ public class HostMonitorBatchExecution{
             });
         }
     }
+
+    //对所有Host采样
+    public void sampleProcess(){
+        //对所有Host异步采样
+        for(int i=0;i<hostConfigInfoList.size();i++){
+            int index = i;
+            executor.submit(() -> {
+                //sampleHost(index);
+                sampleHostProcess(index);
+            });
+        }
+    }
+
+    //进程采样
+    private void sampleHostProcess(int index){
+        //采样返回结果
+        List<String> commandResult = sshManager.runCommand(configInfo.getProcessSampleCommand(), hostConfigInfoList.get(index));
+        if(commandResult.size() == 0){
+            //System.out.println("NULL,Index:"+index);
+        }
+        else{
+            //System.out.println("Index:"+index);
+            //System.out.println(commandResult);
+            Vector<HostProcessSampleData> processSampleDataList = new Vector<>();
+            for(int i=0;i<commandResult.size();i++){
+                String[] segments = commandResult.get(i).split("\\s+");
+                String uid = segments[1];
+                String pid = segments[2];
+                String readKbps = segments[3];
+                String writeKbps = segments[4];
+                String command = segments[7];
+
+                HostProcessSampleData hostProcessSampleData = new HostProcessSampleData(uid,pid,readKbps,writeKbps,command);
+                processSampleDataList.add(hostProcessSampleData);
+                /*System.out.println("uid:"+uid);
+                System.out.println("pid:"+pid);
+                System.out.println("readKbps:"+readKbps);
+                System.out.println("writeKbps:"+writeKbps);
+                System.out.println("command:"+command);*/
+            }
+            hostProcessSampleDataList.set(index,processSampleDataList);
+        }
+    }
+
 
     //对一个Host采样
     public void sampleHost(int index){
@@ -187,7 +232,8 @@ public class HostMonitorBatchExecution{
 
     public static void main(String[] args) {
         HostMonitorBatchExecution hostMonitorBatchExecution = HostMonitorBatchExecution.getInstance();
-        hostMonitorBatchExecution.sample();
+        //hostMonitorBatchExecution.sample();
+        hostMonitorBatchExecution.sampleProcess();
         //System.out.println(hostMonitorBatchExecution.getHostSampleInfo());
     }
 }

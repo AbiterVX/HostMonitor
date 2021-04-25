@@ -11,20 +11,39 @@ public class DataServiceImpl implements DataService{
 
     //采样间隔,单位ms
     private final int sampleIntervalMS = 10* 1000;
+    private final int sampleProcessIntervalMS = 5* 1000;
     //存储偏移,单位ms
-    private final int storeDelayMS = sampleIntervalMS/2;
+    private final int sampleStoreDelayMS = sampleIntervalMS/2;
+    private final int sampleProcessStoreDelayMS = sampleProcessIntervalMS/2;
     //定时器
     private Timer mainTimer = new Timer();
     //定时器任务
-    private final TimerTask mainTimerTask = new TimerTask() {
+    private final TimerTask hostSampleTask = new TimerTask() {
         @Override
         public void run() {
             //采样
+            System.out.println("Host Sample");
             hostMonitorBE.sample();
             try {
-                Thread.sleep(storeDelayMS);
+                Thread.sleep(sampleStoreDelayMS);
                 //存储新采样的数据
                 storeSampleData();
+            } catch (InterruptedException e) {
+                //e.printStackTrace();
+                System.out.println("[Thread Sleep Error]: In TimerTask run()");
+            }
+        }
+    };
+
+
+    private final TimerTask hostProcessSampleTask = new TimerTask() {
+        @Override
+        public void run() {
+            System.out.println("Host Process Sample");
+            hostMonitorBE.sampleProcess();
+            try {
+                Thread.sleep(sampleProcessStoreDelayMS);
+                storeProcessSampleData();
             } catch (InterruptedException e) {
                 //e.printStackTrace();
                 System.out.println("[Thread Sleep Error]: In TimerTask run()");
@@ -37,7 +56,8 @@ public class DataServiceImpl implements DataService{
         System.out.println("启动:DataServiceImpl");
 
         //每隔sampleIntervalMS,执行一次mainTimerTask
-        mainTimer.schedule(mainTimerTask,0,sampleIntervalMS);
+        mainTimer.schedule(hostSampleTask,sampleProcessIntervalMS/2,sampleIntervalMS);
+        mainTimer.schedule(hostProcessSampleTask,0,sampleProcessIntervalMS);
     }
 
     //存储新采样的数据
@@ -45,6 +65,10 @@ public class DataServiceImpl implements DataService{
         //Todo
     }
 
+    //存储新采样的数据-线程
+    private void storeProcessSampleData(){
+        //Todo
+    }
 
 
     //----------对外接口----------
