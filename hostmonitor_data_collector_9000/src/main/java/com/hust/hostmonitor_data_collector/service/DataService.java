@@ -106,4 +106,19 @@ public interface DataService {
      */
     String getHostInfoField(int index,int hour,HostInfoFieldType field);
 
+
+    /**
+     * 功能：获取Host 进程信息-最近
+     * 参数：
+     *      index：配置文件中对应ip的索引，从0开始。
+     *
+     * 格式：[{"uid":1,
+     *        "pid":12,
+     *        "readKbps": 452.7,
+     *        "writeKbps": 142.3,
+     *        "command": “java”,
+     *       },
+     *       ...]
+     */
+    String getHostProcessInfoRealTime(int index);
 }

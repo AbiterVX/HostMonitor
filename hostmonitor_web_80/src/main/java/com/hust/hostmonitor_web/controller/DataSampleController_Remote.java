@@ -68,7 +68,7 @@ public class DataSampleController_Remote {
     //获取Host 数据 近段时间内
     @GetMapping(value = "/getHostInfoRecent/{index}/{dateInterval}")
     public String getHostInfoRecent(@PathVariable Map<String,String> map){
-        String result= restTemplate.getForObject(dataCollectorUrl+ "/getHostInfoRecent" + map.get("index") + "/" + map.get("dateInterval"),String.class);
+        String result= restTemplate.getForObject(dataCollectorUrl+ "/getHostInfoRecent/" + map.get("index") + "/" + map.get("dateInterval"),String.class);
         System.out.println("【请求】:"+result);
         return result;
     }
@@ -76,12 +76,18 @@ public class DataSampleController_Remote {
     //获取Host 数据 某一类别
     @GetMapping(value="/getHostInfoField/{index}/{dateInterval}/{field}")
     public String getHostInfoField(@PathVariable Map<String,String> map) {
-        String result= restTemplate.getForObject(dataCollectorUrl+ "/getHostInfoRecent" + map.get("index") + "/" + map.get("dateInterval") + "/" + map.get("field"),String.class);
+        String result= restTemplate.getForObject(dataCollectorUrl+ "/getHostInfoRecent/" + map.get("index") + "/" + map.get("dateInterval") + "/" + map.get("field"),String.class);
         System.out.println("【请求】:"+result);
         return result;
     }
 
-
+    //获取Host 进程 数据 实时
+    @GetMapping(value="/getHostProcessInfoRealTime/{index}")
+    public String getHostProcessInfoRealTime(@PathVariable Map<String,String> map) {
+        String result= restTemplate.getForObject(dataCollectorUrl+ "/getHostProcessInfoRealTime/" + map.get("index") ,String.class);
+        System.out.println("【请求】:"+result);
+        return result;
+    }
 }
 
     /*

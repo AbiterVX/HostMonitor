@@ -103,4 +103,9 @@ public class DataServiceImpl implements DataService{
         return "null";
     }
 
+    @Override
+    public String getHostProcessInfoRealTime(int index) {
+        return "null";
+    }
+
 }

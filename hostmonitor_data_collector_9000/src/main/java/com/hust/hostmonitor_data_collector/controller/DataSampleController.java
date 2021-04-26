@@ -56,7 +56,7 @@ public class DataSampleController {
 
 
     //----------获取Host 数据----------
-    //获取Host 数据
+    //获取Host 数据 实时
     @GetMapping(value = "/getHostInfoRealTime")
     public String getHostInfoRealTime(){
         String result = dataService.getHostInfoRealTime();//service_implementation.getHostInfoListOutputData();
@@ -86,4 +86,12 @@ public class DataSampleController {
         return result;
     }
 
+
+    //获取Host 进程 数据 实时
+    @GetMapping(value="/getHostProcessInfoRealTime/{index}")
+    public String getHostProcessInfoRealTime(@PathVariable Map<String,String> map) {
+        int index = Integer.parseInt(map.get("index"));
+        String result = dataService.getHostProcessInfoRealTime(index);
+        return result;
+    }
 }
