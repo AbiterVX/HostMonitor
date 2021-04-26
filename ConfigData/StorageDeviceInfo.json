@@ -5,14 +5,31 @@
       "username": "root",
       "password": "VX117Halo"
     },
+
     {
-      "ip": "223.4.179.227",
+      "ip": "192.168.1.74",
       "username": "rzx",
-      "password": "123456"
+      "password": "123",
+      "proxyIp": "222.20.95.235",
+      "proxyPort": 9001
     },
     {
       "ip": "192.168.1.75",
-      "username": "tan",
+      "username": "rzx",
+      "password": "123",
+      "proxyIp": "222.20.95.235",
+      "proxyPort": 9001
+    },
+    {
+      "ip": "192.168.1.76",
+      "username": "rzx",
+      "password": "123",
+      "proxyIp": "222.20.95.235",
+      "proxyPort": 9001
+    },
+    {
+      "ip": "192.168.1.77",
+      "username": "rzx",
       "password": "123",
       "proxyIp": "222.20.95.235",
       "proxyPort": 9001
