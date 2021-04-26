@@ -18,7 +18,7 @@ public class Config {
     private final String path = System.getProperty("user.dir");
     private String sampleCommands;
     private String processSampleCommand;
-
+    private String initEnvironmentCommand;
     //Init
     public Config() {
         try {
@@ -35,6 +35,11 @@ public class Config {
             //进程采样指令
             File processSampleCommandFile = new File(path,"ConfigData/ProcessSampleCommand.sh"); //test  //SampleCommand
             processSampleCommand = FileUtils.readFileToString(processSampleCommandFile, "UTF-8");
+
+            //环境初始化指令
+            File initEnvironmentCommandFile = new File(path,"ConfigData/InitEnvironment.sh");
+            initEnvironmentCommand = FileUtils.readFileToString(initEnvironmentCommandFile, "UTF-8");
+
         }
         catch (IOException e) {
             e.printStackTrace();
@@ -66,6 +71,12 @@ public class Config {
     public String getProcessSampleCommand(){
         return processSampleCommand;
     }
+
+    //环境初始化指令
+    public String getInitEnvironmentCommand() {
+        return initEnvironmentCommand;
+    }
+
     //获取Host配置信息
     public List<HostConfigInfo> getHostConfigInfoList() {
         List<HostConfigInfo> hostConfigInfoList = new ArrayList<>();
@@ -111,5 +122,7 @@ public class Config {
         temp.putAll(jsonObject.getJSONObject(temperatureSampleDataFormat));
         return temp;
     }
+
+
 
 }

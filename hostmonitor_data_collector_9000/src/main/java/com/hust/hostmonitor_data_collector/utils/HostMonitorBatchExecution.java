@@ -229,6 +229,23 @@ public class HostMonitorBatchExecution{
     }
 
 
+    //初始化Host环境-仅安装一次
+    public void initEnvironment(){
+        //对所有Host异步采样
+        for(int i=0;i<hostConfigInfoList.size();i++){
+            int index = i;
+            executor.submit(() -> {
+                initHostEnvironment(index);
+            });
+        }
+    }
+
+    //初始化Host环境-仅安装一次-某一Host
+    public void initHostEnvironment(int index) {
+        //采样返回结果
+        List<String> commandResult = sshManager.runCommand(configInfo.getInitEnvironmentCommand(), hostConfigInfoList.get(index));
+    }
+
 
     public static void main(String[] args) {
         HostMonitorBatchExecution hostMonitorBatchExecution = HostMonitorBatchExecution.getInstance();
