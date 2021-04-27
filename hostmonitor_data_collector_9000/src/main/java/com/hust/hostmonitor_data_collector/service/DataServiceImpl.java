@@ -108,4 +108,9 @@ public class DataServiceImpl implements DataService{
         return "null";
     }
 
+    @Override
+    public String getHostIOTestInfoRealTime() {
+        return "null";
+    }
+
 }

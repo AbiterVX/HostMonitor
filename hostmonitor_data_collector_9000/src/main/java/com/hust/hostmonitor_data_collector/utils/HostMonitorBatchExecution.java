@@ -27,7 +27,6 @@ public class HostMonitorBatchExecution{
     //Host Process 信息
     private Vector<Vector<HostProcessSampleData>> hostProcessSampleDataList;
 
-
     //线程池
     ExecutorService executor;
 
@@ -73,7 +72,8 @@ public class HostMonitorBatchExecution{
         executor= Executors.newFixedThreadPool(hostConfigInfoList.size()*2);
     }
 
-    //对所有Host采样
+    //----------采样----------
+    //Host采样
     public void sample(){
         //对所有Host异步采样
         for(int i=0;i<hostConfigInfoList.size();i++){
@@ -83,52 +83,7 @@ public class HostMonitorBatchExecution{
             });
         }
     }
-
-    //对所有Host采样
-    public void sampleProcess(){
-        //对所有Host异步采样
-        for(int i=0;i<hostConfigInfoList.size();i++){
-            int index = i;
-            executor.submit(() -> {
-                //sampleHost(index);
-                sampleHostProcess(index);
-            });
-        }
-    }
-
-    //进程采样
-    private void sampleHostProcess(int index){
-        //采样返回结果
-        List<String> commandResult = sshManager.runCommand(configInfo.getProcessSampleCommand(), hostConfigInfoList.get(index));
-        if(commandResult.size() == 0){
-            //System.out.println("NULL,Index:"+index);
-        }
-        else{
-            //System.out.println("Index:"+index);
-            //System.out.println(commandResult);
-            Vector<HostProcessSampleData> processSampleDataList = new Vector<>();
-            for(int i=0;i<commandResult.size();i++){
-                String[] segments = commandResult.get(i).split("\\s+");
-                String uid = segments[1];
-                String pid = segments[2];
-                String readKbps = segments[3];
-                String writeKbps = segments[4];
-                String command = segments[7];
-
-                HostProcessSampleData hostProcessSampleData = new HostProcessSampleData(uid,pid,readKbps,writeKbps,command);
-                processSampleDataList.add(hostProcessSampleData);
-                /*System.out.println("uid:"+uid);
-                System.out.println("pid:"+pid);
-                System.out.println("readKbps:"+readKbps);
-                System.out.println("writeKbps:"+writeKbps);
-                System.out.println("command:"+command);*/
-            }
-            hostProcessSampleDataList.set(index,processSampleDataList);
-        }
-    }
-
-
-    //对一个Host采样
+    //Host采样-单个
     public void sampleHost(int index){
         //采样返回结果
         List<String> commandResult = sshManager.runCommand(configInfo.getSampleCommands(), hostConfigInfoList.get(index));
@@ -188,13 +143,58 @@ public class HostMonitorBatchExecution{
         }
     }
 
-    //采样测试
+    //Host采样-进程
+    public void sampleProcess(){
+        //对所有Host异步采样
+        for(int i=0;i<hostConfigInfoList.size();i++){
+            int index = i;
+            executor.submit(() -> {
+                //sampleHost(index);
+                sampleHostProcess(index);
+            });
+        }
+    }
+    //Host采样-进程-单个
+    private void sampleHostProcess(int index){
+        //采样返回结果
+        List<String> commandResult = sshManager.runCommand(configInfo.getProcessSampleCommand(), hostConfigInfoList.get(index));
+        if(commandResult.size() == 0){
+            //System.out.println("NULL,Index:"+index);
+        }
+        else{
+            //System.out.println("Index:"+index);
+            //System.out.println(commandResult);
+            Vector<HostProcessSampleData> processSampleDataList = new Vector<>();
+            for(int i=0;i<commandResult.size();i++){
+                String[] segments = commandResult.get(i).split("\\s+");
+                String uid = segments[1];
+                String pid = segments[2];
+                String readKbps = segments[3];
+                String writeKbps = segments[4];
+                String command = segments[7];
+
+                HostProcessSampleData hostProcessSampleData = new HostProcessSampleData(uid,pid,readKbps,writeKbps,command);
+                processSampleDataList.add(hostProcessSampleData);
+                /*System.out.println("uid:"+uid);
+                System.out.println("pid:"+pid);
+                System.out.println("readKbps:"+readKbps);
+                System.out.println("writeKbps:"+writeKbps);
+                System.out.println("command:"+command);*/
+            }
+            hostProcessSampleDataList.set(index,processSampleDataList);
+        }
+    }
+
+
+    //Host采样-测试
     public void sampleTest(int index){
-        List<String> commandResult = sshManager.runCommand(configInfo.getSampleCommands(), hostConfigInfoList.get(index));
+        List<String> commandResult = sshManager.runCommand(configInfo.getTestCommand(), hostConfigInfoList.get(index));
         System.out.println("Index:"+index);
         System.out.println(commandResult);
     }
 
+
+    //----------数据获取----------
 
     //获取Host IP (Index)
     public String getHostIp(int index){
@@ -228,6 +228,7 @@ public class HostMonitorBatchExecution{
         return arrayList;
     }
 
+    //----------初始化----------
 
     //初始化Host环境-仅安装一次
     public void initEnvironment(){
@@ -239,7 +240,6 @@ public class HostMonitorBatchExecution{
             });
         }
     }
-
     //初始化Host环境-仅安装一次-某一Host
     public void initHostEnvironment(int index) {
         //采样返回结果
@@ -249,8 +249,9 @@ public class HostMonitorBatchExecution{
 
     public static void main(String[] args) {
         HostMonitorBatchExecution hostMonitorBatchExecution = HostMonitorBatchExecution.getInstance();
+        hostMonitorBatchExecution.sampleTest(3);
         //hostMonitorBatchExecution.sample();
-        hostMonitorBatchExecution.sampleProcess();
+        //hostMonitorBatchExecution.sampleProcess();
         //System.out.println(hostMonitorBatchExecution.getHostSampleInfo());
     }
 }

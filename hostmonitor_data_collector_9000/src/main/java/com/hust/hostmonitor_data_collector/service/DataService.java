@@ -121,4 +121,17 @@ public interface DataService {
      *       ...]
      */
     String getHostProcessInfoRealTime(int index);
+
+
+    /**
+     * 功能：获取Host IO测试-信息-最近
+     * 参数：
+     * 格式：[{"IOSpeed":169,
+     *       "UploadSpeed":5.65,
+     *       "DownloadSpeed":98.56},
+     *       ...]
+     */
+    String getHostIOTestInfoRealTime();
+
+
 }

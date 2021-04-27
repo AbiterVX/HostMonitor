@@ -16,36 +16,37 @@ public class Config {
     //Json配置文件
     private JSONObject jsonObject;
     private final String path = System.getProperty("user.dir");
-    private String sampleCommands;
-    private String processSampleCommand;
-    private String initEnvironmentCommand;
+    private final String sampleCommands;
+    private final String processSampleCommand;
+    private final String initEnvironmentCommand;
+    private final String ioTestCommand;
+    private final String testCommand;
     //Init
     public Config() {
-        try {
-            //读配置文件
-            File configFile=new File(path,"ConfigData/StorageDeviceInfo.json");
-            String configFileContent = FileUtils.readFileToString(configFile, "UTF-8");
-            //解析Json
-            jsonObject = JSONObject.parseObject(configFileContent);
-
-            //采样指令
-            File sampleCommandFile = new File(path,"ConfigData/SampleCommand.sh"); //test  //SampleCommand
-            sampleCommands = FileUtils.readFileToString(sampleCommandFile, "UTF-8");
-
-            //进程采样指令
-            File processSampleCommandFile = new File(path,"ConfigData/ProcessSampleCommand.sh"); //test  //SampleCommand
-            processSampleCommand = FileUtils.readFileToString(processSampleCommandFile, "UTF-8");
-
-            //环境初始化指令
-            File initEnvironmentCommandFile = new File(path,"ConfigData/InitEnvironment.sh");
-            initEnvironmentCommand = FileUtils.readFileToString(initEnvironmentCommandFile, "UTF-8");
-
-        }
-        catch (IOException e) {
-            e.printStackTrace();
-        }
+        //解析Json
+        jsonObject = JSONObject.parseObject(readFile("ConfigData/StorageDeviceInfo.json"));
+        //采样指令
+        sampleCommands = readFile("ConfigData/SampleCommand.sh");  //test  //SampleCommand
+        //进程采样指令
+        processSampleCommand = readFile("ConfigData/ProcessSampleCommand.sh");
+        //环境初始化指令
+        initEnvironmentCommand = readFile("ConfigData/InitEnvironment.sh");
+        //测试指令
+        testCommand = readFile("ConfigData/test.sh");
+        //IO测试指令
+        ioTestCommand = readFile("ConfigData/IOTest.sh");
     }
 
+    public String readFile(String filePath){
+        String resultData = "";
+        File file = new File(path,filePath);
+        try {
+            resultData = FileUtils.readFileToString(file, "UTF-8");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return resultData;
+    }
     //----------静态字段
     private final String StorageDeviceHostTxt = "StorageDeviceHost";
     private final String ipTxt = "ip";
@@ -72,9 +73,14 @@ public class Config {
         return processSampleCommand;
     }
 
-    //环境初始化指令
+    //获取环境初始化指令
     public String getInitEnvironmentCommand() {
         return initEnvironmentCommand;
+    }
+
+    //获取测试指令
+    public String getTestCommand() {
+        return testCommand;
     }
 
     //获取Host配置信息
