@@ -21,8 +21,22 @@ public class Config {
     private final String initEnvironmentCommand;
     private final String ioTestCommand;
     private final String testCommand;
+
+
+    private volatile static Config config;
+    public static Config getInstance(){
+        if(config==null){
+            synchronized (Config.class){
+                if(config==null){
+                    config=new Config();
+                }
+            }
+        }
+        return config;
+    }
+
     //Init
-    public Config() {
+    private Config() {
         //解析Json
         jsonObject = JSONObject.parseObject(readFile("ConfigData/StorageDeviceInfo.json"));
         //采样指令

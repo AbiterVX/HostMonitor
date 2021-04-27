@@ -14,7 +14,7 @@ import java.util.concurrent.Executors;
 public class HostMonitorBatchExecution{
     //---------- 配置信息
     //Config配置信息
-    private Config configInfo;
+    private Config configInfo = Config.getInstance();
     //Host 配置信息
     List<HostConfigInfo> hostConfigInfoList;
 
@@ -44,9 +44,7 @@ public class HostMonitorBatchExecution{
     }
 
     //Init
-    public HostMonitorBatchExecution(){
-        //配置信息
-        configInfo = new Config();
+    private HostMonitorBatchExecution(){
         //SSH默认连接方式为JSCH。
         sshManager = new JschSSHManager();
 
