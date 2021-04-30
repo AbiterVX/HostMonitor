@@ -1,11 +1,26 @@
 package com.hust.hostmonitor_data_collector.service;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
+import com.hust.hostmonitor_data_collector.dao.Dao_disk;
+import com.hust.hostmonitor_data_collector.dao.Dao_record;
 import com.hust.hostmonitor_data_collector.utils.HostMonitorBatchExecution;
+import com.hust.hostmonitor_data_collector.utils.HostSampleData;
+import org.springframework.beans.factory.annotation.Autowired;
 
+import java.sql.Timestamp;
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
 public class DataServiceImpl implements DataService{
+    @Autowired
+    Dao_record dao_record;
+    @Autowired
+    Dao_disk dao_disk;
+
+
     //HostMonitor
     private final HostMonitorBatchExecution hostMonitorBE = HostMonitorBatchExecution.getInstance();
 
@@ -67,7 +82,7 @@ public class DataServiceImpl implements DataService{
 
     //存储新采样的数据-线程
     private void storeProcessSampleData(){
-        //Todo
+
     }
 
 
@@ -75,22 +90,80 @@ public class DataServiceImpl implements DataService{
 
     @Override
     public String getHostIp() {
-        return "[\"ip1\",\"ip2\",\"ip3\"]";
+        return JSONArray.parseArray(JSON.toJSONString(hostMonitorBE.getHostIp())).toJSONString();
     }
 
     @Override
     public String getHostState() {
-        return "[X,X,X]";
+        return JSONArray.parseArray(JSON.toJSONString(hostMonitorBE.getHostState())).toJSONString();
     }
 
     @Override
     public String getHostHardwareInfo() {
-        return "null";
+        JSONArray result=new JSONArray();
+        JSONArray dataSource=hostMonitorBE.getHostSampleInfo();
+        for(int i=0;i<dataSource.size();i++){
+            JSONObject temp=new JSONObject();
+            JSONObject sampleData=dataSource.getJSONObject(i);
+            temp.put("os",sampleData.getJSONObject("OS").get("value"));
+            temp.put("MemorySize",sampleData.getJSONObject("MemTotal").getString("value")+sampleData.getJSONObject("MemTotal").getString("unit"));
+            temp.put("CpuType",sampleData.getJSONObject("CpuType").get("value"));
+            temp.put("DiskTotalSize",sampleData.getJSONObject("DiskTotalSize").getString("value")+sampleData.getJSONObject("DiskTotalSize").getString("unit"));
+            result.add(temp);
+        }
+        return result.toJSONString();
     }
-
+    /**
+     * 功能：获取Host信息-近期
+     * 参数：
+     *      index：配置文件中对应ip的索引，从0开始。
+     *      hour：小时数
+     * 格式：[{"TimeStamp":1619319687,
+     *        "CpuUsage":10,
+     *        "MemoryUsage":11,
+     *        "DiskOccupancyUsage":12,
+     *
+     *        "Disk":{
+     *            "vda":{
+     *                "Util":44
+     *                "Iops":5.1
+     *                "Read":89.2
+     *                "Write":22.5
+     *            },
+     *            ...
+     *        },
+     *        "NetSend":200,
+     *        "NetReceive":300,
+     *        "TcpEstablished":16,
+     *        "Temperature":{
+     *            "1": 66,
+     *            ...
+     *        },
+     *        "Power":178,
+     *       },
+     *       ...]
+     */
     @Override
     public String getHostInfoRealTime() {
-        return "null";
+        JSONArray result=new JSONArray();
+        JSONArray dataSource=hostMonitorBE.getHostSampleInfo();
+        Timestamp realTime=new Timestamp(System.currentTimeMillis());
+        for(int i=0;i<dataSource.size();i++){
+            JSONObject temp=new JSONObject();
+            JSONObject sampleData=dataSource.getJSONObject(i);
+            temp.put("Timestamp",realTime);
+            temp.put("CpuIdle",sampleData.getJSONObject("CpuIdle").get("value")+"%");
+            temp.put("MemoryUsage",sampleData.getJSONObject("MemTotal").getInteger("value")-sampleData.getJSONObject("MemAvailable").getInteger("value"));
+            temp.put("DiskOccupancyUsage",sampleData.getJSONObject("DiskOccupancyUsage").getString("value")+sampleData.getJSONObject("DiskOccupancyUsage").getString("unit"));
+            temp.put("Disk",sampleData.getJSONObject("Disk").getString("value"));
+            temp.put("NetSend",sampleData.getJSONObject("NetSend").getString("value")+"B");
+            temp.put("NetReceive",sampleData.getJSONObject("NetReceive").getString("value")+"B");
+            temp.put("TcpEstablished",sampleData.getJSONObject("TcpEstablished").get("value"));
+            temp.put("Temperature",sampleData.getJSONObject("Temperature").get("value"));
+            temp.put("Power",sampleData.getJSONObject("Power").get("value"));
+            result.add(temp);
+        }
+        return result.toJSONString();
     }
 
     @Override

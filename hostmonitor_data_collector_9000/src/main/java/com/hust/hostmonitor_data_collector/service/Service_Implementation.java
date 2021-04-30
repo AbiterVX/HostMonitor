@@ -61,13 +61,13 @@ public class Service_Implementation implements Service_Interface, ApplicationRun
         }
     }
 
-    @Override
+
     public String getSingleNewestInfoByIp(String ip) {
         return JSON.toJSONString(newestData(ip));
 
     }
 
-    @Override
+
     public String getHostInfoListOutputData() {
         return hostMonitor.getHostInfoListOutputData();
     }
