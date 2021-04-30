@@ -186,7 +186,7 @@ public class HostMonitorBatchExecution{
 
     //Host采样-测试
     public void sampleTest(int index){
-        List<String> commandResult = sshManager.runCommand(configInfo.getTestCommand(), hostConfigInfoList.get(index));
+        List<String> commandResult = sshManager.runCommand(configInfo.getInitEnvironmentCommand(), hostConfigInfoList.get(index));
         System.out.println("Index:"+index);
         System.out.println(commandResult);
     }
@@ -251,7 +251,10 @@ public class HostMonitorBatchExecution{
 
     public static void main(String[] args) {
         HostMonitorBatchExecution hostMonitorBatchExecution = HostMonitorBatchExecution.getInstance();
+        hostMonitorBatchExecution.sampleTest(1);
+        hostMonitorBatchExecution.sampleTest(2);
         hostMonitorBatchExecution.sampleTest(3);
+        hostMonitorBatchExecution.sampleTest(4);
         //hostMonitorBatchExecution.sample();
         //hostMonitorBatchExecution.sampleProcess();
         //System.out.println(hostMonitorBatchExecution.getHostSampleInfo());

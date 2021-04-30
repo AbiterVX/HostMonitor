@@ -298,10 +298,10 @@
     function FRefreshHostHardWareInfoCallback(jsonData){
         if(jsonData != null){
             var html = "";
-            html += '<tr><th scope="row">OS</th><td>'+ jsonData[currentHostIpIndex]["OS"]+'</td><td>--</td></tr>';
-            html += '<tr><th scope="row">CPU</th><td>'+ jsonData[currentHostIpIndex]["CPU"]+'</td><td>--</td></tr>';
-            html += '<tr><th scope="row">Memory</th><td>'+ jsonData[currentHostIpIndex]["Memory"]+'</td><td>' + jsonData[currentHostIpIndex]["MemorySize"]  +'</td></tr>';
-            html += '<tr><th scope="row">Disk</th><td>'+ jsonData[currentHostIpIndex]["Disk"]+'</td><td>--</td></tr>';
+            html += '<tr><th scope="row">OS</th><td>'+ jsonData[currentHostIpIndex]["os"]+'</td><td>--</td></tr>';
+            html += '<tr><th scope="row">CPU</th><td>'+ jsonData[currentHostIpIndex]["CpuType"]+'</td><td>--</td></tr>';
+            html += '<tr><th scope="row">Memory</th><td>'+ "null type" +'</td><td>' + jsonData[currentHostIpIndex]["MemorySize"]  +'</td></tr>';
+            html += '<tr><th scope="row">Disk</th><td>'+ "null type" +'</td><td>' + jsonData[currentHostIpIndex]["DiskTotalSize"] +'</td></tr>';
             hostHardWareInfoListTable.innerHTML = html;
         }
     }

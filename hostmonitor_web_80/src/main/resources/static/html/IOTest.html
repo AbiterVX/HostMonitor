@@ -127,11 +127,11 @@
                     <table class="table table-striped table-sm">
                         <thead>
                             <tr>
-                            <th scope="col" >主机</th>
-                            <th scope="col" >平均io速度</th>
-                            <th scope="col" >iops</th>
-                            <th scope="col" >上传速度</th>
-                            <th scope="col" >下载速度</th>
+                            <th scope="col" >IP</th>
+                            <th scope="col" >平均IO速度</th>
+                            <th scope="col" >第一次IO速度</th>
+                            <th scope="col" >第二次IO速度</th>
+                            <th scope="col" >第三次IO速度</th>
                             <th scope="col" >测试时间</th>
                             <th scope="col" >测试</th>
                         </tr>
@@ -151,27 +151,21 @@
     var ioTestData = [
         {
             ip:"0.0.0.0",
-            io:123,
-            upload:3,
-            download:5,
+            IOAverage:123,
+            IO1:123,
+            IO2:1234,
+            IO3:12345,
             lastTimeStamp:0,
             active:true,
         },
         {
-            ip:"2.0.0.0",
-            io:825,
-            upload:5,
-            download:6,
-            lastTimeStamp:0,
+            ip:"0.0.0.1",
+            IOAverage:12233,
+            IO1:15623,
+            IO2:1266434,
+            IO3:12323445,
+            lastTimeStamp:1124,
             active:true,
-        },
-        {
-            ip:"1.0.0.0",
-            io:753,
-            upload:8,
-            download:99,
-            lastTimeStamp:0,
-            active:false,
         },
     ];
 
@@ -199,10 +193,10 @@
                 html +=
                     '<tr>' +
                     '<th scope="row">' + ioTestData[i]["ip"] +
-                    '</td><td>' + ioTestData[i]["io"] +
-                    '</td><td>' + ioTestData[i]["iops"] +
-                    '</td><td>' + ioTestData[i]["upload"] +
-                    '</td><td>' + ioTestData[i]["download"] +
+                    '</td><td>' + ioTestData[i]["IOAverage"] +
+                    '</td><td>' + ioTestData[i]["IO1"] +
+                    '</td><td>' + ioTestData[i]["IO2"] +
+                    '</td><td>' + ioTestData[i]["IO3"] +
                     '</td><td>' + FGetDateTime(ioTestData[i]["lastTimeStamp"]) +
                     '</td><td><button type="button" onclick="FTestBtnClicked('+i+')" ' +
                     'class="btn btn-secondary ' + disabledBtnClass +'">开始测试</button></td>' +

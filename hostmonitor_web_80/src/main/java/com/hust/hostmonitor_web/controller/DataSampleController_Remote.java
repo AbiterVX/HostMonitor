@@ -29,7 +29,6 @@ public class DataSampleController_Remote {
     private String dataCollectorUrl;
 
 
-
     //获取Host状态
     @GetMapping(value="/getHostState")
     @ResponseBody
@@ -88,6 +87,16 @@ public class DataSampleController_Remote {
         System.out.println("【请求】:"+result);
         return result;
     }
+
+    //获取Host IO测试 数据
+    @GetMapping(value="/getIOTestInfo/{index}")
+    public String getIOTestInfo(@PathVariable Map<String,String> map) {
+        String result= restTemplate.getForObject(dataCollectorUrl+ "/getIOTestInfo/" + map.get("index") ,String.class);
+        System.out.println("【请求】:"+result);
+        return result;
+    }
+
+
 }
 
     /*

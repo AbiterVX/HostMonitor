@@ -183,7 +183,7 @@
         //初始化左侧导航栏HostIP列表
         FInitHostIpList();
         //定时任务:更新HostState
-        window.setInterval (FInitHostIpList,FGetRefreshInterval("state"));
+        //window.setInterval (FInitHostIpList,FGetRefreshInterval("state"));
 
 
 
@@ -191,11 +191,11 @@
 
         //初始化表格
         overviewChart = echarts.init(document.getElementById("OverviewChart"));
-        FInitOverviewTable(overviewChart,overviewData,["CPU利用率","内存利用率","网络接受数据","网络发送数据"],["%","%","Kb/s","Kb/s"]);
+        //FInitOverviewTable(overviewChart,overviewData,["CPU利用率","内存利用率","网络接受数据","网络发送数据"],["%","%","Kb/s","Kb/s"]);
 
         //定时刷新数据
-        FGetHostRealTimeInfo(FRefreshHostRealTimeInfoCallback);
-        window.setInterval (FGetHostRealTimeInfo,refreshInterval,FRefreshHostRealTimeInfoCallback);
+        //FGetHostRealTimeInfo(FRefreshHostRealTimeInfoCallback);
+        //window.setInterval (FGetHostRealTimeInfo,refreshInterval,FRefreshHostRealTimeInfoCallback);
     }
 
     function FInitOverviewData(){
