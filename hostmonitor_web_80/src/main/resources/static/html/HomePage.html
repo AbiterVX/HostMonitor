@@ -194,8 +194,8 @@
         //FInitOverviewTable(overviewChart,overviewData,["CPU利用率","内存利用率","网络接受数据","网络发送数据"],["%","%","Kb/s","Kb/s"]);
 
         //定时刷新数据
-        //FGetHostRealTimeInfo(FRefreshHostRealTimeInfoCallback);
-        //window.setInterval (FGetHostRealTimeInfo,refreshInterval,FRefreshHostRealTimeInfoCallback);
+        FGetHostRealTimeInfo(FRefreshHostRealTimeInfoCallback);
+        window.setInterval (FGetHostRealTimeInfo,refreshInterval,FRefreshHostRealTimeInfoCallback);
     }
 
     function FInitOverviewData(){
@@ -228,40 +228,42 @@
 
     //[定时]刷新Host实时信息
     function FRefreshHostRealTimeInfoCallback(jsonData){
+
         if(jsonData != null){
             var HostIpListHtml = ""
-            FAddOverviewData(jsonData);
+            //FAddOverviewData(jsonData);
             for(var i=0;i< jsonData.length;i++){
-                var cpuUsage = FAddDataUnitLabel(jsonData[i]["cpuUsage"],"%");
-                var memoryUsage = FAddDataUnitLabel(jsonData[i]["memoryUsage"],"%");
-                var diskUsage = FAddDataUnitLabel(jsonData[i]["diskUsage"],"%");
-                var receiveBW = FAddDataUnitLabel(jsonData[i]["receiveBW"]," Kb/s");
-                var transmitBW = FAddDataUnitLabel(jsonData[i]["transmitBW"]," Kb/s");
+                //var cpuUsage = FAddDataUnitLabel(jsonData[i]["CpuIdle"],"%");
+                //var memoryUsage = FAddDataUnitLabel(jsonData[i]["MemoryUsage"],"%");
+                //var diskUsage = FAddDataUnitLabel(jsonData[i]["diskUsage"],"%");
+                //var receiveBW = FAddDataUnitLabel(jsonData[i]["NetReceive"]," Kb/s");
+                //var transmitBW = FAddDataUnitLabel(jsonData[i]["NetSend"]," Kb/s");
+                //alert(jsonData[i]);
 
                 HostIpListHtml +=   '<tr>' +
                     '  <th scope="row">'+jsonData[i]["ip"]  +'</th>' +
                     '  <td>'+
                     '      <div class="progress" style="width: 100px;height: 25px;text-align: center;">\n' +
-                    '      <div style="width: '+ jsonData[i]["cpuUsage"] +'%" class="progress-bar progress-bar-striped progress-bar-animated bg-info" role="progressbar" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100" ></div>\n' +
-                    '      <h6 style="margin-top:2px;width: 100px;"> ' + cpuUsage+'</h6>' +
-                    '  </div></td>' +
-
-                    '  <td>'+
-                    '      <div class="progress" style="width: 130px;height: 25px;text-align: center;">\n' +
-                    '      <div style="width: '+ jsonData[i]["memoryUsage"] +'%" class="progress-bar progress-bar-striped progress-bar-animated bg-info" role="progressbar" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100" ></div>\n' +
-                    '      <h6 style="margin-top:2px;width: 130px;"> ' + memoryUsage+'</h6>' +
+                    '      <div style="width: '+ jsonData[i]["CpuIdle"]/100.0 +'%" class="progress-bar progress-bar-striped progress-bar-animated bg-info" role="progressbar" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100" ></div>\n' +
+                    '      <h6 style="margin-top:2px;width: 100px;"> ' + jsonData[i]["CpuIdle"]+' %</h6>' +
                     '  </div></td>' +
 
                     '  <td>'+
                     '      <div class="progress" style="width: 130px;height: 25px;text-align: center;">\n' +
                     '      <div style="width: '+ 0 +'%" class="progress-bar progress-bar-striped progress-bar-animated bg-info" role="progressbar" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100" ></div>\n' +
-                    '      <h6 style="margin-top:2px;width: 130px;"> ' + '0/0 GB' +'</h6>' +
+                    '      <h6 style="margin-top:2px;width: 130px;"> ' + jsonData[i]["MemoryUsage"]+' Kb</h6>' +
                     '  </div></td>' +
 
-                    '  <td>'+ "--"  +'</td>' +
-                    '  <td>'+ "--"  +'</td>' +
-                    '  <td>'+receiveBW   +'</td>' +
-                    '  <td>'+transmitBW   +'</td>' +
+                    '  <td>'+
+                    '      <div class="progress" style="width: 130px;height: 25px;text-align: center;">\n' +
+                    '      <div style="width: '+ 0 +'%" class="progress-bar progress-bar-striped progress-bar-animated bg-info" role="progressbar" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100" ></div>\n' +
+                    '      <h6 style="margin-top:2px;width: 130px;"> ' + jsonData[i]["DiskOccupancyUsage"] +'%' +'</h6>' +
+                    '  </div></td>' +
+
+                    '  <td>'+ jsonData[i]["iops"]  +'</td>' +
+                    '  <td>'+ jsonData[i]["TcpEstablished"]  +'</td>' +
+                    '  <td>'+ jsonData[i]["NetReceive"]   +'B/s</td>' +
+                    '  <td>'+ jsonData[i]["NetSend"]   +'B/s</td>' +
                     '  <td>'+ "--"  +'</td>' +
                     '</tr>';
             }

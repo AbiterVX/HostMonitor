@@ -174,8 +174,12 @@ public class DataServiceImpl implements DataService{
             int iops=r.nextInt(11);
             temp.put("iops",iops);
             temp.put("Power",sampleData.getJSONObject("Power").get("value"));
+
+            System.out.println(temp.toJSONString());
             result.add(temp);
         }
+
+
         return result.toJSONString();
     }
 

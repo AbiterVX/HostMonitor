@@ -150,21 +150,21 @@
     var IOTestInfoList = document.getElementById("IOTestInfoList");
     var ioTestData = [
         {
-            ip:"0.0.0.0",
-            IOAverage:123,
-            IO1:123,
-            IO2:1234,
-            IO3:12345,
-            lastTimeStamp:0,
+            ip:"39.105.123.116",
+            IOAverage:156.7,
+            IO1:170,
+            IO2:149,
+            IO3:151,
+            lastTimeStamp:1619766722,
             active:true,
         },
         {
-            ip:"0.0.0.1",
-            IOAverage:12233,
-            IO1:15623,
-            IO2:1266434,
-            IO3:12323445,
-            lastTimeStamp:1124,
+            ip:"192.168.1.75",
+            IOAverage:274.7,
+            IO1:276,
+            IO2:273,
+            IO3:275,
+            lastTimeStamp:1619766722,
             active:true,
         },
     ];
@@ -193,10 +193,10 @@
                 html +=
                     '<tr>' +
                     '<th scope="row">' + ioTestData[i]["ip"] +
-                    '</td><td>' + ioTestData[i]["IOAverage"] +
-                    '</td><td>' + ioTestData[i]["IO1"] +
-                    '</td><td>' + ioTestData[i]["IO2"] +
-                    '</td><td>' + ioTestData[i]["IO3"] +
+                    '</td><td>' + ioTestData[i]["IOAverage"] + "MB/s" +
+                    '</td><td>' + ioTestData[i]["IO1"] +"MB/s" +
+                    '</td><td>' + ioTestData[i]["IO2"] +"MB/s" +
+                    '</td><td>' + ioTestData[i]["IO3"] +"MB/s" +
                     '</td><td>' + FGetDateTime(ioTestData[i]["lastTimeStamp"]) +
                     '</td><td><button type="button" onclick="FTestBtnClicked('+i+')" ' +
                     'class="btn btn-secondary ' + disabledBtnClass +'">开始测试</button></td>' +
