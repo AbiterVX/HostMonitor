@@ -79,9 +79,6 @@ public class DataSampleController {
         int hour=Integer.parseInt(map.get("dateInterval"));
         String field = map.get("field");
         HostInfoFieldType hostInfoFieldType = HostInfoFieldType.fromString(field);
-
-
-
         String result = dataService.getHostInfoField(index,hour,hostInfoFieldType);//service_implementation.getRecentInfoByIp(service_implementation.getHostIp(index), hour, FieldType.fromString(field));
         return result;
     }

@@ -3,6 +3,7 @@ package com.hust.hostmonitor_data_collector.service;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.hust.hostmonitor_data_collector.dao.Dao_disk;
 import com.hust.hostmonitor_data_collector.dao.Dao_record;
 import com.hust.hostmonitor_data_collector.utils.HostMonitorBatchExecution;
@@ -144,6 +145,7 @@ public class DataServiceImpl implements DataService{
      */
     @Override
     public String getHostInfoRealTime() {
+        Random r=new Random();
         JSONArray result=new JSONArray();
         JSONArray dataSource=hostMonitorBE.getHostSampleInfo();
         Timestamp realTime=new Timestamp(System.currentTimeMillis());
@@ -151,10 +153,11 @@ public class DataServiceImpl implements DataService{
             JSONObject temp=new JSONObject();
             JSONObject sampleData=dataSource.getJSONObject(i);
             temp.put("Timestamp",realTime);
+            temp.put("ip",hostMonitorBE.getHostIp(i));
             temp.put("CpuIdle",sampleData.getJSONObject("CpuIdle").get("value"));
             temp.put("MemoryUsage",""+(sampleData.getJSONObject("MemTotal").getInteger("value")-sampleData.getJSONObject("MemAvailable").getInteger("value")));
             temp.put("DiskOccupancyUsage",sampleData.getJSONObject("DiskOccupancyUsage").getString("value"));
-            temp.put("Disk",sampleData.getJSONObject("Disk").getString("value"));
+            //temp.put("Disk",sampleData.getJSONObject("Disk").getJSONObject("value"));
             try {
                 String toPocesse = sampleData.getJSONObject("NetSend").getString("value");
 
@@ -167,7 +170,9 @@ public class DataServiceImpl implements DataService{
             }
 
             temp.put("TcpEstablished",sampleData.getJSONObject("TcpEstablished").get("value"));
-            temp.put("Temperature",sampleData.getJSONObject("Temperature").get("value"));
+            //temp.put("Temperature",sampleData.getJSONObject("Temperature").toJSONString());
+            int iops=r.nextInt(11);
+            temp.put("iops",iops);
             temp.put("Power",sampleData.getJSONObject("Power").get("value"));
             result.add(temp);
         }
@@ -176,6 +181,7 @@ public class DataServiceImpl implements DataService{
 
     @Override
     public String getHostInfoRecent(int index, int hour) {
+        String ip=hostMonitorBE.getHostIp(index);
         long ms=hour*3600*1000;
         JSONArray result=new JSONArray();
         JSONArray dataSource=hostMonitorBE.getHostSampleInfo();
@@ -185,11 +191,12 @@ public class DataServiceImpl implements DataService{
         Random r=new Random();
         int RandomTotalNumber=r.nextInt(20)+3;
         JSONObject temp=new JSONObject();
+        temp.put("ip",ip);
         temp.put("Timestamp",realTime);
         temp.put("CpuIdle",sampleData.getJSONObject("CpuIdle").getDouble("value"));
         temp.put("MemoryUsage",(sampleData.getJSONObject("MemTotal").getInteger("value")-sampleData.getJSONObject("MemAvailable").getInteger("value")));
         temp.put("DiskOccupancyUsage",sampleData.getJSONObject("DiskOccupancyUsage").getInteger("value"));
-        temp.put("Disk",sampleData.getJSONObject("Disk").getString("value"));
+        //temp.put("Disk",sampleData.getJSONObject("Disk").getJSONObject("value").toJSONString());
         String toPocesse = sampleData.getJSONObject("NetSend").getString("value");
         try {
 
@@ -202,17 +209,20 @@ public class DataServiceImpl implements DataService{
             temp.put("NetReceive",0);
         }
         temp.put("TcpEstablished",sampleData.getJSONObject("TcpEstablished").getInteger("value"));
-        temp.put("Temperature",sampleData.getJSONObject("Temperature").get("value"));
+        //temp.put("Temperature",sampleData.getJSONObject("Temperature").toJSONString());
         temp.put("Power",sampleData.getJSONObject("Power").get("value"));
+        int iops=r.nextInt(11);
+        temp.put("iops",iops);
         result.add(temp);
         int randomnumber=r.nextInt(RandomTotalNumber);
         for(int i=0;i<RandomTotalNumber-1&&randomnumber>0;i++){
             JSONObject later=new JSONObject();
             later.put("Timestamp",new Timestamp(nowtime-ms*randomnumber/RandomTotalNumber));
+            later.put("ip",ip);
             later.put("CpuIdle",sampleData.getJSONObject("CpuIdle").getDouble("value")*randomnumber/(RandomTotalNumber*2));
             later.put("MemoryUsage",(sampleData.getJSONObject("MemTotal").getInteger("value")-sampleData.getJSONObject("MemAvailable").getInteger("value"))*randomnumber/(RandomTotalNumber));
             later.put("DiskOccupancyUsage",sampleData.getJSONObject("DiskOccupancyUsage").getInteger("value")*randomnumber/(RandomTotalNumber));
-            later.put("Disk",sampleData.getJSONObject("Disk").getString("value"));
+            //later.put("Disk",sampleData.getJSONObject("Disk").getJSONObject("value").toJSONString());
             try {
                 toPocesse = sampleData.getJSONObject("NetSend").getString("value");
                 later.put("NetSend", Integer.parseInt(toPocesse.substring(0, toPocesse.length() - 1)) * randomnumber / (RandomTotalNumber * 2));
@@ -224,17 +234,20 @@ public class DataServiceImpl implements DataService{
                 later.put("NetReceive",0);
             }
             later.put("TcpEstablished",sampleData.getJSONObject("TcpEstablished").get("value"));
-            later.put("Temperature",sampleData.getJSONObject("Temperature").get("value"));
+            //later.put("Temperature",sampleData.getJSONObject("Temperature").toJSONString());
+            iops=r.nextInt(11);
+            later.put("iops",iops);
             later.put("Power",sampleData.getJSONObject("Power").get("value"));
             randomnumber=r.nextInt(randomnumber);
             result.add(later);
         }
-        return result.toJSONString();
+        return result.toJSONString(SerializerFeature.DisableCircularReferenceDetect);
     }
 
     @Override
     public String getHostInfoField(int index, int hour, HostInfoFieldType field) {
         long ms=hour*3600*1000;
+        String ip=hostMonitorBE.getHostIp(index);
         JSONArray result=new JSONArray();
         JSONArray dataSource=hostMonitorBE.getHostSampleInfo();
         JSONObject sampleData=dataSource.getJSONObject(index);
@@ -244,11 +257,13 @@ public class DataServiceImpl implements DataService{
         int RandomTotalNumber=r.nextInt(20)+3;
         JSONObject temp=new JSONObject();
         temp.put("Timestamp",realTime);
+        temp.put("ip",ip);
         temp.put(field.value(),sampleData.getJSONObject(field.value()).getDouble("value"));
         result.add(temp);
         int randomnumber=r.nextInt(RandomTotalNumber);
         for(int i=0;i<RandomTotalNumber-1&&randomnumber>0;i++){
             JSONObject later=new JSONObject();
+            later.put("ip",ip);
             later.put("Timestamp",new Timestamp(nowtime-ms*randomnumber/RandomTotalNumber));
             later.put(field.value(),sampleData.getJSONObject(field.value()).getDouble("value")*randomnumber/(RandomTotalNumber*2));
             randomnumber=r.nextInt(randomnumber);
@@ -272,7 +287,20 @@ public class DataServiceImpl implements DataService{
     @Override
     public String getHostProcessInfoRealTime(int index) {
         Vector<Vector<HostProcessSampleData>> processVector=hostMonitorBE.getHostProcessSampleDataList();
-        return null;
+
+        JSONArray result=new JSONArray();
+        Iterator<HostProcessSampleData> it=processVector.get(index).iterator();
+        while(it.hasNext()){
+            JSONObject temp=new JSONObject();
+            HostProcessSampleData tempData=it.next();
+            temp.put("uid",tempData.uid);
+            temp.put("pid",tempData.pid);
+            temp.put("readKbps",tempData.readKbps);
+            temp.put("writeKbps",tempData.writeKbps);
+            temp.put("command",tempData.command);
+            result.add(temp);
+        }
+        return result.toJSONString();
     }
 
     @Override
