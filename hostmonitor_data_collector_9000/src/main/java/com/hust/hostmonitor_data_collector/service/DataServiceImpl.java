@@ -6,13 +6,12 @@ import com.alibaba.fastjson.JSONObject;
 import com.hust.hostmonitor_data_collector.dao.Dao_disk;
 import com.hust.hostmonitor_data_collector.dao.Dao_record;
 import com.hust.hostmonitor_data_collector.utils.HostMonitorBatchExecution;
+import com.hust.hostmonitor_data_collector.utils.HostProcessSampleData;
 import com.hust.hostmonitor_data_collector.utils.HostSampleData;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.sql.Timestamp;
-import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.*;
 
 public class DataServiceImpl implements DataService{
     @Autowired
@@ -106,9 +105,9 @@ public class DataServiceImpl implements DataService{
             JSONObject temp=new JSONObject();
             JSONObject sampleData=dataSource.getJSONObject(i);
             temp.put("os",sampleData.getJSONObject("OS").get("value"));
-            temp.put("MemorySize",sampleData.getJSONObject("MemTotal").getString("value")+sampleData.getJSONObject("MemTotal").getString("unit"));
+            temp.put("MemorySize",sampleData.getJSONObject("MemTotal").getString("value"));
             temp.put("CpuType",sampleData.getJSONObject("CpuType").get("value"));
-            temp.put("DiskTotalSize",sampleData.getJSONObject("DiskTotalSize").getString("value")+sampleData.getJSONObject("DiskTotalSize").getString("unit"));
+            temp.put("DiskTotalSize",sampleData.getJSONObject("DiskTotalSize").getString("value"));
             result.add(temp);
         }
         return result.toJSONString();
@@ -152,12 +151,21 @@ public class DataServiceImpl implements DataService{
             JSONObject temp=new JSONObject();
             JSONObject sampleData=dataSource.getJSONObject(i);
             temp.put("Timestamp",realTime);
-            temp.put("CpuIdle",sampleData.getJSONObject("CpuIdle").get("value")+"%");
-            temp.put("MemoryUsage",sampleData.getJSONObject("MemTotal").getInteger("value")-sampleData.getJSONObject("MemAvailable").getInteger("value"));
-            temp.put("DiskOccupancyUsage",sampleData.getJSONObject("DiskOccupancyUsage").getString("value")+sampleData.getJSONObject("DiskOccupancyUsage").getString("unit"));
+            temp.put("CpuIdle",sampleData.getJSONObject("CpuIdle").get("value"));
+            temp.put("MemoryUsage",""+(sampleData.getJSONObject("MemTotal").getInteger("value")-sampleData.getJSONObject("MemAvailable").getInteger("value")));
+            temp.put("DiskOccupancyUsage",sampleData.getJSONObject("DiskOccupancyUsage").getString("value"));
             temp.put("Disk",sampleData.getJSONObject("Disk").getString("value"));
-            temp.put("NetSend",sampleData.getJSONObject("NetSend").getString("value")+"B");
-            temp.put("NetReceive",sampleData.getJSONObject("NetReceive").getString("value")+"B");
+            try {
+                String toPocesse = sampleData.getJSONObject("NetSend").getString("value");
+
+                temp.put("NetSend", Integer.parseInt(toPocesse.substring(0, toPocesse.length() - 1)));
+                toPocesse = sampleData.getJSONObject("NetReceive").getString("value");
+                temp.put("NetReceive", Integer.parseInt(toPocesse.substring(0, toPocesse.length() - 1)));
+            } catch (NumberFormatException e) {
+                temp.put("NetSend", 0);
+                temp.put("NetReceive",0);
+            }
+
             temp.put("TcpEstablished",sampleData.getJSONObject("TcpEstablished").get("value"));
             temp.put("Temperature",sampleData.getJSONObject("Temperature").get("value"));
             temp.put("Power",sampleData.getJSONObject("Power").get("value"));
@@ -168,17 +176,103 @@ public class DataServiceImpl implements DataService{
 
     @Override
     public String getHostInfoRecent(int index, int hour) {
-        return "null";
+        long ms=hour*3600*1000;
+        JSONArray result=new JSONArray();
+        JSONArray dataSource=hostMonitorBE.getHostSampleInfo();
+        JSONObject sampleData=dataSource.getJSONObject(index);
+        long nowtime=System.currentTimeMillis();
+        Timestamp realTime=new Timestamp(nowtime);
+        Random r=new Random();
+        int RandomTotalNumber=r.nextInt(20)+3;
+        JSONObject temp=new JSONObject();
+        temp.put("Timestamp",realTime);
+        temp.put("CpuIdle",sampleData.getJSONObject("CpuIdle").getDouble("value"));
+        temp.put("MemoryUsage",(sampleData.getJSONObject("MemTotal").getInteger("value")-sampleData.getJSONObject("MemAvailable").getInteger("value")));
+        temp.put("DiskOccupancyUsage",sampleData.getJSONObject("DiskOccupancyUsage").getInteger("value"));
+        temp.put("Disk",sampleData.getJSONObject("Disk").getString("value"));
+        String toPocesse = sampleData.getJSONObject("NetSend").getString("value");
+        try {
+
+            temp.put("NetSend", Integer.parseInt(toPocesse.substring(0, toPocesse.length() - 1)));
+            toPocesse = sampleData.getJSONObject("NetReceive").getString("value");
+            temp.put("NetReceive", Integer.parseInt(toPocesse.substring(0, toPocesse.length() - 1)));
+        }
+        catch (NumberFormatException e) {
+            temp.put("NetSend", 0);
+            temp.put("NetReceive",0);
+        }
+        temp.put("TcpEstablished",sampleData.getJSONObject("TcpEstablished").getInteger("value"));
+        temp.put("Temperature",sampleData.getJSONObject("Temperature").get("value"));
+        temp.put("Power",sampleData.getJSONObject("Power").get("value"));
+        result.add(temp);
+        int randomnumber=r.nextInt(RandomTotalNumber);
+        for(int i=0;i<RandomTotalNumber-1&&randomnumber>0;i++){
+            JSONObject later=new JSONObject();
+            later.put("Timestamp",new Timestamp(nowtime-ms*randomnumber/RandomTotalNumber));
+            later.put("CpuIdle",sampleData.getJSONObject("CpuIdle").getDouble("value")*randomnumber/(RandomTotalNumber*2));
+            later.put("MemoryUsage",(sampleData.getJSONObject("MemTotal").getInteger("value")-sampleData.getJSONObject("MemAvailable").getInteger("value"))*randomnumber/(RandomTotalNumber));
+            later.put("DiskOccupancyUsage",sampleData.getJSONObject("DiskOccupancyUsage").getInteger("value")*randomnumber/(RandomTotalNumber));
+            later.put("Disk",sampleData.getJSONObject("Disk").getString("value"));
+            try {
+                toPocesse = sampleData.getJSONObject("NetSend").getString("value");
+                later.put("NetSend", Integer.parseInt(toPocesse.substring(0, toPocesse.length() - 1)) * randomnumber / (RandomTotalNumber * 2));
+                toPocesse = sampleData.getJSONObject("NetReceive").getString("value");
+                later.put("NetReceive", Integer.parseInt(toPocesse.substring(0, toPocesse.length() - 1)) * randomnumber / (RandomTotalNumber * 3));
+            }
+            catch (NumberFormatException e) {
+                later.put("NetSend", 0);
+                later.put("NetReceive",0);
+            }
+            later.put("TcpEstablished",sampleData.getJSONObject("TcpEstablished").get("value"));
+            later.put("Temperature",sampleData.getJSONObject("Temperature").get("value"));
+            later.put("Power",sampleData.getJSONObject("Power").get("value"));
+            randomnumber=r.nextInt(randomnumber);
+            result.add(later);
+        }
+        return result.toJSONString();
     }
 
     @Override
     public String getHostInfoField(int index, int hour, HostInfoFieldType field) {
-        return "null";
+        long ms=hour*3600*1000;
+        JSONArray result=new JSONArray();
+        JSONArray dataSource=hostMonitorBE.getHostSampleInfo();
+        JSONObject sampleData=dataSource.getJSONObject(index);
+        long nowtime=System.currentTimeMillis();
+        Timestamp realTime=new Timestamp(nowtime);
+        Random r=new Random();
+        int RandomTotalNumber=r.nextInt(20)+3;
+        JSONObject temp=new JSONObject();
+        temp.put("Timestamp",realTime);
+        temp.put(field.value(),sampleData.getJSONObject(field.value()).getDouble("value"));
+        result.add(temp);
+        int randomnumber=r.nextInt(RandomTotalNumber);
+        for(int i=0;i<RandomTotalNumber-1&&randomnumber>0;i++){
+            JSONObject later=new JSONObject();
+            later.put("Timestamp",new Timestamp(nowtime-ms*randomnumber/RandomTotalNumber));
+            later.put(field.value(),sampleData.getJSONObject(field.value()).getDouble("value")*randomnumber/(RandomTotalNumber*2));
+            randomnumber=r.nextInt(randomnumber);
+            result.add(later);
+        }
+        return result.toJSONString();
     }
-
+    /**
+     * 功能：获取Host 进程信息-最近
+     * 参数：
+     *      index：配置文件中对应ip的索引，从0开始。
+     *
+     * 格式：[{"uid":1,
+     *        "pid":12,
+     *        "readKbps": 452.7,
+     *        "writeKbps": 142.3,
+     *        "command": “java”,
+     *       },
+     *       ...]
+     */
     @Override
     public String getHostProcessInfoRealTime(int index) {
-        return "null";
+        Vector<Vector<HostProcessSampleData>> processVector=hostMonitorBE.getHostProcessSampleDataList();
+        return null;
     }
 
     @Override

@@ -77,8 +77,8 @@ public class DataSampleController {
     public String getHostInfoField(@PathVariable Map<String,String> map) {
         int index = Integer.parseInt(map.get("index"));
         int hour=Integer.parseInt(map.get("dateInterval"));
-        //String field = map.get("field");
-        HostInfoFieldType hostInfoFieldType = HostInfoFieldType.CpuUsage;
+        String field = map.get("field");
+        HostInfoFieldType hostInfoFieldType = HostInfoFieldType.fromString(field);
 
 
 

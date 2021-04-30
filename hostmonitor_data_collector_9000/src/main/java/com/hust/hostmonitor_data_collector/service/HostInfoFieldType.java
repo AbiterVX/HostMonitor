@@ -1,22 +1,44 @@
 package com.hust.hostmonitor_data_collector.service;
 
 
+import java.util.HashMap;
+import java.util.Map;
+
 public enum HostInfoFieldType {
-    CpuUsage,
+    CpuUsage("CpuUsage"),
+    CpuIdle("CpuIdle"),
+    MemoryUsage("MemoryUsage"),
 
-    MemoryUsage,
+    DiskOccupancyUsage("DiskOccupancyUsage"),
+    Disk_Util("Disk_Util"),
+    Disk_Iops("Disk_Iops"),
+    Disk_Read("Disk_Read"),
+    Disk_Write("Disk_Write"),
 
-    DiskOccupancyUsage,
-    Disk_Util,
-    Disk_Iops,
-    Disk_Read,
-    Disk_Write,
+    NetSend("NetSend"),
+    NetReceive("NetReceive"),
+    TcpEstablished("TcpEstablished"),
 
-    NetSend,
-    NetReceive,
-    TcpEstablished,
+    Temperature("Temperature"),
 
-    Temperature,
+    Power("Power"),
+    Meaningless(null);
 
-    Power,
+    private final String value;
+    private final static Map<String,HostInfoFieldType> FIELD_TYPE_MAP=new HashMap<String,HostInfoFieldType>();
+    private HostInfoFieldType(String value){
+        this.value=value;
+    }
+    public String value(){
+        return value;
+    }
+    static{
+        for(HostInfoFieldType f:values()){
+            FIELD_TYPE_MAP.put(f.value(),f);
+        }
+    }
+    public static HostInfoFieldType fromString(String f){
+        HostInfoFieldType fieldType=FIELD_TYPE_MAP.get(f);
+        return fieldType==null? Meaningless:fieldType;
+    }
 }

@@ -217,6 +217,10 @@ public class HostMonitorBatchExecution{
         return jsonArray;
     }
 
+    public Vector<Vector<HostProcessSampleData>> getHostProcessSampleDataList() {
+        return hostProcessSampleDataList;
+    }
+
     //获取Host 状态
     public List<Boolean> getHostState(){
         List<Boolean> arrayList=new ArrayList<>();
