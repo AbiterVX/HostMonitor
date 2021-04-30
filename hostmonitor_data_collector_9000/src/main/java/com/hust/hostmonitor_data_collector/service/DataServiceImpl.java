@@ -106,9 +106,9 @@ public class DataServiceImpl implements DataService{
             JSONObject temp=new JSONObject();
             JSONObject sampleData=dataSource.getJSONObject(i);
             temp.put("os",sampleData.getJSONObject("OS").get("value"));
-            temp.put("MemorySize",sampleData.getJSONObject("MemTotal").getString("value"));
+            temp.put("MemorySize",sampleData.getJSONObject("MemTotal").getInteger("value")/1024);
             temp.put("CpuType",sampleData.getJSONObject("CpuType").get("value"));
-            temp.put("DiskTotalSize",sampleData.getJSONObject("DiskTotalSize").getString("value"));
+            temp.put("DiskTotalSize",sampleData.getJSONObject("DiskTotalSize").getInteger("value")/1024);
             result.add(temp);
         }
         return result.toJSONString();
@@ -154,8 +154,8 @@ public class DataServiceImpl implements DataService{
             JSONObject sampleData=dataSource.getJSONObject(i);
             temp.put("Timestamp",realTime);
             temp.put("ip",hostMonitorBE.getHostIp(i));
-            temp.put("CpuIdle",sampleData.getJSONObject("CpuIdle").get("value"));
-            temp.put("MemoryUsage",""+(sampleData.getJSONObject("MemTotal").getInteger("value")-sampleData.getJSONObject("MemAvailable").getInteger("value")));
+            temp.put("CpuIdle",100-sampleData.getJSONObject("CpuIdle").getDouble("value"));
+            temp.put("MemoryUsage",(sampleData.getJSONObject("MemTotal").getInteger("value")-sampleData.getJSONObject("MemAvailable").getInteger("value"))/1024);
             temp.put("DiskOccupancyUsage",sampleData.getJSONObject("DiskOccupancyUsage").getString("value"));
             //temp.put("Disk",sampleData.getJSONObject("Disk").getJSONObject("value"));
             try {
@@ -197,8 +197,8 @@ public class DataServiceImpl implements DataService{
         JSONObject temp=new JSONObject();
         temp.put("ip",ip);
         temp.put("Timestamp",realTime);
-        temp.put("CpuIdle",sampleData.getJSONObject("CpuIdle").getDouble("value"));
-        temp.put("MemoryUsage",(sampleData.getJSONObject("MemTotal").getInteger("value")-sampleData.getJSONObject("MemAvailable").getInteger("value")));
+        temp.put("CpuIdle",100-sampleData.getJSONObject("CpuIdle").getDouble("value"));
+        temp.put("MemoryUsage",(sampleData.getJSONObject("MemTotal").getInteger("value")-sampleData.getJSONObject("MemAvailable").getInteger("value"))/1024);
         temp.put("DiskOccupancyUsage",sampleData.getJSONObject("DiskOccupancyUsage").getInteger("value"));
         //temp.put("Disk",sampleData.getJSONObject("Disk").getJSONObject("value").toJSONString());
         String toPocesse = sampleData.getJSONObject("NetSend").getString("value");
@@ -223,8 +223,8 @@ public class DataServiceImpl implements DataService{
             JSONObject later=new JSONObject();
             later.put("Timestamp",new Timestamp(nowtime-ms*randomnumber/RandomTotalNumber));
             later.put("ip",ip);
-            later.put("CpuIdle",sampleData.getJSONObject("CpuIdle").getDouble("value")*randomnumber/(RandomTotalNumber*2));
-            later.put("MemoryUsage",(sampleData.getJSONObject("MemTotal").getInteger("value")-sampleData.getJSONObject("MemAvailable").getInteger("value"))*randomnumber/(RandomTotalNumber));
+            later.put("CpuIdle",100-sampleData.getJSONObject("CpuIdle").getDouble("value")*randomnumber/(RandomTotalNumber*2));
+            later.put("MemoryUsage",(sampleData.getJSONObject("MemTotal").getInteger("value")-sampleData.getJSONObject("MemAvailable").getInteger("value"))*randomnumber/(RandomTotalNumber*1024));
             later.put("DiskOccupancyUsage",sampleData.getJSONObject("DiskOccupancyUsage").getInteger("value")*randomnumber/(RandomTotalNumber));
             //later.put("Disk",sampleData.getJSONObject("Disk").getJSONObject("value").toJSONString());
             try {
