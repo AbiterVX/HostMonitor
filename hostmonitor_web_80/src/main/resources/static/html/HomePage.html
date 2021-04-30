@@ -244,8 +244,8 @@
                     '  <th scope="row">'+jsonData[i]["ip"]  +'</th>' +
                     '  <td>'+
                     '      <div class="progress" style="width: 100px;height: 25px;text-align: center;">\n' +
-                    '      <div style="width: '+ jsonData[i]["CpuIdle"]/100.0 +'%" class="progress-bar progress-bar-striped progress-bar-animated bg-info" role="progressbar" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100" ></div>\n' +
-                    '      <h6 style="margin-top:2px;width: 100px;"> ' + jsonData[i]["CpuIdle"]+' %</h6>' +
+                    '      <div style="width: '+ (100 - jsonData[i]["CpuIdle"]) +'%" class="progress-bar progress-bar-striped progress-bar-animated bg-info" role="progressbar" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100" ></div>\n' +
+                    '      <h6 style="margin-top:2px;width: 100px;position: absolute;"> ' + (100 - jsonData[i]["CpuIdle"]).toFixed(2) +' %</h6>' +
                     '  </div></td>' +
 
                     '  <td>'+
@@ -256,7 +256,7 @@
 
                     '  <td>'+
                     '      <div class="progress" style="width: 130px;height: 25px;text-align: center;">\n' +
-                    '      <div style="width: '+ 0 +'%" class="progress-bar progress-bar-striped progress-bar-animated bg-info" role="progressbar" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100" ></div>\n' +
+                    '      <div style="width: '+ jsonData[i]["DiskOccupancyUsage"] +'%" class="progress-bar progress-bar-striped progress-bar-animated bg-info" role="progressbar" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100" ></div>\n' +
                     '      <h6 style="margin-top:2px;width: 130px;"> ' + jsonData[i]["DiskOccupancyUsage"] +'%' +'</h6>' +
                     '  </div></td>' +
 

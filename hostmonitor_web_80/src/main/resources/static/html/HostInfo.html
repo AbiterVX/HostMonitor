@@ -300,8 +300,8 @@
             var html = "";
             html += '<tr><th scope="row">OS</th><td>'+ jsonData[currentHostIpIndex]["os"]+'</td><td>--</td></tr>';
             html += '<tr><th scope="row">CPU</th><td>'+ jsonData[currentHostIpIndex]["CpuType"]+'</td><td>--</td></tr>';
-            html += '<tr><th scope="row">Memory</th><td>'+ "null type" +'</td><td>' + jsonData[currentHostIpIndex]["MemorySize"]  +'</td></tr>';
-            html += '<tr><th scope="row">Disk</th><td>'+ "null type" +'</td><td>' + jsonData[currentHostIpIndex]["DiskTotalSize"] +'</td></tr>';
+            html += '<tr><th scope="row">Memory</th><td>'+ "null type" +'</td><td>' + jsonData[currentHostIpIndex]["MemorySize"]  +'MB</td></tr>';
+            html += '<tr><th scope="row">Disk</th><td>'+ "null type" +'</td><td>' + jsonData[currentHostIpIndex]["DiskTotalSize"] +'MB</td></tr>';
             hostHardWareInfoListTable.innerHTML = html;
         }
     }
