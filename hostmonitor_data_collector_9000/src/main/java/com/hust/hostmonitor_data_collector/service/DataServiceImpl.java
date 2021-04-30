@@ -11,6 +11,8 @@ import com.hust.hostmonitor_data_collector.utils.HostProcessSampleData;
 import com.hust.hostmonitor_data_collector.utils.HostSampleData;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.Timestamp;
 import java.util.*;
 
@@ -106,9 +108,9 @@ public class DataServiceImpl implements DataService{
             JSONObject temp=new JSONObject();
             JSONObject sampleData=dataSource.getJSONObject(i);
             temp.put("os",sampleData.getJSONObject("OS").get("value"));
-            temp.put("MemorySize",sampleData.getJSONObject("MemTotal").getInteger("value")/1024);
+            temp.put("MemorySize",sampleData.getJSONObject("MemTotal").getInteger("value"));
             temp.put("CpuType",sampleData.getJSONObject("CpuType").get("value"));
-            temp.put("DiskTotalSize",sampleData.getJSONObject("DiskTotalSize").getInteger("value")/1024);
+            temp.put("DiskTotalSize",sampleData.getJSONObject("DiskTotalSize").getInteger("value"));
             result.add(temp);
         }
         return result.toJSONString();
@@ -154,8 +156,8 @@ public class DataServiceImpl implements DataService{
             JSONObject sampleData=dataSource.getJSONObject(i);
             temp.put("Timestamp",realTime);
             temp.put("ip",hostMonitorBE.getHostIp(i));
-            temp.put("CpuIdle",100-sampleData.getJSONObject("CpuIdle").getDouble("value"));
-            temp.put("MemoryUsage",(sampleData.getJSONObject("MemTotal").getInteger("value")-sampleData.getJSONObject("MemAvailable").getInteger("value"))/1024);
+            temp.put("CpuIdle",new BigDecimal(101-sampleData.getJSONObject("CpuIdle").getDouble("value")).setScale(2, RoundingMode.HALF_UP).doubleValue());
+            temp.put("MemoryUsage",(sampleData.getJSONObject("MemTotal").getInteger("value")-sampleData.getJSONObject("MemAvailable").getInteger("value")));
             temp.put("DiskOccupancyUsage",sampleData.getJSONObject("DiskOccupancyUsage").getString("value"));
             //temp.put("Disk",sampleData.getJSONObject("Disk").getJSONObject("value"));
             try {
@@ -197,8 +199,8 @@ public class DataServiceImpl implements DataService{
         JSONObject temp=new JSONObject();
         temp.put("ip",ip);
         temp.put("Timestamp",realTime);
-        temp.put("CpuIdle",100-sampleData.getJSONObject("CpuIdle").getDouble("value"));
-        temp.put("MemoryUsage",(sampleData.getJSONObject("MemTotal").getInteger("value")-sampleData.getJSONObject("MemAvailable").getInteger("value"))/1024);
+        temp.put("CpuIdle",new BigDecimal(101-sampleData.getJSONObject("CpuIdle").getDouble("value")).setScale(2, RoundingMode.HALF_UP).doubleValue());
+        temp.put("MemoryUsage",(sampleData.getJSONObject("MemTotal").getInteger("value")-sampleData.getJSONObject("MemAvailable").getInteger("value")));
         temp.put("DiskOccupancyUsage",sampleData.getJSONObject("DiskOccupancyUsage").getInteger("value"));
         //temp.put("Disk",sampleData.getJSONObject("Disk").getJSONObject("value").toJSONString());
         String toPocesse = sampleData.getJSONObject("NetSend").getString("value");
@@ -219,19 +221,20 @@ public class DataServiceImpl implements DataService{
         temp.put("iops",iops);
         result.add(temp);
         int randomnumber=r.nextInt(RandomTotalNumber);
+        int oldvalue=RandomTotalNumber;
         for(int i=0;i<RandomTotalNumber-1&&randomnumber>0;i++){
             JSONObject later=new JSONObject();
-            later.put("Timestamp",new Timestamp(nowtime-ms*randomnumber/RandomTotalNumber));
+            later.put("Timestamp",new Timestamp(nowtime-ms*randomnumber/oldvalue));
             later.put("ip",ip);
-            later.put("CpuIdle",100-sampleData.getJSONObject("CpuIdle").getDouble("value")*randomnumber/(RandomTotalNumber*2));
-            later.put("MemoryUsage",(sampleData.getJSONObject("MemTotal").getInteger("value")-sampleData.getJSONObject("MemAvailable").getInteger("value"))*randomnumber/(RandomTotalNumber*1024));
-            later.put("DiskOccupancyUsage",sampleData.getJSONObject("DiskOccupancyUsage").getInteger("value")*randomnumber/(RandomTotalNumber));
+            later.put("CpuIdle",new BigDecimal(101-sampleData.getJSONObject("CpuIdle").getDouble("value")*randomnumber/oldvalue).setScale(2, RoundingMode.HALF_UP).doubleValue());
+            later.put("MemoryUsage",(sampleData.getJSONObject("MemTotal").getInteger("value")-sampleData.getJSONObject("MemAvailable").getInteger("value"))*randomnumber/(RandomTotalNumber));
+            later.put("DiskOccupancyUsage",sampleData.getJSONObject("DiskOccupancyUsage").getInteger("value")*randomnumber/oldvalue);
             //later.put("Disk",sampleData.getJSONObject("Disk").getJSONObject("value").toJSONString());
             try {
                 toPocesse = sampleData.getJSONObject("NetSend").getString("value");
-                later.put("NetSend", Integer.parseInt(toPocesse.substring(0, toPocesse.length() - 1)) * randomnumber / (RandomTotalNumber * 2));
+                later.put("NetSend", Integer.parseInt(toPocesse.substring(0, toPocesse.length() - 1)) * randomnumber /oldvalue );
                 toPocesse = sampleData.getJSONObject("NetReceive").getString("value");
-                later.put("NetReceive", Integer.parseInt(toPocesse.substring(0, toPocesse.length() - 1)) * randomnumber / (RandomTotalNumber * 3));
+                later.put("NetReceive", Integer.parseInt(toPocesse.substring(0, toPocesse.length() - 1)) * randomnumber /oldvalue);
             }
             catch (NumberFormatException e) {
                 later.put("NetSend", 0);
@@ -242,10 +245,11 @@ public class DataServiceImpl implements DataService{
             iops=r.nextInt(11);
             later.put("iops",iops);
             later.put("Power",sampleData.getJSONObject("Power").get("value"));
+            oldvalue=randomnumber;
             randomnumber=r.nextInt(randomnumber);
             result.add(later);
         }
-        return result.toJSONString(SerializerFeature.DisableCircularReferenceDetect);
+        return result.toJSONString();
     }
 
     @Override
