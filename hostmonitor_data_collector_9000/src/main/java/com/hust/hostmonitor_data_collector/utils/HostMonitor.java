@@ -67,7 +67,7 @@ public class HostMonitor implements Runnable {
 
     public HostMonitor(int _interval_ms){
         //配置信息
-        configInfo = new Config();
+        configInfo = Config.getInstance();
         //主机配置信息
         hostConfigInfoList = configInfo.getHostConfigInfoList();
         //主机返回信息

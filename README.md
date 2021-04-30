@@ -18,13 +18,15 @@ SpringCloud项目。
 
 **（2）模块**
 
+hostmonitor_commons：公共对象模块，若工程公共对象过多会移动到common并集中打包（目前暂时不用）
+
 hostmonitor_data_collector_9000：对host采样，数据库CRUD。位于9000端口
 
 hostmonitor_web_80：显示web界面，位于80端口（从而可直接输入域名/ip直接访问页面）
 
 **（3）外部依赖**
 
-nacos：用于注册中心
+nacos：用于注册中心（可选项）
 
 
 
@@ -50,7 +52,7 @@ github：https://github.com/alibaba/nacos/tree/develop
 
 ## 4. 部署
 
-**（1）先运行nacos配置中心**
+**（1）先运行nacos注册中心**
 
 进入nacos/bin，windows下以单机版运行
 
@@ -67,7 +69,7 @@ java -jar HostMonitor_Web.jar
 
 需要确保ConfigData及内部配置文件在HostMonitor_DataCollector.jar相同目录中。
 
-**（3）查看配置中心内的服务项**
+**（3）查看注册中心内的服务项**
 
 进入nacos默认网页。默认账户：nacos，密码：nacos。
 
@@ -82,4 +84,20 @@ http://localhost:8848/nacos/#/login
 ```
 localhost
 ```
+
+## 5.注册中心
+
+​	项目默认不使用Nacos，当然由于未移除@EnableDiscoveryClient等配置，会导致运行报错，但不影响项目正常执行。
+
+（1）若需开启注册中心，需要修改hostmonitor_web_80中的配置
+
+​	application.yml：data_collector_service字段，改为名字
+
+​	ApplicationContextBean：使用@LoadBalanced
+
+
+
+
+
+​			
 

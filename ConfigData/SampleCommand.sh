@@ -103,7 +103,9 @@ echo "Power:""$power"
 
 
 #[cpu type]
-cpuType=$(cat /proc/cpuinfo | grep "model name" | awk '{$1="";$2="";$3="";print $0}' | awk '$1=$1' | head -n 1  )
+cname=$( awk -F: '/model name/ {name=$2} END {print name}' /proc/cpuinfo | sed 's/^[ \t]*//;s/[ \t]*$//' )
+cores=$( awk -F: '/model name/ {core++} END {print core}' /proc/cpuinfo )
+cpuType=$cname" , with "$cores" cores"
 
 echo "CpuType:""$cpuType"
 
