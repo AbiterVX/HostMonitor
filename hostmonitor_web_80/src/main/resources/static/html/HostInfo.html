@@ -29,21 +29,20 @@
         </button>
         <div class="collapse navbar-collapse" id="navbarNavDropdown">
             <ul class="navbar-nav">
-                <li class="nav-item active">
+                <!--仪表盘 -->
+                <li class="nav-item">
                     <a id="Navbar1" class="nav-link" href="/"></a>
                 </li>
-                <!--
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                        Dropdown link
-                    </a>
-                    <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
-                        <a class="dropdown-item" href="#">Action</a>
-                        <a class="dropdown-item" href="#">Another action</a>
-                        <a class="dropdown-item" href="#">Something else here</a>
-                    </div>
+
+                <!--磁盘故障预测 -->
+                <li class="nav-item">
+                    <a id="Navbar2" class="nav-link" href="/"></a>
                 </li>
-                -->
+
+                <!--Host配置 -->
+                <li class="nav-item">
+                    <a id="Navbar3" class="nav-link" href="/"></a>
+                </li>
             </ul>
         </div>
     </nav>
@@ -75,12 +74,6 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a id="NavItem4" class="nav-link" href="#">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-file"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><polyline points="13 2 13 9 20 9"></polyline></svg>
-                                磁盘故障预测
-                            </a>
-                        </li>
-                        <li class="nav-item">
                             <a id="NavItem5" class="nav-link" href="#">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-file"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><polyline points="13 2 13 9 20 9"></polyline></svg>
                                 IO测试
@@ -92,14 +85,7 @@
                     <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
                         <span>主机列表</span>
                     </h6>
-                    <ul class="nav flex-column mb-2" id = "HostIpList" >
-                        <!--<li class="nav-item">
-                            <a class="nav-link" href="#">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-layers"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
-                                39.105.123.116
-                            </a>
-                        </li>-->
-                    </ul>
+                    <ul class="nav flex-column mb-2" id = "HostIpList" ></ul>
                 </div>
             </nav>
 
@@ -178,8 +164,6 @@
                 <!-- 温度图表-->
                 <div id="TemperatureChart" style="width: 100%;height: 350px;"></div>
 
-
-
             </main>
         </div>
     </div>
@@ -216,7 +200,7 @@
     //页面加载完成后执行
     window.onload=function (){
         //设置左侧导航栏当前选中的导航项
-        setCurrentNavItem(2);
+        setCurrentNavItem(2,1);
         //初始化左侧导航栏HostIP列表
         FInitHostIpList();
         //定时任务:更新HostState
@@ -327,7 +311,5 @@
         }
     }
 </script>
-
-
 
 </html>

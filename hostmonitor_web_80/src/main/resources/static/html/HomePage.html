@@ -31,9 +31,21 @@
         </button>
         <div class="collapse navbar-collapse" id="navbarNavDropdown">
             <ul class="navbar-nav">
-                <li class="nav-item active">
+                <!--仪表盘 -->
+                <li class="nav-item">
                     <a id="Navbar1" class="nav-link" href="/"></a>
                 </li>
+
+                <!--磁盘故障预测 -->
+                <li class="nav-item">
+                    <a id="Navbar2" class="nav-link" href="/"></a>
+                </li>
+
+                <!--Host配置 -->
+                <li class="nav-item">
+                    <a id="Navbar3" class="nav-link" href="/"></a>
+                </li>
+
                 <!--
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -75,12 +87,6 @@
                             <a id="NavItem3" class="nav-link" href="#">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-file"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><polyline points="13 2 13 9 20 9"></polyline></svg>
                                 进程IO信息
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a id="NavItem4" class="nav-link" href="#">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-file"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><polyline points="13 2 13 9 20 9"></polyline></svg>
-                                磁盘故障预测
                             </a>
                         </li>
                         <li class="nav-item">
@@ -178,7 +184,7 @@
     //页面加载完成后执行
     window.onload=function (){
         //设置左侧导航栏当前选中的导航项
-        setCurrentNavItem(1);
+        setCurrentNavItem(1,1);
 
         //初始化左侧导航栏HostIP列表
         FInitHostIpList();
@@ -191,7 +197,7 @@
 
         //初始化表格
         overviewChart = echarts.init(document.getElementById("OverviewChart"));
-        //FInitOverviewTable(overviewChart,overviewData,["CPU利用率","内存利用率","网络接受数据","网络发送数据"],["%","%","Kb/s","Kb/s"]);
+        FInitOverviewTable(overviewChart,overviewData,["CPU利用率","内存利用率","网络接受数据","网络发送数据"],["%","%","Kb/s","Kb/s"]);
 
         //定时刷新数据
         FGetHostRealTimeInfo(FRefreshHostRealTimeInfoCallback);
@@ -212,15 +218,21 @@
     function FAddOverviewData(jsonData){
         var overviewTempData = [0,0,0,0];
         //!(overviewData[0].length != 0 && overviewData[1][overviewData[1].length -1 ][0] == date)
+
+        overviewTempData[0] = (100 - jsonData[0]["CpuIdle"]);
+        overviewTempData[1] = Math.ceil(Math.random()*10);
+        overviewTempData[2] = Math.ceil(Math.random()*10);
+        overviewTempData[3] = Math.ceil(Math.random()*10);
+/*
         for(var i=0;i< jsonData.length;i++){
-            overviewTempData[0] += jsonData[i]["cpuUsage"];
-            overviewTempData[1] += jsonData[i]["memoryUsage"];
-            overviewTempData[2] += jsonData[i]["receiveBW"];
-            overviewTempData[3] += jsonData[i]["transmitBW"];
-        }
-        var date = FGetDateTime(jsonData[1]["timestamp"]);
+            overviewTempData[0] += Math.ceil(Math.random()*10);
+            overviewTempData[1] += Math.ceil(Math.random()*10);
+            overviewTempData[2] += Math.ceil(Math.random()*10);
+            overviewTempData[3] += Math.ceil(Math.random()*10);
+        }*/
+        var date = FGetDateTime(new Date()); //new Date();
         for(var i=0;i< overviewTempData.length;i++){
-            overviewData[i].push([ date,(overviewTempData[i]/jsonData.length).toFixed(2)]  );
+            overviewData[i].push([ date,(overviewTempData[i]).toFixed(2)]  );
             //overviewData[i].shift();
         }
         FRefreshOverviewData();
@@ -239,13 +251,16 @@
                 //var receiveBW = FAddDataUnitLabel(jsonData[i]["NetReceive"]," Kb/s");
                 //var transmitBW = FAddDataUnitLabel(jsonData[i]["NetSend"]," Kb/s");
                 //alert(jsonData[i]);
+                var cpuUsage =  (100 - jsonData[i]["CpuIdle"]).toFixed(2);
+
+
 
                 HostIpListHtml +=   '<tr>' +
                     '  <th scope="row">'+jsonData[i]["ip"]  +'</th>' +
                     '  <td>'+
                     '      <div class="progress" style="width: 100px;height: 25px;text-align: center;">\n' +
-                    '      <div style="width: '+ (100 - jsonData[i]["CpuIdle"]) +'%" class="progress-bar progress-bar-striped progress-bar-animated bg-info" role="progressbar" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100" ></div>\n' +
-                    '      <h6 style="margin-top:2px;width: 100px;position: absolute;"> ' + (100 - jsonData[i]["CpuIdle"]).toFixed(2) +' %</h6>' +
+                    '      <div style="width: '+ cpuUsage +'%" class="progress-bar progress-bar-striped progress-bar-animated bg-info" role="progressbar" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100" ></div>\n' +
+                    '      <h6 style="margin-top:2px;width: 100px;position: absolute;"> ' + cpuUsage +' %</h6>' +
                     '  </div></td>' +
 
                     '  <td>'+
@@ -268,9 +283,13 @@
                     '</tr>';
             }
             hostInfoListTable.innerHTML = HostIpListHtml;
+
+            FAddOverviewData(jsonData);
         }
         //设置主机IP列表
         FSetHostIpList("HostIpList");
+
+
     }
 
     //初始化图表

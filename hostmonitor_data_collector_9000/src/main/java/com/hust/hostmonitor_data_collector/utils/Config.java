@@ -143,6 +143,30 @@ public class Config {
         return temp;
     }
 
+    List<HostConfigInfo> getHostConfigInfoData(){
+        List<HostConfigInfo> hostConfigInfoList = new ArrayList<>();
 
 
+
+        return hostConfigInfoList;
+    }
+
+
+    public JSONObject getHostList(){
+        // 设定Excel文件所在路径
+        String excelFileName = "/Users/Dreamer-1/Desktop/myBlog/java解析Excel/readExample.xlsx";
+        // 读取Excel文件内容
+        //List<HostConfigInfo> readResult = ExcelReader.readExcel(excelFileName);
+
+
+        JSONObject temp = new JSONObject();
+
+
+        return jsonObject;
+    }
+
+    public static void main(String[] args) {
+        Config config = Config.getInstance();
+        config.getHostList();
+    }
 }
