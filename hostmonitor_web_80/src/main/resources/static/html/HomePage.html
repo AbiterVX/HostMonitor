@@ -180,7 +180,6 @@
     var overviewChart;
     var overviewData = [[],[],[],[]];
 
-
     //页面加载完成后执行
     window.onload=function (){
         //设置左侧导航栏当前选中的导航项
@@ -189,10 +188,7 @@
         //初始化左侧导航栏HostIP列表
         FInitHostIpList();
         //定时任务:更新HostState
-        //window.setInterval (FInitHostIpList,FGetRefreshInterval("state"));
-
-
-
+        window.setInterval (FInitHostIpList,FGetRefreshInterval("state"));
         //FInitOverviewData();
 
         //初始化表格
@@ -212,6 +208,58 @@
             var jsonData = FGetRecentHostInfoList(i,timeInterval);
 
         }
+    }
+
+    //[定时]刷新Host实时信息
+    function FRefreshHostRealTimeInfoCallback(jsonData){
+        if(jsonData != null){
+            var HostIpListHtml = ""
+            //FAddOverviewData(jsonData);
+            for(var i=0;i< jsonData.length;i++){
+                //var cpuUsage = FAddDataUnitLabel(jsonData[i]["CpuIdle"],"%");
+                //var memoryUsage = FAddDataUnitLabel(jsonData[i]["MemoryUsage"],"%");
+                //var diskUsage = FAddDataUnitLabel(jsonData[i]["diskUsage"],"%");
+                //var receiveBW = FAddDataUnitLabel(jsonData[i]["NetReceive"]," Kb/s");
+                //var transmitBW = FAddDataUnitLabel(jsonData[i]["NetSend"]," Kb/s");
+                //alert(jsonData[i]);
+                var cpuUsage =  (100 - jsonData[i]["CpuIdle"]).toFixed(2);
+
+
+
+                HostIpListHtml +=   '<tr>' +
+                    '  <th scope="row">'+jsonData[i]["ip"]  +'</th>' +
+                    '  <td>'+
+                    '      <div class="progress" style="width: 100px;height: 25px;text-align: center;">' +
+                    '      <div style="width: '+ cpuUsage +'%" class="progress-bar progress-bar-striped progress-bar-animated bg-info" role="progressbar" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100" ></div>' +
+                    '      <h6 style="margin-top:2px;width: 100px;position: absolute;"> ' + cpuUsage +' %</h6>' +
+                    '  </div></td>' +
+
+                    '  <td>'+
+                    '      <div class="progress" style="width: 130px;height: 25px;text-align: center;">' +
+                    '      <div style="width: '+ 0 +'%" class="progress-bar progress-bar-striped progress-bar-animated bg-info" role="progressbar" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100" ></div>' +
+                    '      <h6 style="margin-top:2px;width: 130px;position: absolute;"> ' + jsonData[i]["MemoryUsage"]+' Kb</h6>' +
+                    '  </div></td>' +
+
+                    '  <td>'+
+                    '      <div class="progress" style="width: 130px;height: 25px;text-align: center;">' +
+                    '           <div style="width: '+ jsonData[i]["DiskOccupancyUsage"] +'%" class="progress-bar progress-bar-striped progress-bar-animated bg-info" role="progressbar" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100" ></div>' +
+                    '           <h6 style="width: 130px;position: absolute;" > ' + jsonData[i]["DiskOccupancyUsage"] +'%' +'</h6>' +
+                    '      </div>' +
+                    '</td>' +
+
+                    '  <td>'+ jsonData[i]["iops"]  +'</td>' +
+                    '  <td>'+ jsonData[i]["TcpEstablished"]  +'</td>' +
+                    '  <td>'+ jsonData[i]["NetReceive"]   +'B/s</td>' +
+                    '  <td>'+ jsonData[i]["NetSend"]   +'B/s</td>' +
+                    '  <td>'+ "--"  +'</td>' +
+                    '</tr>';
+            }
+            hostInfoListTable.innerHTML = HostIpListHtml;
+
+            FAddOverviewData(jsonData);
+        }
+        //设置主机IP列表
+        FSetHostIpList("HostIpList");
     }
 
     //添加总览数据
@@ -238,58 +286,19 @@
         FRefreshOverviewData();
     }
 
-    //[定时]刷新Host实时信息
-    function FRefreshHostRealTimeInfoCallback(jsonData){
-
-        if(jsonData != null){
-            var HostIpListHtml = ""
-            //FAddOverviewData(jsonData);
-            for(var i=0;i< jsonData.length;i++){
-                //var cpuUsage = FAddDataUnitLabel(jsonData[i]["CpuIdle"],"%");
-                //var memoryUsage = FAddDataUnitLabel(jsonData[i]["MemoryUsage"],"%");
-                //var diskUsage = FAddDataUnitLabel(jsonData[i]["diskUsage"],"%");
-                //var receiveBW = FAddDataUnitLabel(jsonData[i]["NetReceive"]," Kb/s");
-                //var transmitBW = FAddDataUnitLabel(jsonData[i]["NetSend"]," Kb/s");
-                //alert(jsonData[i]);
-                var cpuUsage =  (100 - jsonData[i]["CpuIdle"]).toFixed(2);
-
-
-
-                HostIpListHtml +=   '<tr>' +
-                    '  <th scope="row">'+jsonData[i]["ip"]  +'</th>' +
-                    '  <td>'+
-                    '      <div class="progress" style="width: 100px;height: 25px;text-align: center;">\n' +
-                    '      <div style="width: '+ cpuUsage +'%" class="progress-bar progress-bar-striped progress-bar-animated bg-info" role="progressbar" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100" ></div>\n' +
-                    '      <h6 style="margin-top:2px;width: 100px;position: absolute;"> ' + cpuUsage +' %</h6>' +
-                    '  </div></td>' +
-
-                    '  <td>'+
-                    '      <div class="progress" style="width: 130px;height: 25px;text-align: center;">\n' +
-                    '      <div style="width: '+ 0 +'%" class="progress-bar progress-bar-striped progress-bar-animated bg-info" role="progressbar" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100" ></div>\n' +
-                    '      <h6 style="margin-top:2px;width: 130px;"> ' + jsonData[i]["MemoryUsage"]+' Kb</h6>' +
-                    '  </div></td>' +
-
-                    '  <td>'+
-                    '      <div class="progress" style="width: 130px;height: 25px;text-align: center;">\n' +
-                    '      <div style="width: '+ jsonData[i]["DiskOccupancyUsage"] +'%" class="progress-bar progress-bar-striped progress-bar-animated bg-info" role="progressbar" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100" ></div>\n' +
-                    '      <h6 style="margin-top:2px;width: 130px;"> ' + jsonData[i]["DiskOccupancyUsage"] +'%' +'</h6>' +
-                    '  </div></td>' +
-
-                    '  <td>'+ jsonData[i]["iops"]  +'</td>' +
-                    '  <td>'+ jsonData[i]["TcpEstablished"]  +'</td>' +
-                    '  <td>'+ jsonData[i]["NetReceive"]   +'B/s</td>' +
-                    '  <td>'+ jsonData[i]["NetSend"]   +'B/s</td>' +
-                    '  <td>'+ "--"  +'</td>' +
-                    '</tr>';
-            }
-            hostInfoListTable.innerHTML = HostIpListHtml;
-
-            FAddOverviewData(jsonData);
+    //更新图表数据，并刷新图表
+    function FRefreshOverviewData(){
+        var option = {
+            series: []
+        };
+        for(var i=0;i<overviewData.length;i++){
+            option["series"].push({
+                data:overviewData[i],
+                xAxisIndex: i,
+                yAxisIndex: i,
+            })
         }
-        //设置主机IP列表
-        FSetHostIpList("HostIpList");
-
-
+        overviewChart.setOption(option);
     }
 
     //初始化图表
@@ -409,20 +418,6 @@
         if (option && typeof option === 'object') {
             currentChart.setOption(option);
         }
-    }
-
-    function FRefreshOverviewData(){
-        var option = {
-            series: []
-        };
-        for(var i=0;i<overviewData.length;i++){
-            option["series"].push({
-                data:overviewData[i],
-                xAxisIndex: i,
-                yAxisIndex: i,
-            })
-        }
-        overviewChart.setOption(option);
     }
 </script>
 </html>

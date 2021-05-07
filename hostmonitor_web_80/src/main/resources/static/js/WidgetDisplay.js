@@ -11,7 +11,7 @@ function setCurrentNavItem(leftNavItemIndex,TopNavItemIndex){
 
     document.getElementById("Navbar1").href = "/";
     document.getElementById("Navbar2").href = "DiskFailurePredict";
-
+    document.getElementById("Navbar3").href = "HostConfig";
 
     var navbar = document.getElementById("Navbar" + TopNavItemIndex);
     var classVal = navbar.getAttribute("class");
