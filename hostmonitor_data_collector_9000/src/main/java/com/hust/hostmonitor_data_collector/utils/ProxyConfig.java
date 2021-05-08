@@ -12,6 +12,12 @@ public class ProxyConfig {
     @ExcelProperty("proxyPort")
     public int proxyPort;
 
+    public ProxyConfig(){
+        proxyId = -1;
+        proxyIp = "0.0.0.0";
+        proxyPort = 0;
+    }
+
     @Override
     public String toString(){
         return "["+ proxyId +"," + proxyIp+","+ proxyPort+"]";

@@ -59,11 +59,21 @@ public class Config {
         //Proxy excel
         EasyExcel.read(path+"/ConfigData/Proxy.xlsx",ProxyConfig.class,new ProxyConfigListener()).sheet().doRead();
 
+        /*
         for(ProxyConfig proxyConfig:proxyConfigList){
             System.out.println(proxyConfig);
-        }
+        }*/
+        //List<ProxyConfig> tempList = proxyConfigList;
+        //tempList.add(new ProxyConfig());
+        //EasyExcel.write(path+"/ConfigData/Proxy.xlsx",ProxyConfig.class).sheet().doWrite(tempList);
+
         //host excel
         EasyExcel.read(path+"/ConfigData/Host.xlsx",HostConfigInfo.class,new HostConfigInfoListener()).sheet().doRead();
+
+        //写入excel
+        //List<HostConfigInfo> tempList = hostConfigInfoList;
+        //tempList.add(new HostConfigInfo());
+        //EasyExcel.write(path+"/ConfigData/Host.xlsx",HostConfigInfo.class).sheet().doWrite(tempList);
     }
 
     public String readFile(String filePath){

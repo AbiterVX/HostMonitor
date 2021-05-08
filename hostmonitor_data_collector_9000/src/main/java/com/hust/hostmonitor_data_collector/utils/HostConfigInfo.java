@@ -1,5 +1,6 @@
 package com.hust.hostmonitor_data_collector.utils;
 
+import com.alibaba.excel.annotation.ExcelIgnore;
 import com.alibaba.excel.annotation.ExcelProperty;
 import lombok.Data;
 
@@ -9,6 +10,10 @@ import lombok.Data;
 @Data
 public class HostConfigInfo {
     public HostConfigInfo(){
+        ip = "0.0.0.0";
+        username = "null user";
+        password = "null password";
+
         proxy = false;
     }
     public void setProxy(ProxyConfig proxyConfig){
@@ -28,13 +33,16 @@ public class HostConfigInfo {
     public String password;
 
     //代理
+    @ExcelIgnore
     public boolean proxy;
 
     @ExcelProperty("proxyId")
     public int proxyId;
 
+    @ExcelIgnore
     public String proxyIp;
 
+    @ExcelIgnore
     public int proxyPort;
 
     @Override
