@@ -1,5 +1,7 @@
 package com.hust.hostmonitor_data_collector.utils;
 
+import com.alibaba.excel.context.AnalysisContext;
+import com.alibaba.excel.event.AnalysisEventListener;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.io.FileUtils;
@@ -8,6 +10,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
+import com.alibaba.excel.*;
 
 /**
  * 读取json配置文件并解析
@@ -21,6 +25,8 @@ public class Config {
     private final String initEnvironmentCommand;
     private final String ioTestCommand;
     private final String testCommand;
+    List<ProxyConfig> proxyConfigList = new ArrayList<>();
+    List<HostConfigInfo> hostConfigInfoList = new ArrayList<>();
 
 
     private volatile static Config config;
@@ -49,6 +55,25 @@ public class Config {
         testCommand = readFile("ConfigData/test.sh");
         //IO测试指令
         ioTestCommand = readFile("ConfigData/IOTest.sh");
+
+        //Proxy excel
+        EasyExcel.read(path+"/ConfigData/Proxy.xlsx",ProxyConfig.class,new ProxyConfigListener()).sheet().doRead();
+
+        /*
+        for(ProxyConfig proxyConfig:proxyConfigList){
+            System.out.println(proxyConfig);
+        }*/
+        //List<ProxyConfig> tempList = proxyConfigList;
+        //tempList.add(new ProxyConfig());
+        //EasyExcel.write(path+"/ConfigData/Proxy.xlsx",ProxyConfig.class).sheet().doWrite(tempList);
+
+        //host excel
+        EasyExcel.read(path+"/ConfigData/Host.xlsx",HostConfigInfo.class,new HostConfigInfoListener()).sheet().doRead();
+
+        //写入excel
+        //List<HostConfigInfo> tempList = hostConfigInfoList;
+        //tempList.add(new HostConfigInfo());
+        //EasyExcel.write(path+"/ConfigData/Host.xlsx",HostConfigInfo.class).sheet().doWrite(tempList);
     }
 
     public String readFile(String filePath){
@@ -62,18 +87,45 @@ public class Config {
         return resultData;
     }
     //----------静态字段
-    private final String StorageDeviceHostTxt = "StorageDeviceHost";
-    private final String ipTxt = "ip";
-    private final String usernameTxt = "username";
-    private final String passwordTxt = "password";
-    private final String proxyIpTxt = "proxyIp";
-    private final String proxyPortTxt = "proxyPort";
-    private final String sampleDataKeyTxt = "value";
-    private final String sampleDataUnitTxt = "unit";
     private final String sampleDataFormat = "SampleDataFormat";
     private final String diskSampleDataFormat = "DiskSampleDataFormat";
     private final String temperatureSampleDataFormat = "TemperatureSampleDataFormat";
 
+    //----------解析excel文件
+    //解析Host-excel文件
+    public class HostConfigInfoListener extends AnalysisEventListener<HostConfigInfo>{
+        //每条数据解析都会调用
+        @Override
+        public void invoke(HostConfigInfo hostConfigInfo, AnalysisContext analysisContext) {
+            if(hostConfigInfo.proxyId != 0){
+                for(ProxyConfig proxyConfig:proxyConfigList){
+                    if(hostConfigInfo.proxyId == proxyConfig.proxyId){
+                        hostConfigInfo.setProxy(proxyConfig);
+                        break;
+                    }
+                }
+            }
+            hostConfigInfoList.add(hostConfigInfo);
+        }
+        //全部解析完后调用
+        @Override
+        public void doAfterAllAnalysed(AnalysisContext analysisContext) {
+            System.out.println("Host-excel解析完成");
+        }
+    }
+    //解析Proxy-excel文件
+    public class ProxyConfigListener extends AnalysisEventListener<ProxyConfig>{
+        //每条数据解析都会调用
+        @Override
+        public void invoke(ProxyConfig proxyConfig, AnalysisContext analysisContext) {
+            proxyConfigList.add(proxyConfig);
+        }
+        //全部解析完后调用
+        @Override
+        public void doAfterAllAnalysed(AnalysisContext analysisContext) {
+            System.out.println("Proxy-excel解析完成");
+        }
+    }
 
 
     //----------外部接口
@@ -81,61 +133,34 @@ public class Config {
     public String getSampleCommands() {
         return sampleCommands;
     }
-
     //获取进程采样指令
     public String getProcessSampleCommand(){
         return processSampleCommand;
     }
-
     //获取环境初始化指令
     public String getInitEnvironmentCommand() {
         return initEnvironmentCommand;
     }
-
     //获取测试指令
     public String getTestCommand() {
         return testCommand;
     }
-
     //获取Host配置信息
     public List<HostConfigInfo> getHostConfigInfoList() {
-        List<HostConfigInfo> hostConfigInfoList = new ArrayList<>();
-        JSONArray jsonArray = jsonObject.getJSONArray(StorageDeviceHostTxt);
-        for (Object object : jsonArray) {
-            //读取字段
-            JSONObject jsonObject = (JSONObject) object;
-            String ip = jsonObject.getString(ipTxt);
-            String username = jsonObject.getString(usernameTxt);
-            String password = jsonObject.getString(passwordTxt);
-            HostConfigInfo newHostConfigInfo = new HostConfigInfo(ip,username,password);
-
-            //代理信息
-            if(jsonObject.containsKey(proxyIpTxt) && jsonObject.containsKey(proxyPortTxt)){
-                String proxyIp = jsonObject.getString(proxyIpTxt);
-                int proxyPort = jsonObject.getInteger(proxyPortTxt);
-                newHostConfigInfo.setProxy(proxyIp,proxyPort);
-            }
-
-            //添加到List
-            hostConfigInfoList.add(newHostConfigInfo);
-        }
         return hostConfigInfoList;
     }
-
     //采样数据格式
     public JSONObject getSampleDataFormat() {
         JSONObject temp = new JSONObject();
         temp.putAll(jsonObject.getJSONObject(sampleDataFormat));
         return temp;
     }
-
     //磁盘采样数据格式
     public JSONObject getDiskSampleDataFormat(){
         JSONObject temp = new JSONObject();
         temp.putAll(jsonObject.getJSONObject(diskSampleDataFormat));
         return temp;
     }
-
     //温度采样数据格式
     public JSONObject getTemperatureSampleDataFormat(){
         JSONObject temp = new JSONObject();
@@ -145,4 +170,11 @@ public class Config {
 
 
 
+    public static void main(String[] args) {
+        Config config = Config.getInstance();
+        List<HostConfigInfo> hostList= config.getHostConfigInfoList();
+        for(HostConfigInfo hostConfigInfo:hostList){
+            System.out.println(hostConfigInfo);
+        }
+    }
 }

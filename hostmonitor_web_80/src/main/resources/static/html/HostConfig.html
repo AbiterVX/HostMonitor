@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Storage Device Monitor</title>
+
+
+    <!-- JQuery -->
+    <script type="text/javascript" src="../JQuery/jquery-3.3.1.min.js"></script>
+    <!-- popper 用于下拉框 -->
+    <script type="text/javascript" src="../popper/popper.min.js"></script>
+    <!-- BootStrap -->
+    <link rel="stylesheet" href= "../bootstrap-4.3.1-dist/css/bootstrap.min.css" >
+    <script type="text/javascript" src="../bootstrap-4.3.1-dist/js/bootstrap.js"></script>
+
+    <!-- ECharts -->
+    <script type="text/javascript" src="../echarts/echarts.min.js"></script>
+    <!-- functionLibrary -->
+    <script type="text/javascript" src="../js/functionLibrary.js"></script>
+    <script type="text/javascript" src="../js/DataRequest.js"></script>
+    <script type="text/javascript" src="../js/WidgetDisplay.js"></script>
+</head>
+
+<body>
+<!-- 顶部导航项 -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <a id="Title" class="navbar-brand col-sm-3 col-md-2 mr-0" href="/"></a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNavDropdown">
+        <ul class="navbar-nav">
+            <!--仪表盘 -->
+            <li class="nav-item">
+                <a id="Navbar1" class="nav-link" href="/"></a>
+            </li>
+
+            <!--磁盘故障预测 -->
+            <li class="nav-item">
+                <a id="Navbar2" class="nav-link" href="/"></a>
+            </li>
+
+            <!--Host配置 -->
+            <li class="nav-item">
+                <a id="Navbar3" class="nav-link" href="/"></a>
+            </li>
+        </ul>
+    </div>
+</nav>
+
+<div class="container-fluid">
+    <div class="row">
+        <!-- 左侧导航项 -->
+        <nav class="col-md-2 d-none d-md-block bg-light sidebar">
+            <div class="sidebar-sticky">
+                <ul class="nav flex-column">
+                    <!-- 导航项 -->
+                    <li class="nav-item">
+                        <a id="NavItem21" class="nav-link"  href="#">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-home"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                            主机配置 <span class="sr-only">(current)</span>
+                        </a>
+
+                    </li>
+                </ul>
+
+                <!-- 节点列表 -->
+                <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
+                    <span>主机列表</span>
+                </h6>
+                <ul class="nav flex-column mb-2" id = "HostIpList" ></ul>
+            </div>
+        </nav>
+
+        <main role="main" class="col-md-9 ml-sm-auto col-lg-10 pt-3 px-4">
+        </main>
+    </div>
+</div>
+</body>
+
+<script >
+    //页面加载完成后执行
+    window.onload=function (){
+        //设置左侧导航栏当前选中的导航项
+        setCurrentNavItem(21,3);
+
+    }
+
+</script>
+</html>

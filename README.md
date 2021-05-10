@@ -85,6 +85,12 @@ http://localhost:8848/nacos/#/login
 localhost
 ```
 
+windows 可能会存在 IIS占用80端口，需要关闭功能
+
+https://www.laoliang.net/jsjh/technology/4016.html
+
+
+
 ## 5.注册中心
 
 ​	项目默认不使用Nacos，当然由于未移除@EnableDiscoveryClient等配置，会导致运行报错，但不影响项目正常执行。
@@ -95,9 +101,66 @@ localhost
 
 ​	ApplicationContextBean：使用@LoadBalanced
 
+## 6.Todo
 
+#### v1.0
 
+单个SpringBoot项目demo。具有简单框架，支持demo阶段业务功能。
 
+能够使用ssh远程连接并执行shell。实现数据库存取。前端简单界面显示。
 
-​			
+#### v2.0
 
+springcloud项目，需求较为明确。（current version）
+
+以具体需求划分相应界面。实现简单的部署与演示。
+
+#### v2.1
+
+前端界面完善，完善数据库存取过程。
+
+**（1）basic**
+
+HomePage：时间段折线图显示
+
+​						后端：返回最近时间段内的数据
+
+​									实时数据存入数据库
+
+HostInfo：时间段折线图显示
+
+​					后端：返回最近时间段内的数据
+
+ProcessIOInfo：实时显示进程情况
+
+​							后端：返回实时进程情况
+
+**（2）low**
+
+HostConfig：修改Host配置文件
+
+​						读取修改excel文件。
+
+​						后端，Host配置文件CRUD，配置文件写入同步修改。
+
+IOTest：点击进行IO测试
+
+​				后端，返回IO测试结果
+
+**（3）故障预测-工作流程整合**
+
+Host采样部分整合。定期采样Host故障预测所需数据。
+
+DiskFailurePredict：获取Host及其磁盘的故障预测结果，查看磁盘故障预测历史折线图
+
+​									后端：磁盘故障预测结果存入数据库。
+
+​												获取最近数据，获取最近时间段数据。
+
+DiskFailurePredictConfig：重新进行故障预测。
+
+​												后端：调用故障预测代码。
+
+#### v2.2
+
+web后端内数据缓存。
