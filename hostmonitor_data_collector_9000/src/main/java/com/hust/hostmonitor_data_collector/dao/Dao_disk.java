@@ -10,11 +10,7 @@ import java.util.List;
 
 @Mapper
 public interface Dao_disk {
-    @Select("select * from DiskFailure where ip=#{ip} ")
-    List<DiskFailureRecord> getDiskFailureByIp(@Param("ip") String ip);
 
-    @Select("select * from DiskFailure where ip=#{ip} and timestamp>#{lowbound} and timestamp<#{highbound} order by timestamp")
-    List<DiskFailureRecord> getDiskFailureWithTimestamp(@Param("ip") String ip, @Param("lowbound")Timestamp lowbound,@Param("highbound")Timestamp highbound);
 
     @Select("select distinct timestamp from DiskFailure where ip=#{ip}")
     List<String> getDiskFailureTimestamp(@Param("ip") String ip);

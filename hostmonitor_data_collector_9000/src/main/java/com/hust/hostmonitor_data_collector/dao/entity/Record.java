@@ -6,60 +6,24 @@ import java.sql.Timestamp;
 public class Record {
     private String ip;
     private Timestamp timestamp;
-    private BigDecimal receiveBW;
-    private BigDecimal transmitBW;
-    private BigDecimal cpuUsage;
-    private BigDecimal memoryUsage;
-    private BigDecimal diskUsage;
-    private BigDecimal temp;
-    private BigDecimal energy;
-
-    private Integer iNumber;
-    private Integer oNumber;
-
-    private float receiveBWf;
-    private float transmitBWf;
-    private float cpuUsagef;
-    private float memoryUsagef;
-    private float diskUsagef;
-    private float tempf;
-    private float energyf;
-
-    public Record(String ip, Timestamp timestamp, Integer iNumber, Integer oNumber, float receiveBWf, float transmitBWf, float cpuUsagef, float memoryUsagef, float diskUsagef, float tempf, float energyf) {
-        this.ip = ip;
-        this.timestamp = timestamp;
-        this.iNumber = iNumber;
-        this.oNumber = oNumber;
-        this.receiveBWf = receiveBWf;
-        this.transmitBWf = transmitBWf;
-        this.cpuUsagef = cpuUsagef;
-        this.memoryUsagef = memoryUsagef;
-        this.diskUsagef = diskUsagef;
-        this.tempf = tempf;
-        this.energyf = energyf;
-    }
-    public Record(String ip, Timestamp timestamp, BigDecimal receiveBW, BigDecimal transmitBW, BigDecimal cpuUsage, BigDecimal memoryUsage, BigDecimal diskUsage,Integer iNumber, Integer oNumber,BigDecimal temp, BigDecimal energy) {
-        this.ip = ip;
-        this.timestamp = timestamp;
-        this.receiveBW = receiveBW;
-        this.transmitBW = transmitBW;
-        this.cpuUsage = cpuUsage;
-        this.memoryUsage = memoryUsage;
-        this.diskUsage = diskUsage;
-        this.temp = temp;
-        this.energy = energy;
-        this.iNumber = iNumber;
-        this.oNumber = oNumber;
-        this.receiveBWf=receiveBW.floatValue();
-        this.transmitBWf=transmitBW.floatValue();
-        this.cpuUsagef=cpuUsage.floatValue();
-        this.memoryUsagef=memoryUsage.floatValue();
-        this.diskUsagef=diskUsage.floatValue();
-        this.tempf=temp.floatValue();
-        this.energyf=energy.floatValue();
-    }
-
-
+    private Double NetReceive;
+    private Double NetSend;
+    private Integer MemTotal;
+    private Integer MemFree;
+    private Integer MemAvailable;
+    private Double Buffers;
+    private Double Cached;
+    private Integer TcpEstablished;
+    private Double DiskTotalSize;
+    private Double DiskOccupancyUsage;
+    private Double CpuIdle;
+    private Double Power;
+    private Double temperature;
+    private Integer Iops;
+    private String Type;
+    private Double ReadRates;
+    private Double WriteRates;
+    private Double Utils;
 
     public String getIp() {
         return ip;
@@ -69,56 +33,124 @@ public class Record {
         return timestamp;
     }
 
-    public Integer getiNumber() {
-        return iNumber;
+    public double getNetReceive() {
+        return NetReceive;
     }
 
-    public Integer getoNumber() {
-        return oNumber;
+    public double getNetSend() {
+        return NetSend;
     }
 
-    public float getReceiveBWf() {
-        return receiveBWf;
+    public double getMemTotal() {
+        return MemTotal;
     }
 
-    public float getTransmitBWf() {
-        return transmitBWf;
+    public double getMemFree() {
+        return MemFree;
     }
 
-    public float getCpuUsagef() {
-        return cpuUsagef;
+    public double getMemAvailable() {
+        return MemAvailable;
     }
 
-    public float getMemoryUsagef() {
-        return memoryUsagef;
+    public double getBuffers() {
+        return Buffers;
     }
 
-    public float getDiskUsagef() {
-        return diskUsagef;
+    public double getCached() {
+        return Cached;
     }
 
-    public float getTempf() {
-        return tempf;
+    public int getTcpEstablished() {
+        return TcpEstablished;
     }
 
-    public float getEnergyf() {
-        return energyf;
+    public double getDiskTotalSize() {
+        return DiskTotalSize;
+    }
+
+    public double getDiskOccupancyUsage() {
+        return DiskOccupancyUsage;
+    }
+
+    public double getCpuIdle() {
+        return CpuIdle;
+    }
+
+    public double getPower() {
+        return Power;
+    }
+
+    public double getTemperature() {
+        return temperature;
+    }
+
+    public int getIops() {
+        return Iops;
+    }
+
+    public String getType() {
+        return Type;
+    }
+
+    public double getReadRates() {
+        return ReadRates;
+    }
+
+    public double getWriteRates() {
+        return WriteRates;
+    }
+
+    public double getUtils() {
+        return Utils;
+    }
+
+    public Record(String ip, Timestamp timestamp, Double netReceive, Double netSend, Integer memTotal, Integer memFree, Integer memAvailable, Double buffers, Double cached, Integer tcpEstablished, Double diskTotalSize, Double diskOccupancyUsage, Double cpuIdle, Double power, Double temperature, Integer iops, String type, Double readRates, Double writeRates, Double utils) {
+        this.ip = ip;
+        this.timestamp = timestamp;
+        NetReceive = netReceive;
+        NetSend = netSend;
+        MemTotal = memTotal;
+        MemFree = memFree;
+        MemAvailable = memAvailable;
+        Buffers = buffers;
+        Cached = cached;
+        TcpEstablished = tcpEstablished;
+        DiskTotalSize = diskTotalSize;
+        DiskOccupancyUsage = diskOccupancyUsage;
+        CpuIdle = cpuIdle;
+        Power = power;
+        this.temperature = temperature;
+        Iops = iops;
+        Type = type;
+        ReadRates = readRates;
+        WriteRates = writeRates;
+        Utils = utils;
     }
 
     @Override
     public String toString() {
-        return "record{" +
+        return "Record{" +
                 "ip='" + ip + '\'' +
                 ", timestamp=" + timestamp +
-                ", iNumber=" + iNumber +
-                ", oNumber=" + oNumber +
-                ", receiveBWf=" + receiveBWf +
-                ", transmitBWf=" + transmitBWf +
-                ", cpuUsagef=" + cpuUsagef +
-                ", memoryUsagef=" + memoryUsagef +
-                ", diskUsagef=" + diskUsagef +
-                ", tempf=" + tempf +
-                ", energyf=" + energyf +
+                ", NetReceive=" + NetReceive +
+                ", NetSend=" + NetSend +
+                ", MemTotal=" + MemTotal +
+                ", MemFree=" + MemFree +
+                ", MemAvailable=" + MemAvailable +
+                ", Buffers=" + Buffers +
+                ", Cached=" + Cached +
+                ", TcpEstablished=" + TcpEstablished +
+                ", DiskTotalSize=" + DiskTotalSize +
+                ", DiskOccupancyUsage=" + DiskOccupancyUsage +
+                ", CpuIdle=" + CpuIdle +
+                ", Power=" + Power +
+                ", temperature=" + temperature +
+                ", Iops=" + Iops +
+                ", Type='" + Type + '\'' +
+                ", ReadRates=" + ReadRates +
+                ", WriteRates=" + WriteRates +
+                ", Utils=" + Utils +
                 '}';
     }
 }

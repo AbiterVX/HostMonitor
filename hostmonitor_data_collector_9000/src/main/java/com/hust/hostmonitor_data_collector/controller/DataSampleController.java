@@ -1,10 +1,7 @@
 package com.hust.hostmonitor_data_collector.controller;
 
-import com.hust.hostmonitor_data_collector.dao.entity.FieldType;
 import com.hust.hostmonitor_data_collector.service.DataService;
 import com.hust.hostmonitor_data_collector.service.HostInfoFieldType;
-import com.hust.hostmonitor_data_collector.service.Service_Implementation;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 

@@ -3,12 +3,13 @@ package com.hust.hostmonitor_data_collector.service;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.alibaba.fastjson.serializer.SerializerFeature;
-import com.hust.hostmonitor_data_collector.dao.Dao_disk;
-import com.hust.hostmonitor_data_collector.dao.Dao_record;
+import com.hust.hostmonitor_data_collector.dao.ProcessMapper;
+import com.hust.hostmonitor_data_collector.dao.RecordMapper;
+import com.hust.hostmonitor_data_collector.dao.entity.Record;
 import com.hust.hostmonitor_data_collector.utils.HostMonitorBatchExecution;
 import com.hust.hostmonitor_data_collector.utils.HostProcessSampleData;
 import com.hust.hostmonitor_data_collector.utils.HostSampleData;
+import org.apache.catalina.Host;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.math.BigDecimal;
@@ -18,9 +19,9 @@ import java.util.*;
 
 public class DataServiceImpl implements DataService{
     @Autowired
-    Dao_record dao_record;
+    RecordMapper recordMapper;
     @Autowired
-    Dao_disk dao_disk;
+    ProcessMapper processMapper;
 
 
     //HostMonitor
@@ -79,14 +80,68 @@ public class DataServiceImpl implements DataService{
 
     //存储新采样的数据
     private void storeSampleData(){
-        //Todo
+        JSONArray dataSource=hostMonitorBE.getHostSampleInfo();
+        List<Boolean> hostState=hostMonitorBE.getHostState();
+        List<String> ipList=hostMonitorBE.getHostIp();
+        //netsend netreceive格式需要修改
+        System.out.println(dataSource.size());
+        for(int i=0;i<dataSource.size();i++){
+            JSONObject sampleData=dataSource.getJSONObject(i);
+            System.out.println(hostState.get(i));
+            if(hostState.get(i)) {
+
+                Double NetSend,NetReceive;
+                try {
+                    String toPocesse = sampleData.getJSONObject("NetSend").getString("value");
+                    NetSend=Double.parseDouble(toPocesse.substring(0, toPocesse.length() - 1));
+                    toPocesse = sampleData.getJSONObject("NetReceive").getString("value");
+                    NetReceive=Double.parseDouble(toPocesse.substring(0, toPocesse.length() - 1));
+                } catch (NumberFormatException e) {
+                    NetSend=Double.parseDouble("0.0");
+                    NetReceive=Double.parseDouble("0.0");
+                }
+                recordMapper.insertNewRecord(ipList.get(i),new Timestamp(System.currentTimeMillis()),NetReceive,
+                        NetSend, sampleData.getJSONObject("MemTotal").getInteger("value"),
+                        sampleData.getJSONObject("MemFree").getInteger("value"),
+                        sampleData.getJSONObject("MemAvailable").getInteger("value"),
+                        sampleData.getJSONObject("Buffers").getDouble("value"),
+                        sampleData.getJSONObject("Cached").getDouble("value"),
+                        sampleData.getJSONObject("TcpEstablished").getInteger("value"),
+                        sampleData.getJSONObject("DiskTotalSize").getDouble("value"),
+                        sampleData.getJSONObject("DiskOccupancyUsage").getDouble("value"),
+                        sampleData.getJSONObject("CpuIdle").getDouble("value"),
+                        sampleData.getJSONObject("Power").getDouble("value"),
+                        Double.parseDouble("22.0"),
+//                        sampleData.getJSONObject("Disk").getJSONObject("value").getJSONObject("value").getInteger("Iops"),
+//                        sampleData.getJSONObject("Disk").getJSONObject("value").getJSONObject("value").getString("Type"),
+//                        sampleData.getJSONObject("Disk").getJSONObject("value").getJSONObject("value").getDouble("ReadRates"),
+//                        sampleData.getJSONObject("Disk").getJSONObject("value").getJSONObject("value").getDouble("WriteRates"),
+//                        sampleData.getJSONObject("Disk").getJSONObject("value").getJSONObject("value").getDouble("Utils"));
+                        Integer.parseInt("13"),
+                        "NoValue",
+                        Double.parseDouble("33.0"),
+                        Double.parseDouble("44.0"),
+                        Double.parseDouble("55.0"));
+            }
+        }
+        System.out.println("["+Thread.currentThread().getName()+"]:Insert into database");
+
     }
 
     //存储新采样的数据-线程
     private void storeProcessSampleData(){
-
+        Vector<Vector<HostProcessSampleData>> processVector=hostMonitorBE.getHostProcessSampleDataList();
+        Timestamp timestamp=new Timestamp(System.currentTimeMillis());
+        int index=0;
+        for(Iterator<Vector<HostProcessSampleData>> outerIt=processVector.iterator(); outerIt.hasNext();index++){
+            Iterator<HostProcessSampleData> it=outerIt.next().iterator();
+            String ip=hostMonitorBE.getHostIp(index);
+            while(it.hasNext()){
+                HostProcessSampleData tempData=it.next();
+                processMapper.insertProcessRecord(ip,timestamp,tempData.pid,tempData.uid,tempData.readKbps,tempData.writeKbps,tempData.command);
+            }
+        }
     }
-
 
     //----------对外接口----------
 
@@ -190,95 +245,109 @@ public class DataServiceImpl implements DataService{
     public String getHostInfoRecent(int index, int hour) {
         String ip=hostMonitorBE.getHostIp(index);
         long ms=hour*3600*1000;
-        JSONArray result=new JSONArray();
-        JSONArray dataSource=hostMonitorBE.getHostSampleInfo();
-        JSONObject sampleData=dataSource.getJSONObject(index);
         long nowtime=System.currentTimeMillis();
-        Timestamp realTime=new Timestamp(nowtime);
-        Random r=new Random();
-        int RandomTotalNumber=r.nextInt(20)+3;
-        JSONObject temp=new JSONObject();
-        temp.put("ip",ip);
-        temp.put("Timestamp",realTime);
 
-        temp.put("CpuIdle",sampleData.getJSONObject("CpuIdle").getDouble("value"));
-
-        temp.put("MemoryUsage",(sampleData.getJSONObject("MemTotal").getInteger("value")-sampleData.getJSONObject("MemAvailable").getInteger("value")));
-        temp.put("DiskOccupancyUsage",sampleData.getJSONObject("DiskOccupancyUsage").getInteger("value"));
-        //temp.put("Disk",sampleData.getJSONObject("Disk").getJSONObject("value").toJSONString());
-        String toPocesse = sampleData.getJSONObject("NetSend").getString("value");
-        try {
-
-            temp.put("NetSend", Integer.parseInt(toPocesse.substring(0, toPocesse.length() - 1)));
-            toPocesse = sampleData.getJSONObject("NetReceive").getString("value");
-            temp.put("NetReceive", Integer.parseInt(toPocesse.substring(0, toPocesse.length() - 1)));
-        }
-        catch (NumberFormatException e) {
-            temp.put("NetSend", 0);
-            temp.put("NetReceive",0);
-        }
-        temp.put("TcpEstablished",sampleData.getJSONObject("TcpEstablished").getInteger("value"));
-        //temp.put("Temperature",sampleData.getJSONObject("Temperature").toJSONString());
-        temp.put("Power",sampleData.getJSONObject("Power").get("value"));
-        int iops=r.nextInt(11);
-        temp.put("iops",iops);
-        result.add(temp);
-        int randomnumber=r.nextInt(RandomTotalNumber);
-        int oldvalue=RandomTotalNumber;
-        for(int i=0;i<RandomTotalNumber-1&&randomnumber>0;i++){
-            JSONObject later=new JSONObject();
-            later.put("Timestamp",new Timestamp(nowtime-ms*randomnumber/oldvalue));
-            later.put("ip",ip);
-            later.put("CpuIdle",sampleData.getJSONObject("CpuIdle").getDouble("value")*randomnumber/(RandomTotalNumber*2));
-            later.put("MemoryUsage",(sampleData.getJSONObject("MemTotal").getInteger("value")-sampleData.getJSONObject("MemAvailable").getInteger("value"))*randomnumber/(RandomTotalNumber));
-            later.put("DiskOccupancyUsage",sampleData.getJSONObject("DiskOccupancyUsage").getInteger("value")*randomnumber/(RandomTotalNumber));
-            //later.put("Disk",sampleData.getJSONObject("Disk").getJSONObject("value").toJSONString());
-            try {
-                toPocesse = sampleData.getJSONObject("NetSend").getString("value");
-                later.put("NetSend", Integer.parseInt(toPocesse.substring(0, toPocesse.length() - 1)) * randomnumber /oldvalue );
-                toPocesse = sampleData.getJSONObject("NetReceive").getString("value");
-                later.put("NetReceive", Integer.parseInt(toPocesse.substring(0, toPocesse.length() - 1)) * randomnumber /oldvalue);
-            }
-            catch (NumberFormatException e) {
-                later.put("NetSend", 0);
-                later.put("NetReceive",0);
-            }
-            later.put("TcpEstablished",sampleData.getJSONObject("TcpEstablished").get("value"));
-            //later.put("Temperature",sampleData.getJSONObject("Temperature").toJSONString());
-            iops=r.nextInt(11);
-            later.put("iops",iops);
-            later.put("Power",sampleData.getJSONObject("Power").get("value"));
-            oldvalue=randomnumber;
-            randomnumber=r.nextInt(randomnumber);
-            result.add(later);
+        JSONArray result=new JSONArray();
+        List<Record> queryResult=recordMapper.queryRecordsWithTimeLimit(new Timestamp(nowtime-ms),new Timestamp(nowtime),ip);
+        for(Record record:queryResult){
+            JSONObject temp=new JSONObject();
+            temp.put("ip",ip);
+            temp.put("Timestamp",record.getTimestamp());
+            temp.put("CpuIdle",record.getCpuIdle());
+            temp.put("MemoryUsage",record.getMemTotal()-record.getMemAvailable());
+            temp.put("DiskOccupencyUsage",record.getDiskOccupancyUsage());
+            temp.put("NetSend", record.getNetSend());
+            temp.put("NetReceive", record.getNetReceive());
+            temp.put("TcpEstablished",record.getTcpEstablished());
+            temp.put("Power",record.getPower());
+            temp.put("iops",record.getIops());
+            result.add(temp);
         }
         return result.toJSONString();
     }
 
     @Override
     public String getHostInfoField(int index, int hour, HostInfoFieldType field) {
-        long ms=hour*3600*1000;
         String ip=hostMonitorBE.getHostIp(index);
-        JSONArray result=new JSONArray();
-        JSONArray dataSource=hostMonitorBE.getHostSampleInfo();
-        JSONObject sampleData=dataSource.getJSONObject(index);
+        long ms=hour*3600*1000;
         long nowtime=System.currentTimeMillis();
-        Timestamp realTime=new Timestamp(nowtime);
-        Random r=new Random();
-        int RandomTotalNumber=r.nextInt(20)+3;
-        JSONObject temp=new JSONObject();
-        temp.put("Timestamp",realTime);
-        temp.put("ip",ip);
-        temp.put(field.value(),sampleData.getJSONObject(field.value()).getDouble("value"));
-        result.add(temp);
-        int randomnumber=r.nextInt(RandomTotalNumber);
-        for(int i=0;i<RandomTotalNumber-1&&randomnumber>0;i++){
-            JSONObject later=new JSONObject();
-            later.put("ip",ip);
-            later.put("Timestamp",new Timestamp(nowtime-ms*randomnumber/RandomTotalNumber));
-            later.put(field.value(),sampleData.getJSONObject(field.value()).getDouble("value")*randomnumber/(RandomTotalNumber*2));
-            randomnumber=r.nextInt(randomnumber);
-            result.add(later);
+        JSONArray result=new JSONArray();
+        List<Record> queryResult=recordMapper.queryRecordsWithTimeLimit(new Timestamp(nowtime-ms),new Timestamp(nowtime),ip);
+        switch(field){
+            case CpuIdle:
+                for(Record record:queryResult){
+                    JSONObject temp=new JSONObject();
+                    temp.put("ip",ip);
+                    temp.put("Timestamp",record.getTimestamp());
+                    temp.put("CpuIdle",record.getCpuIdle());
+                    result.add(temp);
+                }
+                break;
+            case MemoryUsage:
+                for(Record record:queryResult){
+                    JSONObject temp=new JSONObject();
+                    temp.put("ip",ip);
+                    temp.put("Timestamp",record.getTimestamp());
+                    temp.put("MemoryUsage",record.getMemTotal()-record.getMemAvailable());
+                    result.add(temp);
+                }
+                break;
+            case DiskOccupancyUsage:
+                for(Record record:queryResult){
+                    JSONObject temp=new JSONObject();
+                    temp.put("ip",ip);
+                    temp.put("Timestamp",record.getTimestamp());
+                    temp.put("DiskOccupencyUsage",record.getDiskOccupancyUsage());
+                    result.add(temp);
+                }
+                break;
+            case NetSend:
+                for(Record record:queryResult){
+                    JSONObject temp=new JSONObject();
+                    temp.put("ip",ip);
+                    temp.put("Timestamp",record.getTimestamp());
+                    temp.put("NetSend", record.getNetSend());
+                    result.add(temp);
+                }
+                break;
+            case NetReceive:
+                for(Record record:queryResult){
+                    JSONObject temp=new JSONObject();
+                    temp.put("ip",ip);
+                    temp.put("Timestamp",record.getTimestamp());
+                    temp.put("NetReceive", record.getNetReceive());
+                    result.add(temp);
+                }
+                break;
+            case TcpEstablished:
+                for(Record record:queryResult){
+                    JSONObject temp=new JSONObject();
+                    temp.put("ip",ip);
+                    temp.put("Timestamp",record.getTimestamp());
+                    temp.put("TcpEstablished",record.getTcpEstablished());
+                    result.add(temp);
+                }
+                break;
+            case Power:
+                for(Record record:queryResult){
+                    JSONObject temp=new JSONObject();
+                    temp.put("ip",ip);
+                    temp.put("Timestamp",record.getTimestamp());
+                    temp.put("Power",record.getPower());
+                    result.add(temp);
+                }
+                break;
+            case Disk_Iops:
+                for(Record record:queryResult){
+                    JSONObject temp=new JSONObject();
+                    temp.put("ip",ip);
+                    temp.put("Timestamp",record.getTimestamp());
+                    temp.put("iops",record.getIops());
+                    result.add(temp);
+                }
+                break;
+            default:
+                break;
         }
         return result.toJSONString();
     }
@@ -316,7 +385,7 @@ public class DataServiceImpl implements DataService{
 
     @Override
     public String getHostIOTestInfoRealTime() {
-        return "null";
+        return "";
     }
 
 }
