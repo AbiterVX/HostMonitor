@@ -125,8 +125,8 @@
                         <tbody id ="IOTestInfoList"></tbody>
                     </table>
                 </div>
-
             </main>
+
         </div>
     </div>
 </body>
@@ -169,6 +169,7 @@
 
     //刷新表格
     function FRefreshIOTestInfoList(){
+
         if(ioTestData != null){
             var html = "";
             for(var i=0;i< ioTestData.length;i++){
@@ -184,8 +185,9 @@
                     '</td><td>' + ioTestData[i]["IO2"] +"MB/s" +
                     '</td><td>' + ioTestData[i]["IO3"] +"MB/s" +
                     '</td><td>' + FGetDateTime(ioTestData[i]["lastTimeStamp"]) +
-                    '</td><td><button type="button" onclick="FTestBtnClicked('+i+')" ' +
-                    'class="btn btn-secondary ' + disabledBtnClass +'">开始测试</button></td>' +
+                    '</td><td id="TestBtn'+i+'">' +
+                    '<button type="button" onclick="FTestBtnClicked('+i+')" class="btn btn-secondary ' + disabledBtnClass +'">开始测试</button>' +
+                    '</td>' +
                     '</tr>';
 
                 //ioTestData[i]["testTimeStamp"]
@@ -197,8 +199,9 @@
     }
 
     function FTestBtnClicked(index){
+        var loadingSvg = '<img src="../images/loading-spin.svg" alt="Loading icon" />';
         if(ioTestData[index]["active"]){
-            alert(index);
+            document.getElementById("TestBtn"+index).innerHTML = loadingSvg;
         }
         else{
             alert("False");

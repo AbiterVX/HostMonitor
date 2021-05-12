@@ -160,10 +160,24 @@ public class HostMonitorBatchExecution{
             //System.out.println("NULL,Index:"+index);
         }
         else{
+            //System.out.println(commandResult);
             //System.out.println("Index:"+index);
             //System.out.println(commandResult);
             Vector<HostProcessSampleData> processSampleDataList = new Vector<>();
-            for(int i=0;i<commandResult.size();i++){
+            int startIndex = -1;
+            int endlineCount = 0;
+            for(int i=0;i<commandResult.size();i++) {
+                if (commandResult.get(i).equals("")) {
+                    endlineCount += 1;
+                    if(endlineCount == 3){
+                        startIndex = i+2;
+                        break;
+                    }
+                }
+            }
+
+            for(int i=startIndex;i<commandResult.size();i++){
+                //System.out.println(commandResult.get(i));
                 String[] segments = commandResult.get(i).split("\\s+");
                 String uid = segments[1];
                 String pid = segments[2];
@@ -183,6 +197,28 @@ public class HostMonitorBatchExecution{
         }
     }
 
+    //IO测试采样
+    public void SampleIOTest(){
+        //对所有Host异步采样
+        for(int i=0;i<hostConfigInfoList.size();i++){
+            int index = i;
+            executor.submit(() -> {
+                sampleHostIOTest(index);
+            });
+        }
+    }
+    //IO测试采样-单个
+    private void sampleHostIOTest(int index){
+        //采样返回结果
+        List<String> commandResult = sshManager.runCommand(configInfo.getIoTestCommand(), hostConfigInfoList.get(index));
+        System.out.println(commandResult);
+        if(commandResult.size() == 0){
+            //System.out.println("NULL,Index:"+index);
+        }
+        else{
+
+        }
+    }
 
     //Host采样-测试
     public void sampleTest(int index){
@@ -251,7 +287,8 @@ public class HostMonitorBatchExecution{
 
     public static void main(String[] args) {
         HostMonitorBatchExecution hostMonitorBatchExecution = HostMonitorBatchExecution.getInstance();
-        hostMonitorBatchExecution.sampleTest(2);
+        //hostMonitorBatchExecution.SampleIOTest();
+        //hostMonitorBatchExecution.sampleHostProcess(0);
         //hostMonitorBatchExecution.sampleProcess();
         //System.out.println(hostMonitorBatchExecution.getHostSampleInfo());
     }
