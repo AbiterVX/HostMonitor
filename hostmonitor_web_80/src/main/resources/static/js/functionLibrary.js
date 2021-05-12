@@ -277,6 +277,25 @@ function FGetFieldHostInfoList(hostIndex,_dateInterval,field) {
     return jsonData;
 }
 
+//获取某一时段主机信息
+function FGetHostProcessInfoRealTime(hostIndex) {
+    var requestUrl = "/getHostProcessInfoRealTime/"+ hostIndex;
+    var jsonData = null;
+    $.ajax({
+        type:"get",
+        dataType:"json",
+        url:requestUrl,
+        processData :false,
+        contentType:"application/json",
+        async:false,
+        success:function (resultJsonData) {
+            jsonData = resultJsonData;
+        },
+        error: function (err) {
+        }
+    });
+    return jsonData;
+}
 
 
 

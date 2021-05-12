@@ -141,10 +141,16 @@ public class Config {
     public String getInitEnvironmentCommand() {
         return initEnvironmentCommand;
     }
+    //获取IO测试指令
+    public String getIoTestCommand() {
+        return ioTestCommand;
+    }
     //获取测试指令
     public String getTestCommand() {
         return testCommand;
     }
+
+
     //获取Host配置信息
     public List<HostConfigInfo> getHostConfigInfoList() {
         return hostConfigInfoList;
