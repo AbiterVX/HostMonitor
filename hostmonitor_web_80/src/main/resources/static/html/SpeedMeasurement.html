@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <!-- JQuery -->
+    <script type="text/javascript" src="../JQuery/jquery-3.3.1.min.js"></script>
+    <!-- popper 用于下拉框 -->
+    <script type="text/javascript" src="../popper/popper.min.js"></script>
+    <!-- BootStrap -->
+    <link rel="stylesheet" href= "../bootstrap-4.3.1-dist/css/bootstrap.min.css" >
+    <script type="text/javascript" src="../bootstrap-4.3.1-dist/js/bootstrap.js"></script>
+
+    <!-- ECharts -->
+    <script type="text/javascript" src="../echarts/echarts.min.js"></script>
+    <!-- functionLibrary -->
+    <script type="text/javascript" src="../js/DataRequest.js"></script>
+    <script type="text/javascript" src="../js/WidgetDisplay.js"></script>
+    <script type="text/javascript" src="../js/TableAndChart.js"></script>
+
+    <!-- Bootstrap-table -->
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="../bootstrap-table/bootstrap-table.min.css">
+
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="../bootstrap-table/bootstrap-table.min.js"></script>
+    <!-- Latest compiled and minified Locales -->
+    <script src="../bootstrap-table/bootstrap-table-zh-CN.min.js"></script>
+</head>
+<body>
+    <!--标题-->
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
+        <h2 class="h2">测速</h2>
+        <div class="btn-toolbar mb-2 mb-md-0" role="toolbar" style="margin-right: 5px;">
+            <button id="measureBtn" onclick="measureBtnOnclick()" type="button" class="btn btn-secondary" style="width: 120px;height: 40px;font-size: 18px;" >开始测试</button>
+        </div>
+    </div>
+    <table id="speedMeasurement" style="table-layout: fixed;word-break: break-all;"></table>
+    <div style="height: 100px;width: 100%"></div>
+</body>
+<script>
+    //table选中项
+    var selectedItems = new Set();
+
+
+    window.onload=function (){
+        //
+        refreshSpeedMeasurementTable(true);
+    }
+
+    //更新Table-SpeedMeasurement
+    function refreshSpeedMeasurementTable(init){
+        if(init){
+            $('#speedMeasurement').bootstrapTable({
+                columns: tableColumns["speedMeasurement"],
+                data: tableData["speedMeasurement"],
+                onCheck:function(row, $element){
+                    selectedItems.add(row["hostName"]);
+                },
+                onUncheck:function(row, $element){
+                    selectedItems.delete(row["hostName"]);
+                },
+                onCheckAll: function (rowsAfter,rowsBefore) {
+                    selectedItems.clear();
+                    for(var i=0;i<rowsAfter.length;i++){
+                        if(rowsAfter[i]["diskIOSpeed"] !== -1){
+                            selectedItems.add(rowsAfter[i]["hostName"]);
+                        }
+                    }
+                },
+                onUncheckAll: function (rowsAfter,rowsBefore) {
+                    selectedItems.clear();
+                }
+            });
+        }
+        else{
+            $('#speedMeasurement').bootstrapTable("load",tableData["speedMeasurement"]);
+        }
+    }
+
+    function measureBtnOnclick(){
+        var hostNameList = Array.from(selectedItems);
+        for(var i=0;i<tableData["speedMeasurement"].length;i++){
+            for(var j=0;j<hostNameList.length;j++){
+                if(tableData["speedMeasurement"][i]["hostName"] === hostNameList[j]){
+                    tableData["speedMeasurement"][i]["netSendSpeed"] = -1;
+                    tableData["speedMeasurement"][i]["netDownloadSpeed"] = -1;
+                    tableData["speedMeasurement"][i]["diskIOSpeed"] = -1;
+                    break;
+                }
+            }
+        }
+        selectedItems.clear();
+        refreshSpeedMeasurementTable(false);
+        $('#measureBtn').prop('disabled', true);
+    }
+
+</script>
+</html>
+
+
+

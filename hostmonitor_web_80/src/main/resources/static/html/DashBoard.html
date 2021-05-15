@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <!-- JQuery -->
+    <script type="text/javascript" src="../JQuery/jquery-3.3.1.min.js"></script>
+    <!-- popper 用于下拉框 -->
+    <script type="text/javascript" src="../popper/popper.min.js"></script>
+    <!-- BootStrap -->
+    <link rel="stylesheet" href= "../bootstrap-4.3.1-dist/css/bootstrap.min.css" >
+    <script type="text/javascript" src="../bootstrap-4.3.1-dist/js/bootstrap.js"></script>
+
+    <!-- ECharts -->
+    <script type="text/javascript" src="../echarts/echarts.min.js"></script>
+    <!-- functionLibrary -->
+    <script type="text/javascript" src="../js/DataRequest.js"></script>
+    <script type="text/javascript" src="../js/WidgetDisplay.js"></script>
+    <script type="text/javascript" src="../js/TableAndChart.js"></script>
+
+    <!-- Bootstrap-table -->
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="../bootstrap-table/bootstrap-table.min.css">
+
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="../bootstrap-table/bootstrap-table.min.js"></script>
+    <!-- Latest compiled and minified Locales -->
+    <script src="../bootstrap-table/bootstrap-table-zh-CN.min.js"></script>
+</head>
+<body>
+    <!--标题-->
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
+        <h2 class="h2">概要</h2>
+    </div>
+    <!--摘要部分-->
+    <div class="row"  style="margin-bottom: 10px;">
+        <!--摘要Table-->
+        <div class="col-sm-3">
+            <table id="summaryPart1"></table>
+            <table id="summaryPart2"></table>
+            <table id="summaryPart3"></table>
+        </div>
+        <!--摘要Chart-->
+        <div class="col-sm-9">
+            <div id="SummaryChart" style="width: 100%;height: 300px;"></div>
+        </div>
+    </div>
+
+    <!--标题-->
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
+        <h2 class="h2">主机状态</h2>
+    </div>
+    <!--主机状态Table-->
+    <div id="HostStateTable"></div>
+    <div style="height: 100px;width: 100%"></div>
+</body>
+
+<script>
+    //摘要图表
+    var SummaryChart = echarts.init(document.getElementById("SummaryChart"));
+    //
+    var HostStateTable = document.getElementById("HostStateTable");
+
+    //加载后执行
+    window.onload=function (){
+        //刷新SummaryTable
+        refreshSummaryTable(true);
+        //初始化SummaryChart
+        SummaryChart.setOption(FGetSummaryChartOption());
+
+        refreshHostStateTable();
+        setTimeout(function (){collapseAllDiskInfo()},1000);
+        refreshHostStateTableData();
+        //刷新SummaryChart
+        var currentData = [
+          [10,85,28],
+          [75,12,86],
+          [91,25,60],
+        ];
+        setTimeout(function(){
+          FRefreshSummaryChartData(SummaryChart,currentData);
+        }, 2000);
+
+
+    }
+
+    //刷新Table-SummaryTable
+    function refreshSummaryTable(init){
+        if(init){
+            $('#summaryPart1').bootstrapTable({
+                columns: tableColumns["summaryPart1"],
+                data: tableData["summaryPart1"],
+                classes : 'table table-bordered'
+            });
+            $('#summaryPart2').bootstrapTable({
+                columns: tableColumns["summaryPart2"],
+                data: tableData["summaryPart2"],
+                classes : 'table table-bordered'
+            });
+            $('#summaryPart3').bootstrapTable({
+                columns: tableColumns["summaryPart3"],
+                data: tableData["summaryPart3"],
+                classes : 'table table-bordered'
+            });
+        }
+        else{
+            $('#summaryPart1').bootstrapTable("load",tableData["summaryPart1"]);
+            $('#summaryPart2').bootstrapTable("load",tableData["summaryPart2"]);
+            $('#summaryPart3').bootstrapTable("load",tableData["summaryPart3"]);
+        }
+
+    }
+
+    //刷新Table-HostStateTable
+    function refreshHostStateTable(){
+        var tableHTML = "";
+        for(var i=0;i<tableData["hostName"].length;i++){
+            var accordionId = "accordion_" + i;
+            var collapseId = "collapse_" + i;
+            var hostInfo1ID = "hostInfo1_" + i;
+            var diskInfoID = "diskInfo_" + i;
+            var titleID = "title_" + i;
+            tableHTML +=
+                '<div class="accordion" id="'+accordionId+'" style="margin-bottom: 5px;">\n' +
+                '     <div class="card" style="background-color: #72787b">\n' +
+                '          <button class="btn" type="button" data-toggle="collapse"  data-target="#'+collapseId+'">\n' +
+                '                <h5 id="'+titleID+'" style="text-align: left;margin-top: 10px;color: white">\n' +
+                                        tableData["hostName"][i] +
+                '                </h5>\n' +
+                '          </button>\n' +
+                '     </div>\n' +
+                '     <table id="'+hostInfo1ID+'" style="table-layout: fixed;word-break: break-all"></table>\n' +
+                '     <div id="'+collapseId+'" style="margin-top: 5px;" class="collapse show" data-parent="#'+accordionId+'">\n' +
+                '          <table id="'+diskInfoID+'" style="table-layout: fixed;word-break: break-all"></table>\n' +
+                '     </div>\n' +
+                '</div>';
+        }
+        HostStateTable.innerHTML = tableHTML;
+    }
+
+    //折叠全部
+    function collapseAllDiskInfo(){
+        for(var i=0;i<tableData["hostName"].length;i++){
+            $("#collapse_" + i).collapse();
+        }
+    }
+
+    //刷新Table-Data-HostStateTable
+    function refreshHostStateTableData(){
+        for(var i=0;i<tableData["hostName"].length;i++){
+            $("#hostInfo1_" + i).bootstrapTable({
+                columns: tableColumns["hostInfo1"],
+                data: tableData["hostInfo1"][tableData["hostName"][i]],
+            });
+            $("#diskInfo_" + i).bootstrapTable({
+                columns: tableColumns["diskInfo"],
+                data: tableData["diskInfo"][tableData["hostName"][i]],
+            });
+        }
+    }
+</script>
+
+</html>
