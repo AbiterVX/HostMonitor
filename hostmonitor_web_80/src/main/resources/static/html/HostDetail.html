@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <!-- JQuery -->
+    <script type="text/javascript" src="../JQuery/jquery-3.3.1.min.js"></script>
+    <!-- popper 用于下拉框 -->
+    <script type="text/javascript" src="../popper/popper.min.js"></script>
+    <!-- BootStrap -->
+    <link rel="stylesheet" href= "../bootstrap-4.3.1-dist/css/bootstrap.min.css" >
+    <script type="text/javascript" src="../bootstrap-4.3.1-dist/js/bootstrap.js"></script>
+
+    <!-- ECharts -->
+    <script type="text/javascript" src="../echarts/echarts.min.js"></script>
+    <!-- functionLibrary -->
+    <script type="text/javascript" src="../js/DataRequest.js"></script>
+    <script type="text/javascript" src="../js/WidgetDisplay.js"></script>
+    <script type="text/javascript" src="../js/TableAndChart.js"></script>
+
+    <!-- Bootstrap-table -->
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="../bootstrap-table/bootstrap-table.min.css">
+
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="../bootstrap-table/bootstrap-table.min.js"></script>
+    <!-- Latest compiled and minified Locales -->
+    <script src="../bootstrap-table/bootstrap-table-zh-CN.min.js"></script>
+</head>
+<body>
+    <!--标题-->
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
+        <h2 class="h2">主机配置</h2>
+        <div class="btn-toolbar mb-2 mb-md-0" role="toolbar">
+            <div class="btn-toolbar mb-2 mb-md-0" style="margin-right: 5px;">
+                <!-- 间隔时间-DropDown -->
+                <div style="margin-right: 15px;">
+                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" style="width: 100px;" type="button" id="DateIntervalDropDownBtn" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        1
+                    </button>
+                    <div id="DateIntervalDropDownMenu" class="dropdown-menu" aria-labelledby="DateIntervalDropDownBtn">
+                        <a class="dropdown-item" href="#" > 0.0.0.0</a>
+                    </div>
+                </div>
+                <!-- IP-DropDown-->
+                <div >
+                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" style="width: 150px;" type="button" id="HostIpDropDownBtn" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        0.0.0.0
+                    </button>
+                    <div id="HostIpDropDownMenu" class="dropdown-menu" aria-labelledby="HostIpDropDownBtn">
+                        <a class="dropdown-item" href="#" > 0.0.0.0</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row"  style="margin-bottom: 10px;">
+        <div class="col-sm-12">
+            <div class="accordion" id="accordion" style="margin-bottom: 5px;">
+                <div class="card" style="background-color: #72787b">
+                    <button class="btn" type="button" data-toggle="collapse"  data-target="#collapse">
+                        <h5 id="title" style="text-align: left;margin-top: 10px;color: white">
+                            主机配置
+                        </h5>
+                    </button>
+                </div>
+
+                <table id="hostInfo2" style="table-layout: fixed;word-break: break-all"></table>
+                <div id="collapse" style="margin-top: 5px;" class="collapse" data-parent="#accordion">
+                    <table id="diskInfo" style="table-layout: fixed;word-break: break-all"></table>
+                    <table id="cpuInfo" style="table-layout: fixed;word-break: break-all"></table>
+                    <table id="gpuInfo" style="table-layout: fixed;word-break: break-all"></table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--标题-->
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
+        <h2 class="h2">变化趋势</h2>
+    </div>
+    <div id="TrendChart" style="width: 100%;height: 800px;"></div>
+
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
+        <h2 class="h2">进程信息</h2>
+    </div>
+    <table id="processInfo" style="table-layout: fixed;word-break: break-all;"></table>
+    <div style="height: 100px;width: 100%"></div>
+</body>
+
+<script>
+    //摘要图表
+    var TrendChart = echarts.init(document.getElementById("TrendChart"));
+    //当前HostIndex
+    var currentHostIndex = 0;
+    //当前DateInterval
+    var currentDateIntervalIndex = 0;
+    //trendChartData
+    var trendChartData = [[], [], [], [], [], [] ];
+
+    //加载后执行
+    window.onload=function (){
+        //初始化-DropDown-IP
+        FInitDropDown("HostIpDropDownMenu","HostIpDropDownBtn",tableData["hostName"],"dropDownSelectHostIp",currentHostIndex);
+        //初始化-DropDown-TimeInterval
+        FInitDropDown("DateIntervalDropDownMenu","DateIntervalDropDownBtn",DateInterval,"dropDownSelectDateInterval",currentDateIntervalIndex);
+
+
+        //刷新HostDetailTable
+        refreshHostDetailTable(true);
+        //刷新ProcessInfo
+        refreshProcessInfoTable(true);
+        //初始化SummaryChart
+        TrendChart.setOption(FGetTrendChartOption());
+        window.setInterval(function (){
+            refreshTrendChartData();
+        },2000);
+    }
+
+    //[DropDown]选择-HostIp
+    function dropDownSelectHostIp(index){
+        if(index !== currentHostIndex){
+            //下拉按钮-设置当前显示Txt
+            document.getElementById("HostIpDropDownBtn").innerText = tableData["hostName"][index];
+            //设置
+            currentHostIndex = index;
+            refreshHostDetailTable();
+            refreshProcessInfoTable();
+        }
+    }
+
+    //[DropDown]选择-HostIp
+    function dropDownSelectDateInterval(index){
+        if(index !== currentDateIntervalIndex){
+            //下拉按钮-设置当前显示Txt
+            document.getElementById("DateIntervalDropDownBtn").innerText = DateInterval[index];
+            //设置
+            currentDateIntervalIndex = index;
+        }
+    }
+
+
+    //刷新Table-HostDetailTable
+    function refreshHostDetailTable(init){
+        var hostName = tableData["hostName"][currentHostIndex];
+        document.getElementById("title").innerText = hostName;
+
+        //$('#hostInfo2').bootstrapTable("destroy");
+        if(init){
+            $('#hostInfo2').bootstrapTable({
+                columns: tableColumns["hostInfo2"],
+                data: tableData["hostInfo2"][hostName],
+                classes : 'table table-bordered'
+            });
+            $('#diskInfo').bootstrapTable({
+                columns: tableColumns["diskInfo"],
+                data: tableData["diskInfo"][hostName],
+            });
+            $('#cpuInfo').bootstrapTable({
+                columns: tableColumns["cpuInfo"],
+                data: tableData["cpuInfo"][hostName],
+            });
+            $('#gpuInfo').bootstrapTable({
+                columns: tableColumns["gpuInfo"],
+                data: tableData["gpuInfo"][hostName],
+            });
+        }
+        else{
+            $('#hostInfo2').bootstrapTable("load",tableData["hostInfo2"][hostName]);
+            $('#diskInfo').bootstrapTable("load",tableData["diskInfo"][hostName]);
+            $('#cpuInfo').bootstrapTable("load",tableData["cpuInfo"][hostName]);
+            $('#gpuInfo').bootstrapTable("load",tableData["gpuInfo"][hostName]);
+        }
+
+
+
+
+    }
+    //刷新Table-ProcessInfo
+    function refreshProcessInfoTable(init){
+        var hostName = tableData["hostName"][currentHostIndex];
+        if(init){
+            $('#processInfo').bootstrapTable({
+                columns: tableColumns["processInfo"],
+                data: tableData["processInfo"][hostName],
+                classes : 'table table-bordered'
+            });
+        }
+        else{
+            $('#processInfo').bootstrapTable("load",tableData["processInfo"][hostName]);
+        }
+    }
+
+    //刷新Chart-Data-TrendChart
+    function refreshTrendChartData(){
+        var date = FGetDateTime(new Date());
+        for(var i=0;i<trendChartData.length;i++){
+            trendChartData[i].push([date,Math.ceil(Math.random()*100)]);
+        }
+        var subChartIndex = [0,1,2,2,3,3];
+
+
+        var option = {
+            series: []
+        };
+        for(var i=0;i<trendChartData.length;i++){
+            option["series"].push({
+                data:trendChartData[i],
+                xAxisIndex: subChartIndex[i],
+                yAxisIndex: subChartIndex[i],
+            });
+        }
+        TrendChart.setOption(option);
+    }
+
+
+</script>
+
+</html>
