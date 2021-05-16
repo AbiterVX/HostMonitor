@@ -23,12 +23,16 @@ public class HostMonitorBatchExecution{
     private SSHManager sshManager;
     //Host 信息
     private List<HostSampleData> hostSampleDataList;
-
+    private List<HostSampleData> SocketSampleDataList;
     //Host Process 信息
     private Vector<Vector<HostProcessSampleData>> hostProcessSampleDataList;
 
     //线程池
     ExecutorService executor;
+
+    //socket接收
+    private DataReceiver dataReceiver;
+
 
     //Init 单例
     private volatile static HostMonitorBatchExecution hostMonitor;
@@ -53,6 +57,7 @@ public class HostMonitorBatchExecution{
 
         //Host 信息 init
         hostSampleDataList = new ArrayList<>();
+
         hostProcessSampleDataList = new Vector<>();
         JSONObject sampleDataFormat = configInfo.getSampleDataFormat();
 
@@ -65,6 +70,15 @@ public class HostMonitorBatchExecution{
             Vector<HostProcessSampleData> tempList = new Vector<>();
             hostProcessSampleDataList.add(tempList);
         }
+
+        SocketSampleDataList=new ArrayList<>();
+        for(int i=0;i<hostConfigInfoList.size();i++){
+            HostSampleData newHostSampleData = new HostSampleData(hostConfigInfoList.get(i).ip,sampleDataFormat);
+            newHostSampleData.setAllValueInvalid();
+            SocketSampleDataList.add(newHostSampleData);
+        }
+
+
 
         //线程池大小设为Host个数*2
         executor= Executors.newFixedThreadPool(hostConfigInfoList.size()*2);
