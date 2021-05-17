@@ -1,4 +1,4 @@
-package com.hust.hostmonitor_data_collector.utils;
+package com.hust.hostmonitor_data_collector.CentralizedHostMonitor;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;

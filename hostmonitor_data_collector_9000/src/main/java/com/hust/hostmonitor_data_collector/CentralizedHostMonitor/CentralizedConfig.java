@@ -1,8 +1,7 @@
-package com.hust.hostmonitor_data_collector.utils;
+package com.hust.hostmonitor_data_collector.CentralizedHostMonitor;
 
 import com.alibaba.excel.context.AnalysisContext;
 import com.alibaba.excel.event.AnalysisEventListener;
-import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.io.FileUtils;
 
@@ -16,7 +15,7 @@ import com.alibaba.excel.*;
 /**
  * 读取json配置文件并解析
  */
-public class Config {
+public class CentralizedConfig {
     //Json配置文件
     private JSONObject jsonObject;
     private final String path = System.getProperty("user.dir");
@@ -29,20 +28,20 @@ public class Config {
     List<HostConfigInfo> hostConfigInfoList = new ArrayList<>();
 
 
-    private volatile static Config config;
-    public static Config getInstance(){
-        if(config==null){
-            synchronized (Config.class){
-                if(config==null){
-                    config=new Config();
+    private volatile static CentralizedConfig centralizedConfig;
+    public static CentralizedConfig getInstance(){
+        if(centralizedConfig ==null){
+            synchronized (CentralizedConfig.class){
+                if(centralizedConfig ==null){
+                    centralizedConfig =new CentralizedConfig();
                 }
             }
         }
-        return config;
+        return centralizedConfig;
     }
 
     //Init
-    private Config() {
+    private CentralizedConfig() {
         //解析Json
         jsonObject = JSONObject.parseObject(readFile("ConfigData/StorageDeviceInfo.json"));
         //采样指令
@@ -177,8 +176,8 @@ public class Config {
 
 
     public static void main(String[] args) {
-        Config config = Config.getInstance();
-        List<HostConfigInfo> hostList= config.getHostConfigInfoList();
+        CentralizedConfig centralizedConfig = CentralizedConfig.getInstance();
+        List<HostConfigInfo> hostList= centralizedConfig.getHostConfigInfoList();
         for(HostConfigInfo hostConfigInfo:hostList){
             System.out.println(hostConfigInfo);
         }

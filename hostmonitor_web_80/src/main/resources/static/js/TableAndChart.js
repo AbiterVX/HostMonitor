@@ -687,6 +687,30 @@ var tableData={
     ]
 };
 
+function FGetDiskNameList(hostName){
+    var result = [];
+    for(var i=0;i<tableData["diskInfo"][hostName].length;i++){
+        result.push(tableData["diskInfo"][hostName][i]["diskName"]);
+    }
+    return result;
+}
+
+//Load
+var loadPartition ={
+    cpu:[30,70,100],
+    memory:[30,70,100],
+    disk:[30,70,100],
+}
+//Chart数据
+var chartData = {
+    cpuLoad:[],
+    memoryLoad:[],
+    diskLoad:[],
+
+}
+
+
+//数据间隔时间
 var DateInterval = [60,24*60];
 //[配置]SummaryChart
 /* CPU负载统计-百分比+饼状图
@@ -1082,3 +1106,8 @@ function FGetDFPTrendChartOption(){
     };
     return DFPTrendChartOption;
 }
+
+function FUpdateChartData(){
+
+}
+

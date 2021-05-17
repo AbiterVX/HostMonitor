@@ -30,8 +30,8 @@
     <!--标题-->
     <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
         <h2 class="h2">主机配置</h2>
-        <div class="btn-toolbar mb-2 mb-md-0" role="toolbar">
-            <div class="btn-toolbar mb-2 mb-md-0" style="margin-right: 5px;">
+        <div class="btn-toolbar mb-2 mb-md-0" role="toolbar" style="margin-right: 5px;">
+
                 <!-- 间隔时间-DropDown -->
                 <div style="margin-right: 15px;">
                     <button class="btn btn-sm btn-outline-secondary dropdown-toggle" style="width: 100px;" type="button" id="DateIntervalDropDownBtn" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -50,7 +50,7 @@
                         <a class="dropdown-item" href="#" > 0.0.0.0</a>
                     </div>
                 </div>
-            </div>
+
         </div>
     </div>
     <div class="row"  style="margin-bottom: 10px;">
@@ -65,7 +65,7 @@
                 </div>
 
                 <table id="hostInfo2" style="table-layout: fixed;word-break: break-all"></table>
-                <div id="collapse" style="margin-top: 5px;" class="collapse" data-parent="#accordion">
+                <div id="collapse" style="margin-top: 5px;" class="collapse show" data-parent="#accordion">
                     <table id="diskInfo" style="table-layout: fixed;word-break: break-all"></table>
                     <table id="cpuInfo" style="table-layout: fixed;word-break: break-all"></table>
                     <table id="gpuInfo" style="table-layout: fixed;word-break: break-all"></table>
@@ -96,6 +96,7 @@
     //trendChartData
     var trendChartData = [[], [], [], [], [], [] ];
 
+
     //加载后执行
     window.onload=function (){
         //初始化-DropDown-IP
@@ -124,6 +125,8 @@
             currentHostIndex = index;
             refreshHostDetailTable();
             refreshProcessInfoTable();
+            //父页面自适应大小
+            window.parent.pageResize();
         }
     }
 
@@ -169,10 +172,6 @@
             $('#cpuInfo').bootstrapTable("load",tableData["cpuInfo"][hostName]);
             $('#gpuInfo').bootstrapTable("load",tableData["gpuInfo"][hostName]);
         }
-
-
-
-
     }
     //刷新Table-ProcessInfo
     function refreshProcessInfoTable(init){

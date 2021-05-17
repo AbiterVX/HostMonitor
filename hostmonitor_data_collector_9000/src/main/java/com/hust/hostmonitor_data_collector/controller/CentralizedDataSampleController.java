@@ -1,6 +1,6 @@
 package com.hust.hostmonitor_data_collector.controller;
 
-import com.hust.hostmonitor_data_collector.service.DataService;
+import com.hust.hostmonitor_data_collector.service.CentralizedDataService;
 import com.hust.hostmonitor_data_collector.service.HostInfoFieldType;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
@@ -10,12 +10,13 @@ import java.util.Map;
 
 
 @RestController
-public class DataSampleController {
+@RequestMapping("/Centralized")
+public class CentralizedDataSampleController {
     //@Autowired
     //Service_Implementation service_implementation;
 
     @Resource
-    DataService dataService;
+    CentralizedDataService centralizedDataService;
 
 
     //当前端口
@@ -33,21 +34,21 @@ public class DataSampleController {
     //获取Host状态
     @GetMapping(value="/getHostState")
     public String getHostState(){
-        String result= dataService.getHostState();//service_implementation.getHostState();
+        String result= centralizedDataService.getHostState();//service_implementation.getHostState();
         return result;
     }
 
     //获取Host IP
     @GetMapping(value = "/getHostIp")
     public String getHostIp(){
-        String result = dataService.getHostIp();//service_implementation.getHostIpList();
+        String result = centralizedDataService.getHostIp();//service_implementation.getHostIpList();
         return result;
     }
 
     //获取Host 硬件 数据
     @GetMapping(value = "/getHostHardWareInfo")
     public String getHostHardwareInfo(){
-        String result = dataService.getHostHardwareInfo();//service_implementation.getHostHardwareInfoListOutputData();
+        String result = centralizedDataService.getHostHardwareInfo();//service_implementation.getHostHardwareInfoListOutputData();
         return result;
     }
 
@@ -56,7 +57,7 @@ public class DataSampleController {
     //获取Host 数据 实时
     @GetMapping(value = "/getHostInfoRealTime")
     public String getHostInfoRealTime(){
-        String result = dataService.getHostInfoRealTime();//service_implementation.getHostInfoListOutputData();
+        String result = centralizedDataService.getHostInfoRealTime();//service_implementation.getHostInfoListOutputData();
         return result;
     }
 
@@ -65,7 +66,7 @@ public class DataSampleController {
     public String getHostInfoRecent(@PathVariable Map<String,String> map){
         int index= Integer.parseInt(map.get("index"));
         int minute= Integer.parseInt(map.get("dateInterval"));
-        String result = dataService.getHostInfoRecent(index,minute);//service_implementation.getFullRecordsByIP(service_implementation.getHostIp(index),minute);
+        String result = centralizedDataService.getHostInfoRecent(index,minute);//service_implementation.getFullRecordsByIP(service_implementation.getHostIp(index),minute);
         return result;
     }
 
@@ -76,7 +77,7 @@ public class DataSampleController {
         int hour=Integer.parseInt(map.get("dateInterval"));
         String field = map.get("field");
         HostInfoFieldType hostInfoFieldType = HostInfoFieldType.fromString(field);
-        String result = dataService.getHostInfoField(index,hour,hostInfoFieldType);//service_implementation.getRecentInfoByIp(service_implementation.getHostIp(index), hour, FieldType.fromString(field));
+        String result = centralizedDataService.getHostInfoField(index,hour,hostInfoFieldType);//service_implementation.getRecentInfoByIp(service_implementation.getHostIp(index), hour, FieldType.fromString(field));
         return result;
     }
 
@@ -85,7 +86,7 @@ public class DataSampleController {
     @GetMapping(value="/getHostProcessInfoRealTime/{index}")
     public String getHostProcessInfoRealTime(@PathVariable Map<String,String> map) {
         int index = Integer.parseInt(map.get("index"));
-        String result = dataService.getHostProcessInfoRealTime(index);
+        String result = centralizedDataService.getHostProcessInfoRealTime(index);
         return result;
     }
 }

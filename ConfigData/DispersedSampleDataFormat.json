@@ -1,0 +1,73 @@
+{
+  "summary": {
+    "hostName":[],
+    "sumCapacity": 0,
+    "windowsHostCount": 0,
+    "linuxHostCount": 0,
+    "hddCount": 0,
+    "ssdCount": 0,
+    "lastUpdateTime": 0
+  },
+  "hostInfo": {
+    "hostName": "",
+    "connected": false,
+    "ip": "0.0.0.0",
+    "osName": "OS",
+    "memoryTotalSize": 0,
+    "memoryUsedSize": 0,
+    "netReceiveSpeed": 0,
+    "netSendSpeed": 0,
+    "cpuUsageAverage": 0,
+    "diskCapacityTotalSizeSum": 0,
+    "diskCapacityUsedSizeSum": 0,
+    "lastUpdateTime": 0
+  },
+  "diskInfo": {
+    "diskName": "",
+    "diskIOPS": 0,
+    "diskReadSpeed": 0,
+    "diskWriteSpeed": 0,
+    "diskCapacityTotalSize": 0,
+    "diskCapacityUsedSize": 0,
+    "lastUpdateTime": 0,
+    "type": ""
+  },
+  "cpuInfo": {
+    "cpuName": "",
+    "cpuUsage": 0,
+    "cpuTemperature": 0,
+    "lastUpdateTime": 0
+  },
+  "gpuInfo": {
+    "gpuName": "",
+    "gpuAvailableRam": 0,
+    "lastUpdateTime": 0
+  },
+  "processInfo": {
+    "processId": "",
+    "processName": "",
+    "startTime": 0,
+    "cpuUsage": 0,
+    "memoryUsage": 0,
+    "diskReadSpeed": 0,
+    "diskWriteSpeed": 0,
+    "lastUpdateTime": 0
+  },
+  "diskFailurePredictInfo": {
+    "state": false,
+    "hostName": "",
+    "diskName": "",
+    "predictTime": "",
+    "predictProbability": "",
+    "lastUpdateTime": 0
+  },
+  "speedMeasurementInfo": {
+    "state": false,
+    "hostName": "",
+    "ioTestLastTime": "",
+    "netSendSpeed": "",
+    "netDownloadSpeed": "",
+    "diskIOSpeed": "",
+    "lastUpdateTime": 0
+  }
+}

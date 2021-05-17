@@ -1,4 +1,4 @@
-package com.hust.hostmonitor_data_collector.utils;
+package com.hust.hostmonitor_data_collector.CentralizedHostMonitor;
 
 import ch.ethz.ssh2.Connection;
 import ch.ethz.ssh2.Session;
@@ -15,7 +15,7 @@ import java.util.Map;
 /**
  * SSHManager 的 ch.Ethz.ssh2实现方式
  */
-public class EthzSSHManager implements SSHManager{
+public class EthzSSHManager implements SSHManager {
     //字符集
     private final String chartset = "UTF-8";
     //Ethz.ssh2  连接 List

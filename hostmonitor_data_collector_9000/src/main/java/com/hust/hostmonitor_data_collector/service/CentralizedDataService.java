@@ -7,7 +7,7 @@ package com.hust.hostmonitor_data_collector.service;
  *  DataSampleController会调用DataService的接口获取数据。
  *  接口返回格式为JSON
  */
-public interface DataService {
+public interface CentralizedDataService {
 
     /**
      * 功能：获取所有Host的IP

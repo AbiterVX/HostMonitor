@@ -10,7 +10,8 @@ import java.util.Map;
 
 
 @RestController
-public class DataSampleController_Remote {
+@RequestMapping("/Centralized")
+public class CentralizedDataSampleController_Remote {
     @Value("${server.port}")
     private String serverPort;
 

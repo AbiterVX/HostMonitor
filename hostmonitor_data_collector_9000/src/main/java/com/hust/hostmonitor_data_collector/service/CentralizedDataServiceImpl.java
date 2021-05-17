@@ -6,18 +6,14 @@ import com.alibaba.fastjson.JSONObject;
 import com.hust.hostmonitor_data_collector.dao.ProcessMapper;
 import com.hust.hostmonitor_data_collector.dao.RecordMapper;
 import com.hust.hostmonitor_data_collector.dao.entity.Record;
-import com.hust.hostmonitor_data_collector.utils.HostMonitorBatchExecution;
-import com.hust.hostmonitor_data_collector.utils.HostProcessSampleData;
-import com.hust.hostmonitor_data_collector.utils.HostSampleData;
-import org.apache.catalina.Host;
+import com.hust.hostmonitor_data_collector.CentralizedHostMonitor.HostMonitorBatchExecution;
+import com.hust.hostmonitor_data_collector.CentralizedHostMonitor.HostProcessSampleData;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.sql.Timestamp;
 import java.util.*;
 
-public class DataServiceImpl implements DataService{
+public class CentralizedDataServiceImpl implements CentralizedDataService {
     @Autowired
     RecordMapper recordMapper;
     @Autowired
@@ -71,7 +67,7 @@ public class DataServiceImpl implements DataService{
     };
 
     //Init
-    public DataServiceImpl(){
+    public CentralizedDataServiceImpl(){
         System.out.println("启动:DataServiceImpl");
 
         //每隔sampleIntervalMS,执行一次mainTimerTask

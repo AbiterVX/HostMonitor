@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title id="PageTitle">Storage Device Monitor</title>
+    <title id="PageTitle"></title>
     <!-- JQuery -->
     <script type="text/javascript" src="../JQuery/jquery-3.3.1.min.js"></script>
     <!-- popper 用于下拉框 -->
@@ -40,10 +40,13 @@
         </div>-->
         <ul class="mr-auto"></ul>
         <div class="form-inline mt-2 mt-md-0">
-            <img src="../images/loading-spin.svg">
+            <!--<div style="width:40px;height:40px;background-color: white;border-radius: 20px;">
+                <img src="../images/userImg.png" style="width: 40px;height: 40px;border-radius: 20px;">
+            </div>-->
+
             <ul class="navbar-nav px-3">
                 <li class="nav-item text-nowrap">
-                    <a class="nav-link" href="#">Sign out</a>
+                    <a class="nav-link" href="Siginin.html">管理员登录</a>
                 </li>
             </ul>
         </div>
@@ -91,12 +94,18 @@
     var MainPart = document.getElementById("MainPart");
     var currentIndex=-1;
 
+
+
     //加载后执行
     window.onload=function (){
         //[左侧导航栏]设置当前选中的导航项
         FInitNavItems();
         //设置初始界面
         FSetCurrentNavItem(0);
+    }
+
+    function pageResize(){
+        MainPart.style.height = MainPart.contentWindow.document.body.scrollHeight+"px";
     }
 </script>
 </html>

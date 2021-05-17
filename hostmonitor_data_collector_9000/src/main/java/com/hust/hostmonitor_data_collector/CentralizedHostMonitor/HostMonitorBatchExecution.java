@@ -1,12 +1,11 @@
-package com.hust.hostmonitor_data_collector.utils;
+package com.hust.hostmonitor_data_collector.CentralizedHostMonitor;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import org.springframework.scheduling.annotation.Async;
+import com.hust.hostmonitor_data_collector.utils.DataReceiver;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Vector;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -14,7 +13,7 @@ import java.util.concurrent.Executors;
 public class HostMonitorBatchExecution{
     //---------- 配置信息
     //Config配置信息
-    private Config configInfo = Config.getInstance();
+    private CentralizedConfig centralizedConfigInfo = CentralizedConfig.getInstance();
     //Host 配置信息
     List<HostConfigInfo> hostConfigInfoList;
 
@@ -53,13 +52,13 @@ public class HostMonitorBatchExecution{
         sshManager = new JschSSHManager();
 
         //Host 配置信息
-        hostConfigInfoList = configInfo.getHostConfigInfoList();
+        hostConfigInfoList = centralizedConfigInfo.getHostConfigInfoList();
 
         //Host 信息 init
         hostSampleDataList = new ArrayList<>();
 
         hostProcessSampleDataList = new Vector<>();
-        JSONObject sampleDataFormat = configInfo.getSampleDataFormat();
+        JSONObject sampleDataFormat = centralizedConfigInfo.getSampleDataFormat();
 
 
         for(int i=0;i<hostConfigInfoList.size();i++){
@@ -98,7 +97,7 @@ public class HostMonitorBatchExecution{
     //Host采样-单个
     public void sampleHost(int index){
         //采样返回结果
-        List<String> commandResult = sshManager.runCommand(configInfo.getSampleCommands(), hostConfigInfoList.get(index));
+        List<String> commandResult = sshManager.runCommand(centralizedConfigInfo.getSampleCommands(), hostConfigInfoList.get(index));
         //System.out.println("Index:"+index);
         //System.out.println(commandResult);
 
@@ -126,7 +125,7 @@ public class HostMonitorBatchExecution{
                     JSONObject diskValueObject = currentHostSampleData.sampleData.getJSONObject("Disk").getJSONObject("value");
                     //若不存在则创建
                     if(!diskValueObject.containsKey(diskName)){
-                        diskValueObject.put(diskName,configInfo.getDiskSampleDataFormat());
+                        diskValueObject.put(diskName, centralizedConfigInfo.getDiskSampleDataFormat());
                     }
                     //更新值并设为有效
                     diskValueObject.getJSONObject(diskName).getJSONObject(subKey).put("value",value);
@@ -140,7 +139,7 @@ public class HostMonitorBatchExecution{
                     JSONObject temperatureObject = currentHostSampleData.sampleData.getJSONObject("Temperature").getJSONObject("value");
                     //若不存在则创建
                     if(!temperatureObject.containsKey(subKey)){
-                        temperatureObject.put(subKey,configInfo.getTemperatureSampleDataFormat());
+                        temperatureObject.put(subKey, centralizedConfigInfo.getTemperatureSampleDataFormat());
                     }
                     //更新值并设为有效
                     temperatureObject.getJSONObject(subKey).put("value",value);
@@ -169,7 +168,7 @@ public class HostMonitorBatchExecution{
     //Host采样-进程-单个
     private void sampleHostProcess(int index){
         //采样返回结果
-        List<String> commandResult = sshManager.runCommand(configInfo.getProcessSampleCommand(), hostConfigInfoList.get(index));
+        List<String> commandResult = sshManager.runCommand(centralizedConfigInfo.getProcessSampleCommand(), hostConfigInfoList.get(index));
         if(commandResult.size() == 0){
             //System.out.println("NULL,Index:"+index);
         }
@@ -224,7 +223,7 @@ public class HostMonitorBatchExecution{
     //IO测试采样-单个
     private void sampleHostIOTest(int index){
         //采样返回结果
-        List<String> commandResult = sshManager.runCommand(configInfo.getIoTestCommand(), hostConfigInfoList.get(index));
+        List<String> commandResult = sshManager.runCommand(centralizedConfigInfo.getIoTestCommand(), hostConfigInfoList.get(index));
         System.out.println(commandResult);
         if(commandResult.size() == 0){
             //System.out.println("NULL,Index:"+index);
@@ -236,7 +235,7 @@ public class HostMonitorBatchExecution{
 
     //Host采样-测试
     public void sampleTest(int index){
-        List<String> commandResult = sshManager.runCommand(configInfo.getTestCommand(), hostConfigInfoList.get(index));
+        List<String> commandResult = sshManager.runCommand(centralizedConfigInfo.getTestCommand(), hostConfigInfoList.get(index));
         System.out.println("Index:"+index);
         System.out.println(commandResult);
     }
@@ -295,7 +294,7 @@ public class HostMonitorBatchExecution{
     //初始化Host环境-仅安装一次-某一Host
     public void initHostEnvironment(int index) {
         //采样返回结果
-        List<String> commandResult = sshManager.runCommand(configInfo.getInitEnvironmentCommand(), hostConfigInfoList.get(index));
+        List<String> commandResult = sshManager.runCommand(centralizedConfigInfo.getInitEnvironmentCommand(), hostConfigInfoList.get(index));
     }
 
 

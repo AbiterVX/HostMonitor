@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>登录</title>
+    <!-- JQuery -->
+    <script type="text/javascript" src="../JQuery/jquery-3.3.1.min.js"></script>
+    <!-- popper 用于下拉框 -->
+    <script type="text/javascript" src="../popper/popper.min.js"></script>
+    <!-- BootStrap -->
+    <link rel="stylesheet" href= "../bootstrap-4.3.1-dist/css/bootstrap.min.css" >
+    <script type="text/javascript" src="../bootstrap-4.3.1-dist/js/bootstrap.js"></script>
+
+    <!-- ECharts -->
+    <script type="text/javascript" src="../echarts/echarts.min.js"></script>
+    <!-- functionLibrary -->
+    <script type="text/javascript" src="../js/DataRequest.js"></script>
+    <script type="text/javascript" src="../js/WidgetDisplay.js"></script>
+    <script type="text/javascript" src="../js/TableAndChart.js"></script>
+
+    <!-- Bootstrap-table -->
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="../bootstrap-table/bootstrap-table.min.css">
+
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="../bootstrap-table/bootstrap-table.min.js"></script>
+    <!-- Latest compiled and minified Locales -->
+    <script src="../bootstrap-table/bootstrap-table-zh-CN.min.js"></script>
+</head>
+<style>
+    html,body {height: 100%;}
+    body {display: -ms-flexbox;display: -webkit-box;display: flex;-ms-flex-align: center;-ms-flex-pack: center;-webkit-box-align: center;align-items: center;-webkit-box-pack: center;justify-content: center;padding-top: 40px;padding-bottom: 40px;background-color: #f5f5f5;}
+    .form-signin {width: 100%;max-width: 330px;padding: 15px;margin: 0 auto;}
+    .form-signin .checkbox {font-weight: 400;}
+    .form-signin .form-control {position: relative;box-sizing: border-box;height: auto;padding: 10px;font-size: 16px;}
+    .form-signin .form-control:focus {z-index: 2;}
+    .form-signin input[type="email"] {margin-bottom: -1px;border-bottom-right-radius: 0;border-bottom-left-radius: 0;}
+    .form-signin input[type="password"] {margin-bottom: 10px;border-top-left-radius: 0;border-top-right-radius: 0;}
+</style>
+<body class="text-center">
+
+    <form class="form-signin">
+        <img class="mb-4" src="../images/ProjectIcon.png" alt="" width="72" height="72">
+        <h1 class="h3 mb-3 font-weight-normal">管理员登录</h1>
+
+        <input id="InputID" class="form-control" placeholder="账户"  autofocus="">
+        <input id="InputPassword" type="password" class="form-control" placeholder="密码">
+        <div class="checkbox mb-3"></div>
+        <button class="btn btn-lg btn-primary btn-block" >登录</button>
+        <button id="backBtn" onclick="backBtnOnclick()" class="btn btn-lg btn-secondary btn-block ">返回</button>
+        <p class="mt-5 mb-3 text-muted">HUST-数据中心资源监控-2021 v3.0</p>
+    </form>
+
+
+
+</body>
+<script>
+
+    function backBtnOnclick(){
+        alert("!!");
+        //window.location.href="/";
+    }
+</script>
+</html>
