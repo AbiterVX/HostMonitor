@@ -20,7 +20,11 @@
     "cpuUsageAverage": 0,
     "diskCapacityTotalSizeSum": 0,
     "diskCapacityUsedSizeSum": 0,
-    "lastUpdateTime": 0
+    "lastUpdateTime": 0,
+    "diskInfoList": [],
+    "cpuInfoList": [],
+    "gpuInfoList": [],
+    "processInfoList": []
   },
   "diskInfo": {
     "diskName": "",
@@ -30,7 +34,7 @@
     "diskCapacityTotalSize": 0,
     "diskCapacityUsedSize": 0,
     "lastUpdateTime": 0,
-    "type": ""
+    "type": 0
   },
   "cpuInfo": {
     "cpuName": "",
