@@ -40,19 +40,22 @@
 <script>
     //table选中项
     var selectedItems = new Set();
+    //MainInfo
+    var mainInfo = FGetMainInfo();
 
 
     window.onload=function (){
-        //
-        refreshSpeedMeasurementTable(true);
+        FRefreshDataSpeedMeasurementInfoAll(function (speedMeasurementInfoList){
+            refreshSpeedMeasurementTable(true,speedMeasurementInfoList);
+        });
     }
 
     //更新Table-SpeedMeasurement
-    function refreshSpeedMeasurementTable(init){
+    function refreshSpeedMeasurementTable(init,speedMeasurementInfoList){
         if(init){
             $('#speedMeasurement').bootstrapTable({
                 columns: tableColumns["speedMeasurement"],
-                data: tableData["speedMeasurement"],
+                data: speedMeasurementInfoList,
                 onCheck:function(row, $element){
                     selectedItems.add(row["hostName"]);
                 },
@@ -73,7 +76,7 @@
             });
         }
         else{
-            $('#speedMeasurement').bootstrapTable("load",tableData["speedMeasurement"]);
+            $('#speedMeasurement').bootstrapTable("load",speedMeasurementInfoList);
         }
     }
 

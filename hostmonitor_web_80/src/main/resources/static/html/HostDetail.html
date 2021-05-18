@@ -93,110 +93,148 @@
     var currentHostIndex = 0;
     //当前DateInterval
     var currentDateIntervalIndex = 0;
-    //trendChartData
-    var trendChartData = [[], [], [], [], [], [] ];
-
+    //MainInfo
+    var mainInfo = FGetMainInfo();
 
     //加载后执行
     window.onload=function (){
         //初始化-DropDown-IP
-        FInitDropDown("HostIpDropDownMenu","HostIpDropDownBtn",tableData["hostName"],"dropDownSelectHostIp",currentHostIndex);
+        FInitDropDown("HostIpDropDownMenu","HostIpDropDownBtn",mainInfo["hostName"],"dropDownSelectHostIp",currentHostIndex);
         //初始化-DropDown-TimeInterval
-        FInitDropDown("DateIntervalDropDownMenu","DateIntervalDropDownBtn",DateInterval,"dropDownSelectDateInterval",currentDateIntervalIndex);
+        FInitDropDown("DateIntervalDropDownMenu","DateIntervalDropDownBtn",DateIntervalText,"dropDownSelectDateInterval",currentDateIntervalIndex);
 
-
-        //刷新HostDetailTable
-        refreshHostDetailTable(true);
-        //刷新ProcessInfo
-        refreshProcessInfoTable(true);
         //初始化SummaryChart
         TrendChart.setOption(FGetTrendChartOption());
-        window.setInterval(function (){
-            refreshTrendChartData();
-        },2000);
+        //-----更新HostInfo数据.
+        FRefreshDataHostInfo(mainInfo["hostName"][currentHostIndex],function (hostInfo){
+            //刷新HostDetailTable
+            refreshHostDetailTable(true,hostInfo);
+            //刷新ProcessInfo
+            refreshProcessInfoTable(true,hostInfo);
+        });
+        //定时刷新
+        setInterval(function (){
+            //-----更新HostInfo数据.
+            FRefreshDataHostInfo(mainInfo["hostName"][currentHostIndex],function (hostInfo){
+                //刷新HostDetailTable
+                refreshHostDetailTable(true,hostInfo);
+                //刷新ProcessInfo
+                refreshProcessInfoTable(true,hostInfo);
+            });
+        },requestCoolDownTime["RefreshDataHostInfo"]);
+
+        FRefreshDataHostDetailTrend(mainInfo["hostName"][currentHostIndex],function (trendChartData){
+            refreshTrendChartData(trendChartData);
+        });
+
     }
+
+
 
     //[DropDown]选择-HostIp
     function dropDownSelectHostIp(index){
         if(index !== currentHostIndex){
             //下拉按钮-设置当前显示Txt
-            document.getElementById("HostIpDropDownBtn").innerText = tableData["hostName"][index];
+            document.getElementById("HostIpDropDownBtn").innerText = mainInfo["hostName"][index];
             //设置
             currentHostIndex = index;
-            refreshHostDetailTable();
-            refreshProcessInfoTable();
+            FRefreshDataHostInfo(mainInfo["hostName"][currentHostIndex],function (hostInfo){
+                //刷新HostDetailTable
+                refreshHostDetailTable(false,hostInfo);
+                //刷新ProcessInfo
+                refreshProcessInfoTable(false,hostInfo);
+            });
+            //刷新Chart
+            refreshTrendChart();
             //父页面自适应大小
             window.parent.pageResize();
         }
     }
 
-    //[DropDown]选择-HostIp
+    //[DropDown]选择-DateInterval时间间隔
     function dropDownSelectDateInterval(index){
         if(index !== currentDateIntervalIndex){
             //下拉按钮-设置当前显示Txt
-            document.getElementById("DateIntervalDropDownBtn").innerText = DateInterval[index];
+            document.getElementById("DateIntervalDropDownBtn").innerText = DateIntervalText[index];
             //设置
             currentDateIntervalIndex = index;
+            //刷新Chart
+            refreshTrendChart();
         }
     }
+    //刷新Chart
+    function refreshTrendChart(){
+        FRefreshDataHostDetailTrend(mainInfo["hostName"][currentHostIndex],function (trendChartData){
+            if(currentDateIntervalIndex === 0){
+                refreshTrendChartData(trendChartData);
+            }
+            else if(currentDateIntervalIndex === 1){
+                var beginIndex = 0;
+                var timestamp=new Date().getTime();
+                for(var i=trendChartData[0].length-1;i>=0;i--){
+                    if(timestamp - trendChartData[0][i][0] > 3600000){
+                        beginIndex = i;
+                        break;
+                    }
+                }
+                var tempTrendChartData = [];
+                for(var i=0;i<trendChartData.length;i++){
+                    tempTrendChartData.push(trendChartData[i].slice(beginIndex,trendChartData[i].length));
+                }
+                refreshTrendChartData(tempTrendChartData);
+            }
 
+        });
+    }
 
     //刷新Table-HostDetailTable
-    function refreshHostDetailTable(init){
-        var hostName = tableData["hostName"][currentHostIndex];
+    function refreshHostDetailTable(init,hostInfo){
+        var hostName = mainInfo["hostName"][currentHostIndex];
         document.getElementById("title").innerText = hostName;
-
-        //$('#hostInfo2').bootstrapTable("destroy");
         if(init){
             $('#hostInfo2').bootstrapTable({
                 columns: tableColumns["hostInfo2"],
-                data: tableData["hostInfo2"][hostName],
+                data: [hostInfo["hostInfo2"]],
                 classes : 'table table-bordered'
             });
             $('#diskInfo').bootstrapTable({
                 columns: tableColumns["diskInfo"],
-                data: tableData["diskInfo"][hostName],
+                data: hostInfo["diskInfoList"],
             });
             $('#cpuInfo').bootstrapTable({
                 columns: tableColumns["cpuInfo"],
-                data: tableData["cpuInfo"][hostName],
+                data: hostInfo["cpuInfoList"],
             });
             $('#gpuInfo').bootstrapTable({
                 columns: tableColumns["gpuInfo"],
-                data: tableData["gpuInfo"][hostName],
+                data: hostInfo["gpuInfoList"],
             });
         }
         else{
-            $('#hostInfo2').bootstrapTable("load",tableData["hostInfo2"][hostName]);
-            $('#diskInfo').bootstrapTable("load",tableData["diskInfo"][hostName]);
-            $('#cpuInfo').bootstrapTable("load",tableData["cpuInfo"][hostName]);
-            $('#gpuInfo').bootstrapTable("load",tableData["gpuInfo"][hostName]);
+            $('#hostInfo2').bootstrapTable("load",[hostInfo["hostInfo2"]]);
+            $('#diskInfo').bootstrapTable("load",hostInfo["diskInfoList"]);
+            $('#cpuInfo').bootstrapTable("load",hostInfo["cpuInfoList"]);
+            $('#gpuInfo').bootstrapTable("load",hostInfo["gpuInfoList"]);
         }
     }
     //刷新Table-ProcessInfo
-    function refreshProcessInfoTable(init){
-        var hostName = tableData["hostName"][currentHostIndex];
+    function refreshProcessInfoTable(init,hostInfo){
         if(init){
             $('#processInfo').bootstrapTable({
                 columns: tableColumns["processInfo"],
-                data: tableData["processInfo"][hostName],
+                data: hostInfo["processInfoList"],
                 classes : 'table table-bordered'
             });
         }
         else{
-            $('#processInfo').bootstrapTable("load",tableData["processInfo"][hostName]);
+            $('#processInfo').bootstrapTable("load",hostInfo["processInfoList"]);
         }
     }
 
     //刷新Chart-Data-TrendChart
-    function refreshTrendChartData(){
-        var date = FGetDateTime(new Date());
-        for(var i=0;i<trendChartData.length;i++){
-            trendChartData[i].push([date,Math.ceil(Math.random()*100)]);
-        }
+    function refreshTrendChartData(trendChartData){
+
         var subChartIndex = [0,1,2,2,3,3];
-
-
         var option = {
             series: []
         };

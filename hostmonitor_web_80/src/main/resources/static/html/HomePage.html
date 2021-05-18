@@ -94,14 +94,15 @@
     var MainPart = document.getElementById("MainPart");
     var currentIndex=-1;
 
-
-
     //加载后执行
     window.onload=function (){
-        //[左侧导航栏]设置当前选中的导航项
-        FInitNavItems();
-        //设置初始界面
-        FSetCurrentNavItem(0);
+        //主页面导入时，请求Summary数据
+        FRefreshDataSummary(function (){
+            //[左侧导航栏]设置当前选中的导航项
+            FInitNavItems();
+            //设置初始界面
+            FSetCurrentNavItem(0);
+        });
     }
 
     function pageResize(){

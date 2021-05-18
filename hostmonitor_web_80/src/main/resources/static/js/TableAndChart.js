@@ -12,11 +12,11 @@ function FGetDateTime(currentDate){
     var s = (date.getSeconds() <10 ? '0' + date.getSeconds() : date.getSeconds());
     return Y+M+D+h+m+s;
 }
-
+//百分制增加单位
 function FGetPercentageWithUnit(value){
     return value + "%";
 }
-
+//温度增加单位
 function FGetTemperatureWithUnit(value){
     return value + "°C";
 }
@@ -60,11 +60,17 @@ const tableColumns = {
             field: 'hostCount',
             title: '主机个数',
             width: 100,
+            formatter : function (value, row, index) {
+                return value[0] + " / " + value[1];
+            }
         },
         {
             field: 'sumCapacity',
             title: '总容量',
             width: 100,
+            formatter : function (value, row, index) {
+                return FGetGBWithUnit(value);
+            }
         },
     ],
     //概要-1
@@ -125,7 +131,7 @@ const tableColumns = {
             }
         },
         {
-            field: 'netReceive',
+            field: 'netReceiveSpeed',
             title: '网络接受',
             width: 100,
             formatter : function (value, row, index) {
@@ -133,7 +139,7 @@ const tableColumns = {
             }
         },
         {
-            field: 'netSend',
+            field: 'netSendSpeed',
             title: '网络发送',
             width: 100,
             formatter : function (value, row, index) {
@@ -224,7 +230,7 @@ const tableColumns = {
             }
         },
         {
-            field: 'netReceive',
+            field: 'netReceiveSpeed',
             title: '网络接受',
             width: 100,
             formatter : function (value, row, index) {
@@ -232,7 +238,7 @@ const tableColumns = {
             }
         },
         {
-            field: 'netSend',
+            field: 'netSendSpeed',
             title: '网络发送',
             width: 100,
             formatter : function (value, row, index) {
@@ -476,224 +482,245 @@ const tableColumns = {
     ],
 };
 
-//表格数据
-var tableData={
-    hostName:[
-        "hostName1",
-        "hostName2",
-    ],
-    summaryPart1:[
-        {
-            hostCount: "70/70",
-            sumCapacity: "4.0TB",
-        },
-    ],
-    summaryPart2:[
-        {
-            windowsHostCount: 60,
-            linuxHostCount: 10,
-        },
-    ],
-    summaryPart3:[
-        {
-            hddCount: 40,
-            ssdCount: 30,
-        },
-    ],
-    hostInfo1:{
-        hostName1:[
-            {
-                osName: "Windows 10",
-                cpuUsage: 13,
-                memoryUsage: [4.0,8.0],
-                diskCapacityTotalUsage: [525.8,1024],
-                netReceive: 82,
-                netSend: 25,
+//----------获取Format
+function FGetFormat(key){
+    if(key === "cpuInfo"){
+        var cpuInfoFormat = {
+            cpuName: "cpuName",
+            cpuUsage: 0,
+            cpuTemperature: 0,
+        };
+        return cpuInfoFormat;
+    }
+    else if(key === "gpuInfo"){
+        var gpuInfoFormat = {
+            gpuName: "gpuName",
+            gpuAvailableRam: 0,
+        };
+        return gpuInfoFormat;
+    }
+    else if(key === "processInfo"){
+        var processInfoFormat = {
+            processId: 0,
+            processName: "processName",
+            startTime: 0,
+            cpuUsage: 0,
+            memoryUsage: 0,
+            diskReadSpeed: 0,
+            diskWriteSpeed: 0,
+        };
+        return processInfoFormat;
+    }
+    else if(key === "dfpInfo"){
+        var dfpInfoFormat = {
+            hostName: "hostName",
+            diskName: "diskName",
+            diskCapacity: 0,
+            predictTime: 0,
+            predictProbability: 0,
+        };
+        return dfpInfoFormat;
+    }
+    else if(key === "speedMeasurementInfo"){
+        var speedMeasurementInfoFormat = {
+            hostName: "hostName",
+            ioTestLastTime: 0,
+            netSendSpeed: 0,
+            netDownloadSpeed: 0,
+            diskIOSpeed: 0,
+        };
+        return speedMeasurementInfoFormat;
+    }
+    else if(key === "diskInfo"){
+        var diskInfoFormat = {
+            diskName: "diskName",
+            diskCapacitySize: [0,0],
+            diskCapacityUsage: 0,
+            diskIOPS: 0,
+            diskReadSpeed: 0,
+            diskWriteSpeed: 0,
+        };
+        return diskInfoFormat;
+    }
+    else if(key === "hostInfo"){
+        var hostInfoFormat = {
+            //Dashboard
+            hostInfo1:{
+                osName: "OS",
+                cpuUsage: 0,
+                memoryUsage: [0,0],
+                diskCapacityTotalUsage: [0,0],
+                netReceiveSpeed: 0,
+                netSendSpeed: 0,
             },
-        ],
-        hostName2:[
-            {
-                osName: "Windows 10",
-                cpuUsage: 20,
-                memoryUsage: [4.8,8.4],
-                diskCapacityTotalUsage: "520 GB / 1.0 TB",
-                netReceive: 71,
-                netSend: 1024
-            },
-        ]
-    },
-    diskInfo:{
-        hostName1:[
-            {
-                diskName: "ssss",
-                diskCapacitySize: [512.0 ,1.0 ],
-                diskCapacityUsage: 50,
-                diskIOPS: 5.1,
-                diskReadSpeed: 10,
-                diskWriteSpeed: 5,
-            },
-            {
-                diskName: "vd",
-                diskCapacitySize: [5.0 ,1024.0 ],
-                diskCapacityUsage: 1,
-                diskIOPS: 7,
-                diskReadSpeed: 1,
-                diskWriteSpeed: 1,
-            },
-        ],
-        hostName2:[
-            {
-                diskName: "sfseffQ",
-                diskCapacitySize: "525 GB / 1.0 TB",
-                diskCapacityUsage: 71,
-                diskIOPS: 1.0,
-                diskReadSpeed: 80,
-                diskWriteSpeed: 8,
-            },
-        ]
-    },
-    hostInfo2:{
-        hostName1:[
-            {
-                osName: "Windows 10",
+            //Detail
+            hostInfo2:{
+                osName: "OS",
                 ip: "0.0.0.0",
-                memoryUsage: [4.0,8.0],
-                diskCapacityTotalUsage: [50,1024],
-                netReceive: 82,
-                netSend: 25,
+                memoryUsage: [0,0],
+                diskCapacityTotalUsage: [0,0],
+                netReceiveSpeed: 0,
+                netSendSpeed: 0,
             },
-        ],
-        hostName2:[
-            {
-                osName: "Windows 10",
-                ip: "0.0.0.1",
-                memoryUsage: [3.5,8.0],
-                diskCapacityTotalUsage: [750,1024],
-                netReceive: 0,
-                netSend: 0,
-            },
-        ]
-    },
-    cpuInfo:{
-        hostName1:[
-            {
-                cpuName: "Intel i7",
-                cpuUsage: 1,
-                cpuTemperature: 10,
-            },
-        ],
-        hostName2:[
-            {
-                cpuName: "Intel i5",
-                cpuUsage: 10,
-                cpuTemperature: 20,
-            },
-        ]
-    },
-    gpuInfo:{
-        hostName1:[
-            {
-                gpuName: "GTX xx",
-                gpuAvailableRam: 4.0,
-            },
-            {
-                gpuName: "RTX xx",
-                gpuAvailableRam: 6.0,
-            },
-        ],
-        hostName2:[
-            {
-                gpuName: "interl xx",
-                gpuAvailableRam: 1.0,
-            },
-        ]
-    },
-    processInfo:{
-        hostName1:[
-            {
-                processId: "101",
-                processName: "java",
-                startTime: 1621065263000,
-                cpuUsage: 13,
-                memoryUsage: 10,
-                diskReadSpeed: 70,
-                diskWriteSpeed: 0,
-            },
-            {
-                processId: 200,
-                processName: "mysql",
-                startTime: 1620065263000,
-                cpuUsage: 5,
-                memoryUsage: 5,
-                diskReadSpeed: 0,
-                diskWriteSpeed: 0,
-            },
-        ],
-        hostName2:[
-            {
-                processId: 10,
-                processName: "java",
-                startTime: 1621065263000,
-                cpuUsage: 50,
-                memoryUsage: 20,
-                diskReadSpeed: 40,
-                diskWriteSpeed: 50,
-            },
-        ]
-    },
-    diskFailurePredictInfo:[
-        {
-            //state: false,
-            hostName: "hostName1",
-            diskName: "disk test name",
-            diskCapacity: 1024,
-            predictTime: 1621060263000,
-            predictProbability: 45,
-        },
-        {
-            //state: false,
-            hostName: "hostName2",
-            diskName: "disk test name2",
-            diskCapacity: 1890,
-            predictTime: 1621065263000,
-            predictProbability: 25,
-        },
-        {
-            //state: false,
-            hostName: "hostName3",
-            diskName: "disk test name3",
-            diskCapacity: 1090,
-            predictTime: 1621060263000,
-            predictProbability: 80,
-        },
-    ],
-    speedMeasurement:[
-        {
-            state: false,
-            hostName: "hostName1",
-            ioTestLastTime: 1621865263000,
-            netSendSpeed: 200,
-            netDownloadSpeed: 100,
-            diskIOSpeed: 50,
-        },
-        {
-            state: false,
-            hostName: "hostName2",
-            ioTestLastTime: 1601865263000,
-            netSendSpeed: 100,
-            netDownloadSpeed: 50,
-            diskIOSpeed: 10,
-        },
-    ]
-};
+            diskInfoList:[],
+            cpuInfoList:[],
+            gpuInfoList:[],
+            processInfoList:[],
+            lastUpdateTime:0,
+        }
+        return hostInfoFormat;
+    }
+    else if(key === "hostInfoTrend"){
+        var hostInfoTrendFormat = {
+            hostInfoTrend: [],
+            lastUpdateTime:0,
+        }
+        return hostInfoTrendFormat;
+    }
+    else if(key === "mainInfo"){
+        var mainInfoFormat = {
+            hostName: [],
+            summaryPart1: [
+                {
+                    hostCount: [0,0],
+                    sumCapacity: 0,
+                },
+            ],
+            summaryPart2: [
+                {
+                    windowsHostCount: 0,
+                    linuxHostCount: 0,
+                },
+            ],
+            summaryPart3: [
+                {
+                    hddCount: 0,
+                    ssdCount: 0,
+                },
+            ],
+            summaryChart:[
+                //cpuLoad
+                [0,0,0],
+                //diskLoad
+                [0,0,0],
+                //memoryLoad
+                [0,0,0],
+            ],
+            lastUpdateTime:0,
+        }
+        return mainInfoFormat;
+    }
+    else if(key === "dfpInfoList"){
+        var dfpInfoListFormat = {
+            dfpInfo: [],
+            lastUpdateTime:0,
+        }
+        return dfpInfoListFormat;
+    }
+    else if(key === "dfpInfoTrendList"){
+        var dfpInfoTrendListFormat = {
+            dfpInfoTrend: [],
+            lastUpdateTime:0,
+        }
+        return dfpInfoTrendListFormat;
+    }
+    else if(key === "speedMeasurementInfoList"){
+        var speedMeasurementInfoListFormat = {
+            speedMeasurementInfo: [],
+            lastUpdateTime:0,
+        }
+        return speedMeasurementInfoListFormat;
+    }
+}
+//----------获取-设置-数据
+function FGetMainInfo(){
+    var mainInfo = window.sessionStorage.getItem("mainInfo");
+    if(mainInfo == null){
+        var mainInfoFormat = FGetFormat("mainInfo");
+        window.sessionStorage.setItem("mainInfo",JSON.stringify(mainInfoFormat));
+        return mainInfoFormat;
+    }
+    else{
+        return JSON.parse(mainInfo);
+    }
+}
+function FGetHostInfo(hostName){
+    var hostInfo = window.sessionStorage.getItem("hostInfo_"+hostName);
+    if(hostInfo == null){
+        var hostInfoFormat = FGetFormat("hostInfo");
+        window.sessionStorage.setItem("hostInfo_"+hostName,JSON.stringify(hostInfoFormat));
+        return hostInfoFormat;
+    }
+    else{
+        return JSON.parse(hostInfo);
+    }
+}
+function FGetHostInfoTrend(hostName){
+    var hostInfoTrend = window.sessionStorage.getItem("hostInfoTrend_"+hostName);
+    if(hostInfoTrend == null){
+        var hostInfoTrendFormat = FGetFormat("hostInfoTrend");
+        window.sessionStorage.setItem("hostInfoTrend_"+hostName,JSON.stringify(hostInfoTrendFormat));
+        return hostInfoTrendFormat;
+    }
+    else{
+        return JSON.parse(hostInfoTrend);
+    }
+}
+function FGetDFPInfoList(){
+    var dfpInfoList = window.sessionStorage.getItem("dfpInfoList");
+    if(dfpInfoList == null){
+        var dfpInfoListFormat = FGetFormat("dfpInfoList");
+        window.sessionStorage.setItem("dfpInfoList",JSON.stringify(dfpInfoListFormat));
+        return dfpInfoListFormat;
+    }
+    else{
+        return JSON.parse(dfpInfoList);
+    }
+}
+function FGetDFPInfoTrend(hostName,diskName){
+    var dfpInfoTrend = window.sessionStorage.getItem("DFPInfoTrend_"+hostName+"_"+diskName);
+    if(dfpInfoTrend == null){
+        var dfpInfoTrendFormat = [];
+        window.sessionStorage.setItem("DFPInfoTrend_"+hostName+"_"+diskName,JSON.stringify(dfpInfoTrendFormat));
+        return dfpInfoTrendFormat;
+    }
+    else{
+        return JSON.parse(dfpInfoTrend);
+    }
+}
+function FGetSpeedMeasurementInfoList(){
+    var speedMeasurementInfoList = window.sessionStorage.getItem("speedMeasurementInfoList");
+    if(speedMeasurementInfoList == null){
+        var speedMeasurementInfoListFormat = FGetFormat("speedMeasurementInfoList");
+        window.sessionStorage.setItem("speedMeasurementInfoList",JSON.stringify(speedMeasurementInfoListFormat));
+        return speedMeasurementInfoListFormat;
+    }
+    else{
+        return JSON.parse(speedMeasurementInfoList);
+    }
+}
+//----------Set数据
+function FSetData(key,newJsonData){
+    //mainInfo
+    //"hostInfo_"+hostName
+    //"dfpInfo"
+    //"speedMeasurementInfo"
+    window.sessionStorage.setItem(key,JSON.stringify(newJsonData));
+}
 
+//获取磁盘名称-DiskName
 function FGetDiskNameList(hostName){
     var result = [];
-    for(var i=0;i<tableData["diskInfo"][hostName].length;i++){
-        result.push(tableData["diskInfo"][hostName][i]["diskName"]);
+    var hostInfo = FGetHostInfo(hostName);
+    for(var i=0;i<hostInfo["diskInfoList"].length;i++){
+        result.push(hostInfo["diskInfoList"][i]["diskName"]);
     }
     return result;
 }
+
+
+
+
 
 //Load
 var loadPartition ={
@@ -701,17 +728,10 @@ var loadPartition ={
     memory:[30,70,100],
     disk:[30,70,100],
 }
-//Chart数据
-var chartData = {
-    cpuLoad:[],
-    memoryLoad:[],
-    diskLoad:[],
-
-}
-
 
 //数据间隔时间
-var DateInterval = [60,24*60];
+var DateInterval = [24,1];
+var DateIntervalText = ["最近1天","最近1小时"];
 //[配置]SummaryChart
 /* CPU负载统计-百分比+饼状图
    磁盘负载统计-百分比+饼状图
@@ -960,7 +980,7 @@ function FGetTrendChartOption(){
         tooltip: {
             trigger: 'axis',
             formatter: function(params){
-                var returnTxt = "时间: "+params[0].value[0] +"<br/>";
+                var returnTxt = "时间: "+ FGetDateTime(params[0].value[0]) +"<br/>";
                 for(var i =0; i< params.length; i++){
                     returnTxt += params[i].marker+" "+params[i].seriesName+ " "+params[i].value[1] + unitLabel[params[i].axisIndex] + "<br/>";
                 }

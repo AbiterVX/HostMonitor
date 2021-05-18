@@ -108,20 +108,25 @@
     var progressBar = $('#progressBar');
     var progressPercentage = document.getElementById("progressPercentage");
     var currentProgressPercentage = 0;
-
+    //MainInfo
+    var mainInfo = FGetMainInfo();
 
     window.onload=function (){
         //初始化-DropDown-HostName
-        FInitDropDown("HostNameDropDownMenu","HostNameDropDownBtn",tableData["hostName"],"dropDownSelectHostName",currentHostIndex);
-
+        FInitDropDown("HostNameDropDownMenu","HostNameDropDownBtn",mainInfo["hostName"],"dropDownSelectHostName",currentHostIndex);
         //初始化-DropDown-HostName
-        FInitDropDown("DiskNameDropDownMenu","DiskNameDropDownBtn",FGetDiskNameList(tableData["hostName"][currentHostIndex]),"dropDownSelectDiskName",currentDiskIndex);
+        FInitDropDown("DiskNameDropDownMenu","DiskNameDropDownBtn",FGetDiskNameList(mainInfo["hostName"][currentHostIndex]),"dropDownSelectDiskName",currentDiskIndex);
 
         //设置Chart
         DFPSummaryChart.setOption(FGetDFPSummaryChartOption());
         DFPTrendChart.setOption(FGetDFPTrendChartOption());
-        //刷新Table
-        refreshDFPInfoTable(true);
+        //-----更新DFPInfo数据
+        FRefreshDataDFPInfoAll(function (dfpInfoList){
+            //刷新Table
+            refreshDFPInfoTable(true,dfpInfoList);
+        });
+
+
         //刷新Chart数据
         window.setInterval(function (){
             refreshDFPTrendChartData();
@@ -132,23 +137,21 @@
     function dropDownSelectHostName(index){
         if(index !== currentHostIndex){
             //下拉按钮-设置当前显示Txt
-            document.getElementById("HostNameDropDownBtn").innerText = tableData["hostName"][index];
+            document.getElementById("HostNameDropDownBtn").innerText = mainInfo["hostName"][index];
             //设置
             currentHostIndex = index;
-
             //初始化-DropDown-HostName
             currentDiskIndex=0;
-
-            FInitDropDown("DiskNameDropDownMenu","DiskNameDropDownBtn",FGetDiskNameList(tableData["hostName"][currentHostIndex]),"dropDownSelectDiskName",currentDiskIndex);
-
+            FInitDropDown("DiskNameDropDownMenu","DiskNameDropDownBtn",FGetDiskNameList(mainInfo["hostName"][currentHostIndex]),"dropDownSelectDiskName",currentDiskIndex);
         }
     }
 
     function dropDownSelectDiskName(index){
         if(index !== currentDiskIndex){
             //下拉按钮-设置当前显示Txt
-            var hostName =tableData["hostName"][currentHostIndex];
-            document.getElementById("DiskNameDropDownBtn").innerText = tableData["diskInfo"][hostName][index]["diskName"];
+            var hostName =mainInfo["hostName"][currentHostIndex];
+            var hostInfo = FGetHostInfo(hostName);
+            document.getElementById("DiskNameDropDownBtn").innerText = hostInfo["diskInfoList"][index]["diskName"];
             //设置
             currentDiskIndex = index;
         }
@@ -165,11 +168,11 @@
     }
 
     //刷新Table-DFPInfo
-    function refreshDFPInfoTable(init){
+    function refreshDFPInfoTable(init,dfpInfoList){
         if(init){
             $('#diskFailurePredictInfo').bootstrapTable({
                 columns: tableColumns["diskFailurePredictInfo"],
-                data: tableData["diskFailurePredictInfo"],
+                data: dfpInfoList,
                 onCheck:function(row, $element){
                     selectedItems.add(row["hostName"]);
                 },
@@ -190,7 +193,7 @@
             });
         }
         else{
-            $('#diskFailurePredictInfo').bootstrapTable("load",tableData["diskFailurePredictInfo"]);
+            $('#diskFailurePredictInfo').bootstrapTable("load",dfpInfoList);
         }
     }
 
