@@ -10,8 +10,10 @@ import oshi.software.os.OSFileStore;
 import oshi.software.os.OperatingSystem;
 import oshi.util.FormatUtil;
 import oshi.util.Util;
+import sun.nio.ch.Net;
 
 
+import java.sql.Timestamp;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -35,82 +37,122 @@ import java.util.List;
 */
 public class DataSampler {
     private SystemInfo systemInfo;
-    private FormatLastSampleData formatLastSampleData;
+    private JSONObject dataObject;
+
+    private FormatConfig formatConfig=new FormatConfig();
+
     //静态硬件信息采样，不会周期性调用
     public DataSampler(){
         systemInfo = new SystemInfo();
-        formatLastSampleData=new FormatLastSampleData();
+        dataObject= new JSONObject();
+        dataObject.putAll(formatConfig.getHostInfoJson());
+        dataObjectInitialization();
     }
-    public String hardWareSample(){
-        JSONObject resultObject=new JSONObject();
-        //操作系统部分
+    private void dataObjectInitialization(){
+        JSONObject cpuObject=new JSONObject();
+        cpuObject.putAll(formatConfig.getCpuInfoJson());
+        dataObject.getJSONArray("cpuInfoList").add(cpuObject);
+        int diskNumber=systemInfo.getHardware().getDiskStores().size();
+        int i=0;
+        for(i=0;i<diskNumber;i++){
+            JSONObject temp=new JSONObject();
+            temp.putAll(formatConfig.getDiskInfoJson());
+            dataObject.getJSONArray("diskInfoList").add(temp);
+        }
+
+        int gpuNumber=systemInfo.getHardware().getGraphicsCards().size();
+        for(i=0;i<gpuNumber;i++){
+            JSONObject temp=new JSONObject();
+            temp.putAll(formatConfig.getGpuInfoJson());
+            dataObject.getJSONArray("gpuInfoList").add(temp);
+        }
+
+        int netInterfaceNumber=systemInfo.getHardware().getNetworkIFs().size();
+        for(i=0;i<netInterfaceNumber;i++){
+            JSONObject temp=new JSONObject();
+            temp.putAll(formatConfig.getNetInterfaceInfoJson());
+            dataObject.getJSONArray("netInterfaceList").add(temp);
+        }
+
+    }
+    public void hardWareSample(){
+        Timestamp timestamp=new Timestamp(System.currentTimeMillis());
         OperatingSystem os = systemInfo.getOperatingSystem();
-        JSONObject osObject=new JSONObject();
-        osObject.put("type",os.getManufacturer()+" "+os.getFamily());
-        osObject.put("version",os.getVersionInfo().toString());
-        resultObject.put("OS",osObject);
+        dataObject.put("osName",os.toString());
         //CPU部分
         CentralProcessor centralProcessor = systemInfo.getHardware().getProcessor();
         CentralProcessor.ProcessorIdentifier identifier=centralProcessor.getProcessorIdentifier();
-        JSONObject CPUObject=new JSONObject();
-        CPUObject.put("type",identifier.getName());
-        CPUObject.put("CoreNumber",centralProcessor.getPhysicalProcessorCount());
-        resultObject.put("CPU",CPUObject);
+        dataObject.getJSONArray("cpuInfoList").getJSONObject(0).put("cpuName",identifier.getName());
         //磁盘
         List<HWDiskStore> hwDiskStoreList=systemInfo.getHardware().getDiskStores();
-        JSONArray diskArray=new JSONArray();
-        for(HWDiskStore hwDiskStore:hwDiskStoreList){
-            JSONObject tempDiskObject=new JSONObject();
-            tempDiskObject.put("type",hwDiskStore.getModel());
-            tempDiskObject.put("size",hwDiskStore.getSize() > 0L ? FormatUtil.formatBytesDecimal(hwDiskStore.getSize()) : "?");
-            diskArray.add(tempDiskObject);
+        int i=0;
+        long totalsize=0;
+        for(i=0;i<hwDiskStoreList.size();i++){
+            HWDiskStore tempDiskStore=hwDiskStoreList.get(i);
+            dataObject.getJSONArray("diskInfoList").getJSONObject(i).put("diskName",tempDiskStore.getName()+":"+tempDiskStore.getModel());
+            dataObject.getJSONArray("diskInfoList").getJSONObject(i).put("diskCapacityTotalSize",tempDiskStore.getSize());
+            dataObject.getJSONArray("diskInfoList").getJSONObject(i).put("lastUpdateTime",timestamp);
+            totalsize+=tempDiskStore.getSize();
+            //tempDiskObject.put("size",hwDiskStore.getSize() > 0L ? FormatUtil.formatBytesDecimal(hwDiskStore.getSize()) : "?");
+            //diskArray.add(tempDiskObject);
         }
-        resultObject.put("Disks",diskArray);
+        dataObject.put("diskCapacityTotalSizeSum",totalsize);
+        //resultObject.put("Disks",diskArray);
         //GPU
         List<GraphicsCard> graphicsCards =  systemInfo.getHardware().getGraphicsCards();
-        JSONArray GPUArray=new JSONArray();
-        for (GraphicsCard graphicsCard:graphicsCards){
-            JSONObject tempGPUObject=new JSONObject();
-            tempGPUObject.put("type",graphicsCard.getName());
-            tempGPUObject.put("RAMSize",graphicsCard.getVRam() > 0L ? FormatUtil.formatBytesDecimal(graphicsCard.getVRam()) : "?");
-            GPUArray.add(tempGPUObject);
+        for (i=0;i<graphicsCards.size();i++){
+            GraphicsCard tempGraphicsCard=graphicsCards.get(i);
+            dataObject.getJSONArray("gpuInfoList").getJSONObject(i).put("gpuName",tempGraphicsCard.getName());
+            dataObject.getJSONArray("gpuInfoList").getJSONObject(i).put("gpuAvailableRam",tempGraphicsCard.getVRam());
+            dataObject.getJSONArray("gpuInfoList").getJSONObject(i).put("lastUpdateTime",timestamp);
         }
-        resultObject.put("GPU",GPUArray);
-        return resultObject.toJSONString();
+        //net interface
+        List<NetworkIF> networkIFList=systemInfo.getHardware().getNetworkIFs();
+        for(i=0;i<networkIFList.size();i++){
+            NetworkIF tempNetworkIF=networkIFList.get(i);
+            dataObject.getJSONArray("netInterfaceList").getJSONObject(i).put("netInterfaceName",tempNetworkIF.getDisplayName());
+        }
     }
-    public String periodSample(int period){
-        JSONObject resultObject=new JSONObject();
+    public void periodSample(int period,boolean isTheFirstTimeToSample){
+        if(isTheFirstTimeToSample){
+            firstSample();
+            return;
+        }
         //Memory利用率
         GlobalMemory globalMemory = systemInfo.getHardware().getMemory();
-        long totalByte = globalMemory.getTotal();
-        long availableByte = globalMemory.getAvailable();
-        //formatUnits(,(1024*1024*1024),"GB");
-        double memoryUsage = (totalByte-availableByte)*1.0/totalByte;
-        resultObject.put("MemUsage",memoryUsage);
+
+        //double memoryUsage = (totalByte-availableByte)*1.0/totalByte;
+        dataObject.put("memoryTotalSize",globalMemory.getTotal());
+        dataObject.put("memoryUsedSize",globalMemory.getTotal()-globalMemory.getAvailable());
 
         //Cpu利用率
         CentralProcessor centralProcessor = systemInfo.getHardware().getProcessor();
         long[] ticks = centralProcessor.getSystemCpuLoadTicks();
-        long[] value = new long[ticks.length];
+        long oldTotalTicks=dataObject.getJSONArray("cpuInfoList").getJSONObject(0).getLong("TotalTicks");
+        long oldIdleTick=dataObject.getJSONArray("cpuInfoList").getJSONObject(0).getLong("idleTick");
+        long newTotalTicks=0;
         long totalCpu = 0;
-        for(int i=0;i<value.length;i++){
-            value[i] = ticks[i] - formatLastSampleData.preTicks[i];
-            totalCpu += value[i];
+        for(int i=0;i<ticks.length;i++){
+            newTotalTicks += ticks[i];
         }
-        double cpuUsage = 1.0-(value[CentralProcessor.TickType.IDLE.getIndex()] * 1.0 / totalCpu);
-        resultObject.put("CpuUsage",new DecimalFormat("#.##%").format(cpuUsage));
-        formatLastSampleData.preTicks=ticks;
+        totalCpu=newTotalTicks-oldTotalTicks;
+        double cpuUsage = 1.0 - ((ticks[CentralProcessor.TickType.IDLE.getIndex()] - oldIdleTick) * 1.0 / totalCpu);
+        dataObject.getJSONArray("cpuInfoList").getJSONObject(0).put("cpuUsage", cpuUsage);
+        dataObject.put("cpuAverageUsage",cpuUsage);
+        dataObject.getJSONArray("cpuInfoList").getJSONObject(0).put("TotalTicks",newTotalTicks);
+        dataObject.getJSONArray("cpuInfoList").getJSONObject(0).put("idleTick",ticks[CentralProcessor.TickType.IDLE.getIndex()]);
+
         //Cpu温度
         Sensors sensors = systemInfo.getHardware().getSensors();
-        resultObject.put("CpuTemperature",sensors.getCpuTemperature());
+        dataObject.getJSONArray("cpuInfoList").getJSONObject(0).put("cpuTemperature",sensors.getCpuTemperature());
 
         //磁盘占用率/iops/速率
         List<HWDiskStore> hwDiskStoreList=systemInfo.getHardware().getDiskStores();
-        JSONArray diskArray=new JSONArray();
         List<partionInfo> pList=processing(systemInfo.getOperatingSystem().getFileSystem().getFileStores());
-        for(HWDiskStore hwDiskStore:hwDiskStoreList){
-            JSONObject tempDiskObject=new JSONObject();
-            List<HWPartition> hwpList= hwDiskStore.getPartitions();
+        long totalUsedSize=0;
+        for(int j=0;j<hwDiskStoreList.size();j++){
+            HWDiskStore hwInThisLoop=hwDiskStoreList.get(j);
+            List<HWPartition> hwpList= hwInThisLoop.getPartitions();
             long usable=0;
             long total=0;
             for(HWPartition hwPartition:hwpList){
@@ -123,32 +165,58 @@ public class DataSampler {
                 }
             }
             double usage=usable*1.0/total;
-            String name=hwDiskStore.getName()+":"+hwDiskStore.getModel();
-            tempDiskObject.put("name",name);
-            tempDiskObject.put("usage",usage);
-            long previousReadNumber=formatLastSampleData.DiskInfo.get(name+"-read");
-            long previousReadBytes=formatLastSampleData.DiskInfo.get(name+"-readbytes");
-            long previousWriteNumber=formatLastSampleData.DiskInfo.get(name+"-write");
-            long previousWriteBytes=formatLastSampleData.DiskInfo.get(name+"-writebytes");
-            long ReadNumber=hwDiskStore.getReads();
-            long ReadBytes=hwDiskStore.getReadBytes();
-            long WriteNumber=hwDiskStore.getWrites();
-            long WriteBytes=hwDiskStore.getWriteBytes();
-            double iops=(ReadNumber+WriteNumber-previousReadNumber-previousWriteNumber)*1.0/period;
-            double ReadRates=(ReadBytes-previousReadBytes)*1.0/period;
-            double WriteRates=(WriteBytes-previousWriteBytes)*1.0/period;
-            tempDiskObject.put("iops",iops);
-            tempDiskObject.put("readrates",ReadRates);
-            tempDiskObject.put("writerates",WriteRates);
-            formatLastSampleData.DiskInfo.put(name+"-read",ReadNumber);
-            formatLastSampleData.DiskInfo.put(name+"-readbytes",ReadBytes);
-            formatLastSampleData.DiskInfo.put(name+"-write",WriteNumber);
-            formatLastSampleData.DiskInfo.put(name+"-writebytes",WriteBytes);
-            diskArray.add(tempDiskObject);
+            dataObject.getJSONArray("diskInfoList").getJSONObject(j).put("diskCapacityUsedSize",total-usable);
+            totalUsedSize+=total-usable;
+            dataObject.getJSONArray("diskInfoList").getJSONObject(j).put("diskUsage",usage);
+            long previousReadNumber=dataObject.getJSONArray("diskInfoList").getJSONObject(j).getLong("diskRead");
+            long previousReadBytes=dataObject.getJSONArray("diskInfoList").getJSONObject(j).getLong("diskReadBytes");
+            long previousWriteNumber=dataObject.getJSONArray("diskInfoList").getJSONObject(j).getLong("diskWrite");
+            long previousWriteBytes=dataObject.getJSONArray("diskInfoList").getJSONObject(j).getLong("diskWriteBytes");
+            long ReadNumber=hwInThisLoop.getReads();
+            long ReadBytes=hwInThisLoop.getReadBytes();
+            long WriteNumber=hwInThisLoop.getWrites();
+            long WriteBytes=hwInThisLoop.getWriteBytes();
+                double iops = (ReadNumber + WriteNumber - previousReadNumber - previousWriteNumber) * 1.0 / period;
+                double ReadRates = (ReadBytes - previousReadBytes) * 1.0 / period;
+                double WriteRates = (WriteBytes - previousWriteBytes) * 1.0 / period;
+                dataObject.getJSONArray("diskInfoList").getJSONObject(j).put("diskIOPS", iops);
+                dataObject.getJSONArray("diskInfoList").getJSONObject(j).put("diskReadSpeed", ReadRates);
+                dataObject.getJSONArray("diskInfoList").getJSONObject(j).put("diskWriteSpeed", WriteRates);
+
+
+
+            dataObject.getJSONArray("diskInfoList").getJSONObject(j).put("diskRead",ReadNumber);
+            dataObject.getJSONArray("diskInfoList").getJSONObject(j).put("diskReadBytes",ReadBytes);
+            dataObject.getJSONArray("diskInfoList").getJSONObject(j).put("diskWrite",WriteNumber);
+            dataObject.getJSONArray("diskInfoList").getJSONObject(j).put("diskWriteBytes",WriteBytes);
         }
-        resultObject.put("Disks",diskArray);
+
+        dataObject.put("diskCapacityUsedSizeSum",totalUsedSize);
+        //网络速率计算
+        List<NetworkIF> networkIFS=systemInfo.getHardware().getNetworkIFs();
+        double totalNetRecv=0;
+        double totalNetSent=0;
+        for(int k=0;k<networkIFS.size();k++){
+            NetworkIF networkIF=networkIFS.get(k);
+            long previousRecvBytes=dataObject.getJSONArray("netInterfaceList").getJSONObject(k).getLong("recvBytes");
+            long previousSentBytes=dataObject.getJSONArray("netInterfaceList").getJSONObject(k).getLong("sentBytes");
+            long RecvBytes=networkIF.getBytesRecv();
+            long SentBytes=networkIF.getBytesSent();
+
+                double NetRecv = (RecvBytes - previousRecvBytes) * 1.0 / period;
+                double NetSent = (SentBytes - previousSentBytes) * 1.0 / period;
+                totalNetRecv+=NetRecv;
+                totalNetSent+=NetSent;
+                dataObject.getJSONArray("netInterfaceList").getJSONObject(k).put("recvSpeed", NetRecv);
+                dataObject.getJSONArray("netInterfaceList").getJSONObject(k).put("sentSpeed", NetSent);
+
+            dataObject.getJSONArray("netInterfaceList").getJSONObject(k).put("recvBytes",RecvBytes);
+            dataObject.getJSONArray("netInterfaceList").getJSONObject(k).put("sentBytes",SentBytes);
+
+        }
+        dataObject.put("netReceiveSpeed",totalNetRecv);
+        dataObject.put("netSendSpeed",totalNetSent);
         System.out.println("Sample Finish");
-        return  resultObject.toJSONString();
     }
     private List<partionInfo> processing(List<OSFileStore> fsList){
         ArrayList<partionInfo> result=new ArrayList<>();
@@ -162,32 +230,31 @@ public class DataSampler {
         }
         return  result;
     }
-    private static String formatUnits(long value, long prefix, String unit) {
-        return value % prefix == 0L ? String.format("%d %s", value / prefix, unit) : String.format("%.2f %s", (double)value / (double)prefix, unit);
-    }
-    public String firstPeriodSample(){
-        JSONObject resultObject=new JSONObject();
-        //Memory利用率
+    private void firstSample(){
         GlobalMemory globalMemory = systemInfo.getHardware().getMemory();
-        long totalByte = globalMemory.getTotal();
-        long availableByte = globalMemory.getAvailable();
-        //formatUnits(,(1024*1024*1024),"GB");
-        double memoryUsage = (totalByte-availableByte)*1.0/totalByte;
-        resultObject.put("MemUsage",memoryUsage);
+        //double memoryUsage = (totalByte-availableByte)*1.0/totalByte;
+        dataObject.put("memoryTotalSize",globalMemory.getTotal());
+        dataObject.put("memoryUsedSize",globalMemory.getTotal()-globalMemory.getAvailable());
         //Cpu利用率
         CentralProcessor centralProcessor = systemInfo.getHardware().getProcessor();
         long[] ticks = centralProcessor.getSystemCpuLoadTicks();
-        formatLastSampleData.preTicks=ticks;
+        long newTotalTicks=0;
+        long totalCpu = 0;
+        for(int i=0;i<ticks.length;i++){
+            newTotalTicks += ticks[i];
+        }
+        dataObject.getJSONArray("cpuInfoList").getJSONObject(0).put("TotalTicks",newTotalTicks);
+        dataObject.getJSONArray("cpuInfoList").getJSONObject(0).put("idleTick",ticks[CentralProcessor.TickType.IDLE.getIndex()]);
         //Cpu温度
         Sensors sensors = systemInfo.getHardware().getSensors();
-        resultObject.put("CpuTemperature",sensors.getCpuTemperature());
+        dataObject.getJSONArray("cpuInfoList").getJSONObject(0).put("cpuTemperature",sensors.getCpuTemperature());
         //磁盘占用率/iops/速率
         List<HWDiskStore> hwDiskStoreList=systemInfo.getHardware().getDiskStores();
-        JSONArray diskArray=new JSONArray();
         List<partionInfo> pList=processing(systemInfo.getOperatingSystem().getFileSystem().getFileStores());
-        for(HWDiskStore hwDiskStore:hwDiskStoreList){
-            JSONObject tempDiskObject=new JSONObject();
-            List<HWPartition> hwpList= hwDiskStore.getPartitions();
+        long totalUsedSize=0;
+        for(int j=0;j<hwDiskStoreList.size();j++){
+            HWDiskStore hwInThisLoop=hwDiskStoreList.get(j);
+            List<HWPartition> hwpList= hwInThisLoop.getPartitions();
             long usable=0;
             long total=0;
             for(HWPartition hwPartition:hwpList){
@@ -200,22 +267,40 @@ public class DataSampler {
                 }
             }
             double usage=usable*1.0/total;
-            String name=hwDiskStore.getName()+":"+hwDiskStore.getModel();
-            tempDiskObject.put("name",name);
-            tempDiskObject.put("usage",usage);
-            long ReadNumber=hwDiskStore.getReads();
-            long ReadBytes=hwDiskStore.getReadBytes();
-            long WriteNumber=hwDiskStore.getWrites();
-            long WriteBytes=hwDiskStore.getWriteBytes();
-            formatLastSampleData.DiskInfo.put(name+"-read",ReadNumber);
-            formatLastSampleData.DiskInfo.put(name+"-readbytes",ReadBytes);
-            formatLastSampleData.DiskInfo.put(name+"-write",WriteNumber);
-            formatLastSampleData.DiskInfo.put(name+"-writebytes",WriteBytes);
-            diskArray.add(tempDiskObject);
+            dataObject.getJSONArray("diskInfoList").getJSONObject(j).put("diskCapacityUsedSize",total-usable);
+            totalUsedSize+=total-usable;
+            dataObject.getJSONArray("diskInfoList").getJSONObject(j).put("diskUsage",usage);
+            long ReadNumber=hwInThisLoop.getReads();
+            long ReadBytes=hwInThisLoop.getReadBytes();
+            long WriteNumber=hwInThisLoop.getWrites();
+            long WriteBytes=hwInThisLoop.getWriteBytes();
+            dataObject.getJSONArray("diskInfoList").getJSONObject(j).put("diskRead",ReadNumber);
+            dataObject.getJSONArray("diskInfoList").getJSONObject(j).put("diskReadBytes",ReadBytes);
+            dataObject.getJSONArray("diskInfoList").getJSONObject(j).put("diskWrite",WriteNumber);
+            dataObject.getJSONArray("diskInfoList").getJSONObject(j).put("diskWriteBytes",WriteBytes);
         }
-        resultObject.put("Disks",diskArray);
+        dataObject.put("diskCapacityUsedSizeSum",totalUsedSize);
+        //网络速率计算
+        List<NetworkIF> networkIFS=systemInfo.getHardware().getNetworkIFs();
+        for(int k=0;k<networkIFS.size();k++){
+            NetworkIF networkIF=networkIFS.get(k);
+
+            long RecvBytes=networkIF.getBytesRecv();
+            long SentBytes=networkIF.getBytesSent();
+
+            dataObject.getJSONArray("netInterfaceList").getJSONObject(k).put("recvBytes",RecvBytes);
+            dataObject.getJSONArray("netInterfaceList").getJSONObject(k).put("sentBytes",SentBytes);
+
+        }
         System.out.println("Sample Finish");
-        return  resultObject.toJSONString();
+
+
+    }
+    private static String formatUnits(long value, long prefix, String unit) {
+        return value % prefix == 0L ? String.format("%d %s", value / prefix, unit) : String.format("%.2f %s", (double)value / (double)prefix, unit);
+    }
+    public String outputSampleData(){
+        return dataObject.toJSONString();
     }
     public static void main(String[] args) {
         DataSampler dataSampler = new DataSampler();

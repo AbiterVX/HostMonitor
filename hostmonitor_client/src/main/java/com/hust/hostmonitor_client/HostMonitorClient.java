@@ -17,22 +17,22 @@ public class HostMonitorClient {
         DataSampler mainSampler=new DataSampler();
         boolean isTheFirstTimeToSample=true;
         String sampleResultJson;
+        mainSampler.hardWareSample();
         DataSender senderThread=new DataSender();
         senderThread.start();
+
         synchronized (lockObject){
             while(true){
                 Util.sleep(SamplePeriod);
                 if(!isTheFirstTimeToSample){
-
-                    sampleResultJson=mainSampler.periodSample(SamplePeriod);
-
+                    mainSampler.periodSample(SamplePeriod/1000,false);
                 }
                 else{
-                    sampleResultJson=mainSampler.firstPeriodSample();
+                    mainSampler.periodSample(SamplePeriod/1000,true);
                     isTheFirstTimeToSample=false;
                 }
                 sampleIndex++;
-                senderThread.setContextToBeSent(sampleResultJson);
+                senderThread.setContextToBeSent(mainSampler.outputSampleData());
                 lockObject.notifyAll();
                 lockObject.wait();
             }
@@ -58,9 +58,11 @@ public class HostMonitorClient {
                         lockObject.wait();
                     }
                 }
-            } catch (IOException e) {
+            }
+            catch (IOException e) {
                 e.printStackTrace();
-            } catch (InterruptedException e) {
+            }
+            catch (InterruptedException e) {
                 e.printStackTrace();
             }
 

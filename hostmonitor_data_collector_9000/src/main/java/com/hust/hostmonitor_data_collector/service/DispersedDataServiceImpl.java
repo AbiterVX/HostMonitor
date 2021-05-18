@@ -1,6 +1,11 @@
 package com.hust.hostmonitor_data_collector.service;
 
+import com.hust.hostmonitor_data_collector.utils.DispersedHostMonitor;
+
 public class DispersedDataServiceImpl implements DispersedDataService{
+
+    private DispersedHostMonitor dispersedHostMonitor=DispersedHostMonitor.getInstance();
+
     @Override
     public String getDashboardSummary() {
         return null;

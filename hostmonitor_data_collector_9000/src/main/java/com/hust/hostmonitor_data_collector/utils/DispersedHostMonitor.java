@@ -18,6 +18,8 @@ public class DispersedHostMonitor {
     public Map<String, JSONObject> dfpInfoList = new HashMap<>();
     //测速Info-List
     public Map<String, JSONObject> speedMeasurementInfoList = new HashMap<>();
+    //serverSocket
+    private DataReceiver dataReceiver=new DataReceiver(this);
 
     //单例
     private volatile static DispersedHostMonitor dispersedHostMonitor;
@@ -33,7 +35,10 @@ public class DispersedHostMonitor {
     }
     private DispersedHostMonitor(){
         summaryInfo = dispersedConfig.getSummaryJson();
+        dataReceiver.startListening();
     }
-
+    public static void main(String[] args){
+        DispersedHostMonitor.getInstance();
+    }
 
 }

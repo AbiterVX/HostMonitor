@@ -69,19 +69,10 @@ public class HostMonitorBatchExecution{
             Vector<HostProcessSampleData> tempList = new Vector<>();
             hostProcessSampleDataList.add(tempList);
         }
-
-        SocketSampleDataList=new ArrayList<>();
-        for(int i=0;i<hostConfigInfoList.size();i++){
-            HostSampleData newHostSampleData = new HostSampleData(hostConfigInfoList.get(i).ip,sampleDataFormat);
-            newHostSampleData.setAllValueInvalid();
-            SocketSampleDataList.add(newHostSampleData);
-        }
-
-
-
         //线程池大小设为Host个数*2
         executor= Executors.newFixedThreadPool(hostConfigInfoList.size()*2);
     }
+
 
     //----------采样----------
     //Host采样
