@@ -121,7 +121,15 @@
         DFPSummaryChart.setOption(FGetDFPSummaryChartOption());
         DFPTrendChart.setOption(FGetDFPTrendChartOption());
         //-----更新DFPInfo数据
-        FRefreshDataDFPInfoAll(function (dfpInfoList){
+        FRefreshDataDFPInfoAll(function (dfpInfoList,dfpSummaryChart){
+            //刷新Summary Chart
+            //alert(JSON.stringify(dfpSummaryChart));
+            //刷新SummaryChart
+            setTimeout(function(){
+                FRefreshDFPSummaryChart(DFPSummaryChart,dfpSummaryChart);
+            }, 1000);
+
+
             //刷新Table
             refreshDFPInfoTable(true,dfpInfoList);
         });
@@ -131,6 +139,8 @@
         var diskName = FGetHostInfo(hostName)["diskInfoList"][0]["diskName"];
         refreshDFPInfoTrend(hostName,diskName);
     }
+
+
 
     //[DropDown]选择-HostName
     function dropDownSelectHostName(index){

@@ -100,7 +100,7 @@ function FSendGetRequest(async,url,callbackFunc){
             },
             hostName2: {
                 hostName: "hostName2",
-                connected: true,
+                connected: false,
                 ip: "0.0.0.1",
                 osName: "Windows 8",
                 memoryUsage: [4.8, 8.4],
@@ -400,6 +400,8 @@ function FRefreshDataHostInfoAll(uiRefreshCallbackFunc){
                     hostInfo["diskInfoList"][j]["diskCapacityUsage"] = (hostInfo["diskInfoList"][j]["diskCapacitySize"][0] / hostInfo["diskInfoList"][j]["diskCapacitySize"][1]*100).toFixed(2);
                 }
 
+                //connected
+                hostInfo["connected"] = resultData[hostName]["connected"];
                 //cpuInfoList
                 hostInfo["cpuInfoList"] = resultData[hostName]["cpuInfoList"];
                 //gpuInfoList
@@ -450,6 +452,8 @@ function FRefreshDataHostInfo(hostName,uiRefreshCallbackFunc){
                 hostInfo["diskInfoList"][j]["diskCapacityUsage"] = (hostInfo["diskInfoList"][j]["diskCapacitySize"][0] / hostInfo["diskInfoList"][j]["diskCapacitySize"][1]*100).toFixed(2);
             }
 
+            //connected
+            hostInfo["connected"] = resultData["connected"];
             //cpuInfoList
             hostInfo["cpuInfoList"] = resultData["cpuInfoList"];
             //gpuInfoList
@@ -519,8 +523,10 @@ function FRefreshDataDFPInfoAll(uiRefreshCallbackFunc){
 
     if(timestamp-dfpInfoList["lastUpdateTime"] >= requestCoolDownTime["RefreshDataDFPInfoTrend"]){
         FSendGetRequest(false,"/Dispersed/getDFPInfo/All",function (resultData){
+            var dfpSummaryChart = [0,0,0];
             dfpInfoList["dfpInfo"] = resultData;
             for(var i=0;i<dfpInfoList["dfpInfo"].length;i++){
+                //设置硬盘容量
                 var diskInfoList = FGetHostInfo(dfpInfoList["dfpInfo"][i]["hostName"])["diskInfoList"];
                 for(var j=0;j<diskInfoList.length;j++){
                     if(diskInfoList[j]["diskName"] === dfpInfoList["dfpInfo"][i]["diskName"]){
@@ -528,13 +534,23 @@ function FRefreshDataDFPInfoAll(uiRefreshCallbackFunc){
                         break;
                     }
                 }
+                //统计
+
+                for(var j=0;j<dfpPartition.length;j++){
+                    if(dfpInfoList["dfpInfo"][i]["predictProbability"]  < dfpPartition[j]){
+                        dfpSummaryChart[j] += 1;
+                        break;
+                    }
+                }
             }
+
+            dfpInfoList["dfpSummaryChart"] = dfpSummaryChart;
             FSetData("dfpInfoList",dfpInfoList);
-            uiRefreshCallbackFunc(dfpInfoList["dfpInfo"]);
+            uiRefreshCallbackFunc(dfpInfoList["dfpInfo"],dfpInfoList["dfpSummaryChart"]);
         });
     }
     else{
-        uiRefreshCallbackFunc(dfpInfoList["dfpInfo"]);
+        uiRefreshCallbackFunc(dfpInfoList["dfpInfo"],dfpInfoList["dfpSummaryChart"]);
     }
 
 }

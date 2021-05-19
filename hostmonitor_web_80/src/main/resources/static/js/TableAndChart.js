@@ -402,7 +402,15 @@ const tableColumns = {
                     return FGetLoadingImg();
                 }
                 else{
-                    return FGetPercentageWithUnit(value);
+                    var color = "";
+                    for(var i=0;i<dfpPartition.length;i++){
+                        if(value < dfpPartition[i]){
+                            color = dfpPartitionColor[i];
+                            break;
+                        }
+                    }
+
+                    return '<span style="font-weight:bold;color:'+ color +'">'+FGetPercentageWithUnit(value)+'</span>';
                 }
             }
         },
@@ -544,6 +552,7 @@ function FGetFormat(key){
     }
     else if(key === "hostInfo"){
         var hostInfoFormat = {
+            connected: false,
             //Dashboard
             hostInfo1:{
                 osName: "OS",
@@ -613,6 +622,7 @@ function FGetFormat(key){
     else if(key === "dfpInfoList"){
         var dfpInfoListFormat = {
             dfpInfo: [],
+            dfpSummaryChart:[0,0,0],
             lastUpdateTime:0,
         }
         return dfpInfoListFormat;
@@ -727,8 +737,10 @@ var loadPartition ={
     cpu:[30,70,100],
     memory:[30,70,100],
     disk:[30,70,100],
-}
+};
 
+var dfpPartition = [30,70,100];
+var dfpPartitionColor = ['#92cc76','#fac859','#ee6767'];
 //数据间隔时间
 var DateInterval = [24,1];
 var DateIntervalText = ["最近1天","最近1小时"];
@@ -917,6 +929,25 @@ function FRefreshSummaryChartData(currentChart,currentData){
     currentChart.setOption(option);
 }
 
+function FRefreshDFPSummaryChart(currentChart,currentData){
+    var option = FGetDFPSummaryChartOption();
+    //alert(JSON.stringify(option));
+    var percentage = [];
+    var sum = 0;
+    for(var j=0;j<3;j++){
+        sum += currentData[j];
+    }
+    for(var j=0;j<3;j++){
+        percentage.push( (currentData[j]/sum* 100).toFixed(1) ) ;
+    }
+
+    for(var j=0;j<3;j++){
+        option["series"][0]["data"][j]["value"] = percentage[j];
+        option["series"][1]["data"][j]["value"] = currentData[j];
+    }
+
+    currentChart.setOption(option);
+}
 
 //获取ChartOption-TrendChart
 function FGetTrendChartOption(){
@@ -1080,7 +1111,7 @@ function FGetDFPTrendChartOption(){
         tooltip: {
             trigger: 'axis',
             formatter: function(params){
-                var returnTxt = "时间: "+params[0].value[0] +"<br/>";
+                var returnTxt = "时间: "+ FGetDateTime(params[0].value[0]) +"<br/>";
                 for(var i =0; i< params.length; i++){
                     returnTxt += params[i].marker+" "+params[i].seriesName+ " "+params[i].value[1] + "%" + "<br/>";
                 }
@@ -1125,9 +1156,5 @@ function FGetDFPTrendChartOption(){
         },
     };
     return DFPTrendChartOption;
-}
-
-function FUpdateChartData(){
-
 }
 

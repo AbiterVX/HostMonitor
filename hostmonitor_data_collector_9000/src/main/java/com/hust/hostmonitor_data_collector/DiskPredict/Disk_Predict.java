@@ -1,6 +1,12 @@
 package com.hust.hostmonitor_data_collector.DiskPredict;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.Charset;
+
 import ai.onnxruntime.OrtException;
+import com.csvreader.CsvReader;
+import org.python.util.PythonInterpreter;
 
 /**
  * @author 62786
@@ -90,7 +96,60 @@ public class Disk_Predict {
 	}
 
 	public static void main(String[] args) {
-		Disk_Predict onnx_Model = new Disk_Predict("testInput.csv", "testOutput.csv");
+		//Disk_Predict onnx_Model = new Disk_Predict("testInput.csv", "testOutput.csv");
+
+
+
+
+
+
+
+
+		/*
+		try {
+			String commend =("cmd.exe /k winsat disk" );//该部分为你的cmd命令,此处为调用javac将Java文件编译出class文件
+
+			Process pro = Runtime.getRuntime().exec(commend); //添加要进行的命令
+			BufferedReader br = new BufferedReader(new InputStreamReader(pro.getInputStream())); //虽然cmd命令可以直接输出，但是通过IO流技术可以保证对数据进行一个缓冲。
+			String msg = null;
+			while ((msg = br.readLine()) != null) {
+				System.out.println(msg);
+			}
+		} catch (IOException exception) {
+			exception.printStackTrace();
+			System.out.println("编译出错");
+		}*/
+
+
+		/*try {
+			String csvFilePath = System.getProperty("user.dir") + "/DiskPredictData/input/testInput.csv";
+			CsvReader reader = new CsvReader(csvFilePath, ',', Charset.forName("UTF-8"));
+			reader.readHeaders();
+			while (reader.readRecord()) {
+				//System.out.println(reader.getRawRecord());
+				System.out.println(reader.getValues()[0]);
+			}
+			reader.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}*/
+
+		/*PythonInterpreter interpreter = new PythonInterpreter();
+		interpreter.exec("a=[5,2,3,9,4,0]; ");
+		interpreter.exec("print(sorted(a));");  //此处python语句是3.x版本的语法
+		interpreter.exec("print sorted(a);");   //此处是python语句是2.*/
+
+
+
+
+
+
+
+
+
+		//https://blog.csdn.net/qq_26591517/article/details/80441540
+		//interpreter.execfile("D:\\add.py");
+
 
 		/*
 		// 数据没有标签列时 TEST必须 = false

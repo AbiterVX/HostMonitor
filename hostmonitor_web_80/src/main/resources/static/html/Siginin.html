@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>登录</title>
+    <title id="SignInPageTitle">登录</title>
     <!-- JQuery -->
     <script type="text/javascript" src="../JQuery/jquery-3.3.1.min.js"></script>
     <!-- popper 用于下拉框 -->
@@ -39,23 +39,25 @@
 </style>
 <body class="text-center">
 
-    <form class="form-signin">
+    <div class="form-signin">
         <img class="mb-4" src="../images/ProjectIcon.png" alt="" width="72" height="72">
         <h1 class="h3 mb-3 font-weight-normal">管理员登录</h1>
 
         <input id="InputID" class="form-control" placeholder="账户"  autofocus="">
         <input id="InputPassword" type="password" class="form-control" placeholder="密码">
         <div class="checkbox mb-3"></div>
-        <button class="btn btn-lg btn-primary btn-block" >登录</button>
+        <button onclick="sigInInBtnOnclick()" class="btn btn-lg btn-primary btn-block" >登录</button>
         <button id="backBtn" onclick="backBtnOnclick()" class="btn btn-lg btn-secondary btn-block ">返回</button>
         <p class="mt-5 mb-3 text-muted">HUST-数据中心资源监控-2021 v3.0</p>
-    </form>
+    </div>
 
 
 
 </body>
 <script>
-
+    function sigInInBtnOnclick(){
+        alert("登录");
+    }
     function backBtnOnclick(){
         alert("!!");
         //window.location.href="/";

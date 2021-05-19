@@ -57,17 +57,18 @@ function FSetCurrentNavItem(leftNavItemIndex){
 
         //MainPart
         var MainPart = document.getElementById("MainPart");
+        var parentPath = ""; //"html/";
         if(leftNavItemIndex ===0){
-            MainPart.src = "DashBoard.html";
+            MainPart.src = parentPath + "DashBoard.html";
         }
         else if(leftNavItemIndex ===1){
-            MainPart.src = "HostDetail.html";
+            MainPart.src = parentPath + "HostDetail.html";
         }
         else if(leftNavItemIndex ===2){
-            MainPart.src = "DiskFailurePrediction.html";
+            MainPart.src = parentPath + "DiskFailurePrediction.html";
         }
         else if(leftNavItemIndex ===3){
-            MainPart.src = "SpeedMeasurement.html";
+            MainPart.src = parentPath + "SpeedMeasurement.html";
         }
 
     }
@@ -82,7 +83,7 @@ function FInitDropDown(dropDownMenuId,dropDownBtnId,dropDownItems,selectBtnCallb
     var dropDownMenuHtml = "";
     //下拉菜单-设置选项
     for(var i=0;i< dropDownItems.length;i++){
-        dropDownMenuHtml += '<a class="dropdown-item" href="#" ' +
+        dropDownMenuHtml += '<a class="dropdown-item" href="javascript:void(0)" ' +
             'onclick="FDropDownOnClick('+ i + ','+  selectBtnCallback +')">' + dropDownItems[i] +'</a>';
     }//
     dropDownMenu.innerHTML = dropDownMenuHtml;
@@ -93,7 +94,7 @@ function FInitDropDown(dropDownMenuId,dropDownBtnId,dropDownItems,selectBtnCallb
 //[下拉菜单]-onclick选择
 function FDropDownOnClick(index,callbackFunc){
     callbackFunc(index);
-}//
+}
 
 
 

@@ -125,9 +125,10 @@
             var hostInfo1ID = "hostInfo1_" + i;
             var diskInfoID = "diskInfo_" + i;
             var titleID = "title_" + i;
+            var cardID = "card_" + i;
             tableHTML +=
                 '<div class="accordion" id="'+accordionId+'" style="margin-bottom: 5px;">\n' +
-                '     <div class="card" style="background-color: #72787b">\n' +
+                '     <div id="'+cardID+'" class="card" style="background-color: #72787b">\n' +
                 '          <button class="btn" type="button" data-toggle="collapse"  data-target="#'+collapseId+'">\n' +
                 '                <h5 id="'+titleID+'" style="text-align: left;margin-top: 10px;color: white">\n' +
                                     hostNameList[i] +
@@ -162,6 +163,15 @@
                 columns: tableColumns["diskInfo"],
                 data: hostInfo["diskInfoList"],
             });
+            if(hostInfo["connected"] === true){
+            }
+            else{
+                document.getElementById("card_"+i).style.backgroundColor = "rgba(250,200,89,0.5)";
+                var title = document.getElementById("title_"+i);
+                title.style.color = "black";
+                title.innerText = title.innerText + " (Down)";
+            }
+
         }
     }
 </script>
