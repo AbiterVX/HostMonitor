@@ -5,28 +5,34 @@ import java.sql.Timestamp;
 
 public class TemperatureRecord {
     private Timestamp timestamp;
-    private BigDecimal temp;
-    private float tempf;
+    private Double temperature;
 
-    public TemperatureRecord(BigDecimal temp,Timestamp timestamp) {
+    public TemperatureRecord(Timestamp timestamp, Double temperature) {
         this.timestamp = timestamp;
-        this.temp = temp;
-        this.tempf=temp.floatValue();
+        this.temperature = temperature;
     }
 
     public Timestamp getTimestamp() {
         return timestamp;
     }
 
-    public float getTempf() {
-        return tempf;
+    public void setTimestamp(Timestamp timestamp) {
+        this.timestamp = timestamp;
+    }
+
+    public Double getTemperature() {
+        return temperature;
+    }
+
+    public void setTemperature(Double temperature) {
+        this.temperature = temperature;
     }
 
     @Override
     public String toString() {
         return "TemperatureRecord{" +
                 "timestamp=" + timestamp +
-                ", tempf=" + tempf +
+                ", temperature=" + temperature +
                 '}';
     }
 }

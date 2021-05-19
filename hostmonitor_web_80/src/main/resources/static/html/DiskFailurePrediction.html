@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <!-- JQuery -->
+    <script type="text/javascript" src="../JQuery/jquery-3.3.1.min.js"></script>
+    <!-- popper 用于下拉框 -->
+    <script type="text/javascript" src="../popper/popper.min.js"></script>
+    <!-- BootStrap -->
+    <link rel="stylesheet" href= "../bootstrap-4.3.1-dist/css/bootstrap.min.css" >
+    <script type="text/javascript" src="../bootstrap-4.3.1-dist/js/bootstrap.js"></script>
+
+    <!-- ECharts -->
+    <script type="text/javascript" src="../echarts/echarts.min.js"></script>
+    <!-- functionLibrary -->
+    <script type="text/javascript" src="../js/DataRequest.js"></script>
+    <script type="text/javascript" src="../js/WidgetDisplay.js"></script>
+    <script type="text/javascript" src="../js/TableAndChart.js"></script>
+
+    <!-- Bootstrap-table -->
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="../bootstrap-table/bootstrap-table.min.css">
+
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="../bootstrap-table/bootstrap-table.min.js"></script>
+    <!-- Latest compiled and minified Locales -->
+    <script src="../bootstrap-table/bootstrap-table-zh-CN.min.js"></script>
+</head>
+<body>
+    <!--标题-->
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
+        <h2 class="h2">概要</h2>
+        <div class="btn-toolbar mb-2 mb-md-0" role="toolbar" style="margin-right: 5px;">
+            <!-- IP-DropDown-->
+            <div style="margin-right: 15px;">
+                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" style="width: 200px;" type="button" id="HostNameDropDownBtn" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    0.0.0.0
+                </button>
+                <div id="HostNameDropDownMenu" class="dropdown-menu" aria-labelledby="HostNameDropDownBtn">
+                    <a class="dropdown-item" href="#"> 0.0.0.0</a>
+                </div>
+            </div>
+
+            <!-- IP-DropDown-->
+            <div>
+                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" style="width: 200px;" type="button" id="DiskNameDropDownBtn" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    0.0.0.0
+                </button>
+                <div id="DiskNameDropDownMenu" class="dropdown-menu" aria-labelledby="DiskNameDropDownBtn">
+                    <a class="dropdown-item" href="#"> 0.0.0.0</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row"  style="margin-bottom: 10px;">
+        <!--Chart-->
+        <div class="col-sm-3">
+            <div id="DFPSummaryChart" style="width: 300px;height: 300px;"></div>
+        </div>
+        <!--摘要Chart-->
+        <div class="col-sm-9">
+            <div id="DFPTrendChart" style="width: 100%;height: 300px;"></div>
+        </div>
+    </div>
+
+    <!--标题-->
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
+        <h2 class="h2">故障预测</h2>
+        <div class="btn-toolbar mb-2 mb-md-0" role="toolbar" style="margin-right: 5px;">
+            <button  id="predictBtn"  onclick="predictBtnOnClick()"  type="button" class="btn btn-secondary" style="width: 120px;height: 40px;font-size: 18px;" >开始预测</button>
+            <button hidden id="processCollapseBtn" data-toggle="collapse"  data-target="#DFPCollapse"></button>
+        </div>
+    </div>
+
+    <div id="DFPCollapse" class="collapse">
+        <div class="row" >
+            <div class="col-md-auto">
+                <h4 class="h4">进度:</h4>
+            </div>
+            <div class="col-sm">
+                <div class="progress" style="width: 100%;height: 32px;" >
+                    <div id="progressBar" style="width: 0%;" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100"></div>
+                    <h4 id="progressPercentage" class="justify-content-center d-flex position-absolute w-100">60%</h4>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <table id="diskFailurePredictInfo" style="table-layout: fixed;word-break: break-all;"></table>
+    <div style="height: 100px;width: 100%"></div>
+</body>
+
+<script>
+    //概要Chart
+    var DFPSummaryChart = echarts.init(document.getElementById("DFPSummaryChart"));
+    //趋势Chart
+    var DFPTrendChart = echarts.init(document.getElementById("DFPTrendChart"));
+    //Data
+    var dfpTrendChartData = [];
+    //当前HostIndex
+    var currentHostIndex = 0;
+    //当前DiskIndex
+    var currentDiskIndex = 0;
+    //table选中项
+    var selectedItems = new Set();
+    //进度条
+    var progressBar = $('#progressBar');
+    var progressPercentage = document.getElementById("progressPercentage");
+    var currentProgressPercentage = 0;
+    //MainInfo
+    var mainInfo = FGetMainInfo();
+
+    window.onload=function (){
+        //初始化-DropDown-HostName
+        FInitDropDown("HostNameDropDownMenu","HostNameDropDownBtn",mainInfo["hostName"],"dropDownSelectHostName",currentHostIndex);
+        //初始化-DropDown-HostName
+        FInitDropDown("DiskNameDropDownMenu","DiskNameDropDownBtn",FGetDiskNameList(mainInfo["hostName"][currentHostIndex]),"dropDownSelectDiskName",currentDiskIndex);
+
+        //设置Chart
+        DFPSummaryChart.setOption(FGetDFPSummaryChartOption());
+        DFPTrendChart.setOption(FGetDFPTrendChartOption());
+        //-----更新DFPInfo数据
+        FRefreshDataDFPInfoAll(function (dfpInfoList){
+            //刷新Table
+            refreshDFPInfoTable(true,dfpInfoList);
+        });
+
+        //刷新Chart数据
+        var hostName = mainInfo["hostName"][currentHostIndex];
+        var diskName = FGetHostInfo(hostName)["diskInfoList"][0]["diskName"];
+        refreshDFPInfoTrend(hostName,diskName);
+    }
+
+    //[DropDown]选择-HostName
+    function dropDownSelectHostName(index){
+        if(index !== currentHostIndex){
+            //下拉按钮-设置当前显示Txt
+            var hostName =mainInfo["hostName"][index];
+            document.getElementById("HostNameDropDownBtn").innerText = hostName;
+            //设置
+            currentHostIndex = index;
+            //初始化-DropDown-HostName
+            currentDiskIndex=0;
+            FInitDropDown("DiskNameDropDownMenu","DiskNameDropDownBtn",FGetDiskNameList(hostName),"dropDownSelectDiskName",currentDiskIndex);
+            //刷新Chart数据
+            var hostInfo = FGetHostInfo(hostName);
+            refreshDFPInfoTrend(hostName,hostInfo["diskInfoList"][0]["diskName"]);
+        }
+    }
+    //[DropDown]选择-DiskName
+    function dropDownSelectDiskName(index){
+        if(index !== currentDiskIndex){
+            //下拉按钮-设置当前显示Txt
+            var hostName =mainInfo["hostName"][currentHostIndex];
+            var hostInfo = FGetHostInfo(hostName);
+            document.getElementById("DiskNameDropDownBtn").innerText = hostInfo["diskInfoList"][index]["diskName"];
+            //设置
+            currentDiskIndex = index;
+            //刷新Chart数据
+            refreshDFPInfoTrend(hostName,hostInfo["diskInfoList"][index]["diskName"]);
+        }
+    }
+    //刷新故障Trend
+    function refreshDFPInfoTrend(hostName,diskName){
+        FRefreshDataDFPInfoTrend(hostName,diskName,function (trendChartData){
+            refreshDFPTrendChartData(trendChartData);
+        });
+    }
+
+    //刷新Chart-Data-DFPTrendChart
+    function refreshDFPTrendChartData(trendChartData){
+        var option = {
+            series: {data:trendChartData},
+        };
+        DFPTrendChart.setOption(option);
+    }
+
+    //刷新Table-DFPInfo
+    function refreshDFPInfoTable(init,dfpInfoList){
+        if(init){
+            $('#diskFailurePredictInfo').bootstrapTable({
+                columns: tableColumns["diskFailurePredictInfo"],
+                data: dfpInfoList,
+                onCheck:function(row, $element){
+                    selectedItems.add(row["hostName"]);
+                },
+                onUncheck:function(row, $element){
+                    selectedItems.delete(row["hostName"]);
+                },
+                onCheckAll: function (rowsAfter,rowsBefore) {
+                    selectedItems.clear();
+                    for(var i=0;i<rowsAfter.length;i++){
+                        if(rowsAfter[i]["predictProbability"] !== -1){
+                            selectedItems.add(rowsAfter[i]["hostName"]);
+                        }
+                    }
+                },
+                onUncheckAll: function (rowsAfter,rowsBefore) {
+                    selectedItems.clear();
+                }
+            });
+        }
+        else{
+            $('#diskFailurePredictInfo').bootstrapTable("load",dfpInfoList);
+        }
+    }
+
+    //按钮-OnClick事件-开始预测
+    function predictBtnOnClick(){
+        var hostNameList = Array.from(selectedItems);
+        var dfpInfoList = FGetDFPInfoList();
+        for(var i=0;i<dfpInfoList["dfpInfo"].length;i++){
+            for(var j=0;j<hostNameList.length;j++){
+                if(dfpInfoList["dfpInfo"][i]["hostName"] === hostNameList[j]){
+                    dfpInfoList["dfpInfo"][i]["predictProbability"] = -1;
+                    break;
+                }
+            }
+        }
+        selectedItems.clear();
+        refreshDFPInfoTable(false,dfpInfoList["dfpInfo"]);
+
+        $('#processCollapseBtn').click();
+        $('#predictBtn').prop('disabled', true);
+        setProgressUpdate();
+    }
+
+    //开启进度条更新-Test
+    function setProgressUpdate(){
+        var progressUpdate = window.setInterval(function (){
+            if(currentProgressPercentage <= 100){
+                var percentage = FGetPercentageWithUnit(currentProgressPercentage);
+                progressBar.css("width",percentage);
+                progressPercentage.innerText = percentage;
+                currentProgressPercentage+=2;
+            }
+            else{
+                progressBar.css("width","100%");
+                progressPercentage.innerText = "完成";
+                predictComplete();
+                clearInterval(progressUpdate);
+            }
+        },50);
+    }
+
+    //预测完成
+    function predictComplete(){
+        setTimeout(function (){
+            $('#processCollapseBtn').click();
+            refreshDFPInfoTable(false);
+            setTimeout(function (){
+                currentProgressPercentage = 0;
+                progressBar.css("width","0%");
+                progressPercentage.innerText = "0%";
+                $('#predictBtn').prop('disabled', false);
+
+            },2000);
+
+        },2000);
+    }
+
+</script>
+</html>

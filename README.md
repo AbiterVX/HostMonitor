@@ -164,3 +164,12 @@ DiskFailurePredictConfig：重新进行故障预测。
 #### v2.2
 
 web后端内数据缓存。
+
+#### v3.0
+
+**hostmonitor_client:** 实现数据分离采样，在windows/Linux环境下的Host本地定时采样数据，并使用socket远程发送数据。
+
+使用OSHI进行硬件采样。
+
+
+

@@ -1,0 +1,59 @@
+{
+  "hostInfo": {
+    "osName": "OS",
+    "memoryTotalSize": 0,
+    "memoryUsedSize": 0,
+    "netReceiveSpeed": 0,
+    "netSendSpeed": 0,
+    "cpuUsageAverage": 0,
+    "diskCapacityTotalSizeSum": 0,
+    "diskCapacityUsedSizeSum": 0,
+    "diskInfoList": [],
+    "cpuInfoList": [],
+    "gpuInfoList": [],
+    "netInterfaceList": [],
+    "processInfoList": []
+  },
+  "diskInfo": {
+    "diskName": "",
+    "diskIOPS": 0,
+    "diskReadSpeed": 0,
+    "diskWriteSpeed": 0,
+    "diskCapacityTotalSize": 0,
+    "diskCapacityUsedSize": 0,
+    "diskUsage": 0,
+    "diskRead": 0,
+    "diskWrite": 0,
+    "diskReadBytes": 0,
+    "diskWriteBytes": 0,
+    "type": 0
+  },
+  "cpuInfo": {
+    "cpuName": "",
+    "TotalTicks" :0,
+    "idleTick": 0,
+    "cpuUsage": 0,
+    "cpuTemperature": 0
+  },
+  "gpuInfo": {
+    "gpuName": "",
+    "gpuAvailableRam": 0
+  },
+  "processInfo": {
+    "processId": "",
+    "processName": "",
+    "startTime": 0,
+    "cpuUsage": 0,
+    "memoryUsage": 0,
+    "diskReadSpeed": 0,
+    "diskWriteSpeed": 0
+  },
+  "netInterfaceInfo": {
+    "netInterfaceName": "",
+    "sentBytes": 0,
+    "recvBytes": 0,
+    "sentSpeed": 0,
+    "recvSpeed": 0
+  }
+
+}

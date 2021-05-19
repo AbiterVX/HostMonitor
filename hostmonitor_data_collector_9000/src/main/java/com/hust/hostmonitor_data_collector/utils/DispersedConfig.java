@@ -1,0 +1,78 @@
+package com.hust.hostmonitor_data_collector.utils;
+
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.JSONPObject;
+import org.apache.commons.io.FileUtils;
+
+import java.io.File;
+import java.io.IOException;
+
+public class DispersedConfig {
+    //配置文件
+    private final JSONObject configJson = JSONObject.parseObject(readFile("ConfigData/DispersedSampleDataFormat.json"));
+    //配置文件父路径-最终为打包jar的同级目录
+    private final String path = System.getProperty("user.dir");
+
+    //单例-init
+    private volatile static DispersedConfig dispersedConfig;
+    public static DispersedConfig getInstance(){
+        if(dispersedConfig ==null){
+            synchronized (DispersedConfig.class){
+                if(dispersedConfig ==null){
+                    dispersedConfig =new DispersedConfig();
+                }
+            }
+        }
+        return dispersedConfig;
+    }
+    private DispersedConfig(){
+    }
+
+
+    //读文件
+    public String readFile(String filePath){
+        String resultData = "";
+        File file = new File(path,filePath);
+        try {
+            resultData = FileUtils.readFileToString(file, "UTF-8");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return resultData;
+    }
+    //获取配置文件JsonObject
+    private JSONObject getConfigJsonObject(String key){
+        return JSONObject.parseObject(configJson.getJSONObject("hostInfo").toJSONString());
+    }
+
+    //-----获取配置文件JsonObject-对外接口-----
+    public JSONObject getSummaryJson(){
+        return getConfigJsonObject("summary");
+    }
+    public JSONObject getHostInfoJson(){
+        return getConfigJsonObject("hostInfo");
+    }
+    public JSONObject getDiskInfoJson(){
+        return getConfigJsonObject("diskInfo");
+    }
+    public JSONObject getCpuInfoJson(){
+        return getConfigJsonObject("cpuInfo");
+    }
+    public JSONObject getGpuInfoJson(){
+        return getConfigJsonObject("gpuInfo");
+    }
+    public JSONObject getProcessInfoJson(){
+        return getConfigJsonObject("processInfo");
+    }
+    public JSONObject getDFPJson(){
+        return getConfigJsonObject("diskFailurePredictInfo");
+    }
+    public JSONObject getSpeedMeasurementInfoJson(){
+        return getConfigJsonObject("speedMeasurementInfo");
+    }
+
+    public static void main(String[] args) {
+
+    }
+}

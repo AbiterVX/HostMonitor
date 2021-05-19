@@ -20,41 +20,4 @@ public class WebPageController {
     public String getHomePage(){
         return "html/HomePage.html";
     }
-
-    //[界面]主机信息
-    @GetMapping(value ="/HostInfo")
-    public String getHostInfoPage(){
-        return "html/HostInfo.html";
-    }
-
-    //[界面]进程IO信息
-    @GetMapping(value ="/ProcessIOInfo")
-    public String getProcessIOInfoPage(){
-        return "html/ProcessIOInfo.html";
-    }
-
-    //[界面]磁盘故障预测
-    @GetMapping(value ="/DiskFailurePredict")
-    public String getDiskFailurePredictPage(){
-        return "html/DiskFailurePredict.html";
-    }
-
-    //[界面]IO测试
-    @GetMapping(value ="/IOTest")
-    public String getIOTestPage(){
-        return "html/IOTest.html";
-    }
-
-    //[界面]IO测试
-    @GetMapping(value ="/Test")
-    public String getTestPage(@RequestParam(value = "id",required = false,defaultValue = "0") int id,
-                              HttpSession session){
-        System.out.println("id:"+id);
-        session.setAttribute("index","111");
-        session.setAttribute("dateInterval","222");
-
-
-        return "html/Test.html";
-    }
-
 }
