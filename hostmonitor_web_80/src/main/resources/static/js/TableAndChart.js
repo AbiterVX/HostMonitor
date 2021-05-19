@@ -617,12 +617,12 @@ function FGetFormat(key){
         }
         return dfpInfoListFormat;
     }
-    else if(key === "dfpInfoTrendList"){
-        var dfpInfoTrendListFormat = {
+    else if(key === "dfpInfoTrend"){
+        var dfpInfoTrendFormat = {
             dfpInfoTrend: [],
             lastUpdateTime:0,
         }
-        return dfpInfoTrendListFormat;
+        return dfpInfoTrendFormat;
     }
     else if(key === "speedMeasurementInfoList"){
         var speedMeasurementInfoListFormat = {
@@ -678,10 +678,10 @@ function FGetDFPInfoList(){
     }
 }
 function FGetDFPInfoTrend(hostName,diskName){
-    var dfpInfoTrend = window.sessionStorage.getItem("DFPInfoTrend_"+hostName+"_"+diskName);
+    var dfpInfoTrend = window.sessionStorage.getItem("dfpInfoTrend_"+hostName+"_"+diskName);
     if(dfpInfoTrend == null){
-        var dfpInfoTrendFormat = [];
-        window.sessionStorage.setItem("DFPInfoTrend_"+hostName+"_"+diskName,JSON.stringify(dfpInfoTrendFormat));
+        var dfpInfoTrendFormat = FGetFormat("dfpInfoTrend");
+        window.sessionStorage.setItem("dfpInfoTrend_"+hostName+"_"+diskName,JSON.stringify(dfpInfoTrendFormat));
         return dfpInfoTrendFormat;
     }
     else{

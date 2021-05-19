@@ -82,18 +82,19 @@
 
     function measureBtnOnclick(){
         var hostNameList = Array.from(selectedItems);
-        for(var i=0;i<tableData["speedMeasurement"].length;i++){
+        var smInfoList = FGetSpeedMeasurementInfoList()["speedMeasurementInfo"];
+        for(var i=0;i<smInfoList.length;i++){
             for(var j=0;j<hostNameList.length;j++){
-                if(tableData["speedMeasurement"][i]["hostName"] === hostNameList[j]){
-                    tableData["speedMeasurement"][i]["netSendSpeed"] = -1;
-                    tableData["speedMeasurement"][i]["netDownloadSpeed"] = -1;
-                    tableData["speedMeasurement"][i]["diskIOSpeed"] = -1;
+                if(smInfoList[i]["hostName"] === hostNameList[j]){
+                    smInfoList[i]["netSendSpeed"] = -1;
+                    smInfoList[i]["netDownloadSpeed"] = -1;
+                    smInfoList[i]["diskIOSpeed"] = -1;
                     break;
                 }
             }
         }
         selectedItems.clear();
-        refreshSpeedMeasurementTable(false);
+        refreshSpeedMeasurementTable(false,smInfoList);
         $('#measureBtn').prop('disabled', true);
     }
 

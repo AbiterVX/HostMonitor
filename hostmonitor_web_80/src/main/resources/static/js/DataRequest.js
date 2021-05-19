@@ -314,7 +314,15 @@ function FSendGetRequest(async,url,callbackFunc){
             }
         }
     }
-
+    else{
+        var dataLength = 100;
+        var timestamp=new Date().getTime();
+        resultData = [];
+        for(var i=0;i<dataLength;i++){
+            var currentDate = timestamp - (dataLength-i)*120000;
+            resultData.push([currentDate,Math.ceil(Math.random()*10)]);
+        }
+    }
     callbackFunc(resultData);
 
 
@@ -490,11 +498,19 @@ function FRefreshDataDiskInfo(hostName,uiRefreshCallbackFunc){
 }
 
 function FRefreshDataDFPInfoTrend(hostName,diskName,uiRefreshCallbackFunc){
-    FSendGetRequest(false,"/Dispersed/getDFPInfo/Trend/"+hostName+"/"+diskName,function (resultData){
+    var dfpInfoTrend = FGetDFPInfoTrend(hostName,diskName);
+    var timestamp=new Date().getTime();
+    if(timestamp-dfpInfoTrend["lastUpdateTime"] >= requestCoolDownTime["RefreshDataDFPInfoTrend"]) {
+        FSendGetRequest(false,"/Dispersed/getDFPInfo/Trend/"+hostName+"/"+diskName,function (resultData){
+            dfpInfoTrend["dfpInfoTrend"] = resultData;
+            FSetData("dfpInfoTrend_"+hostName+"_"+diskName,dfpInfoTrend);
+            uiRefreshCallbackFunc(dfpInfoTrend["dfpInfoTrend"]);
+        });
+    }
+    else{
+        uiRefreshCallbackFunc(dfpInfoTrend["dfpInfoTrend"]);
+    }
 
-
-        uiRefreshCallbackFunc();
-    });
 }
 
 function FRefreshDataDFPInfoAll(uiRefreshCallbackFunc){
@@ -529,6 +545,7 @@ function FRefreshDataSpeedMeasurementInfoAll(uiRefreshCallbackFunc){
     if(timestamp-speedMeasurementInfoList["lastUpdateTime"] >= requestCoolDownTime["RefreshDataSpeedMeasurementInfoAll"]) {
         FSendGetRequest(false,"/Dispersed/getSpeedMeasurementInfo/All",function (resultData){
             speedMeasurementInfoList["speedMeasurementInfo"] = resultData;
+            FSetData("speedMeasurementInfoList",speedMeasurementInfoList);
             uiRefreshCallbackFunc(speedMeasurementInfoList["speedMeasurementInfo"]);
         });
     }

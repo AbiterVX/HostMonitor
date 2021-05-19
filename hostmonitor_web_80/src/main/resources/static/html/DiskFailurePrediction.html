@@ -126,26 +126,29 @@
             refreshDFPInfoTable(true,dfpInfoList);
         });
 
-
         //刷新Chart数据
-        window.setInterval(function (){
-            refreshDFPTrendChartData();
-        },2000);
+        var hostName = mainInfo["hostName"][currentHostIndex];
+        var diskName = FGetHostInfo(hostName)["diskInfoList"][0]["diskName"];
+        refreshDFPInfoTrend(hostName,diskName);
     }
 
-    //[DropDown]选择-HostIp
+    //[DropDown]选择-HostName
     function dropDownSelectHostName(index){
         if(index !== currentHostIndex){
             //下拉按钮-设置当前显示Txt
-            document.getElementById("HostNameDropDownBtn").innerText = mainInfo["hostName"][index];
+            var hostName =mainInfo["hostName"][index];
+            document.getElementById("HostNameDropDownBtn").innerText = hostName;
             //设置
             currentHostIndex = index;
             //初始化-DropDown-HostName
             currentDiskIndex=0;
-            FInitDropDown("DiskNameDropDownMenu","DiskNameDropDownBtn",FGetDiskNameList(mainInfo["hostName"][currentHostIndex]),"dropDownSelectDiskName",currentDiskIndex);
+            FInitDropDown("DiskNameDropDownMenu","DiskNameDropDownBtn",FGetDiskNameList(hostName),"dropDownSelectDiskName",currentDiskIndex);
+            //刷新Chart数据
+            var hostInfo = FGetHostInfo(hostName);
+            refreshDFPInfoTrend(hostName,hostInfo["diskInfoList"][0]["diskName"]);
         }
     }
-
+    //[DropDown]选择-DiskName
     function dropDownSelectDiskName(index){
         if(index !== currentDiskIndex){
             //下拉按钮-设置当前显示Txt
@@ -154,15 +157,21 @@
             document.getElementById("DiskNameDropDownBtn").innerText = hostInfo["diskInfoList"][index]["diskName"];
             //设置
             currentDiskIndex = index;
+            //刷新Chart数据
+            refreshDFPInfoTrend(hostName,hostInfo["diskInfoList"][index]["diskName"]);
         }
+    }
+    //刷新故障Trend
+    function refreshDFPInfoTrend(hostName,diskName){
+        FRefreshDataDFPInfoTrend(hostName,diskName,function (trendChartData){
+            refreshDFPTrendChartData(trendChartData);
+        });
     }
 
     //刷新Chart-Data-DFPTrendChart
-    function refreshDFPTrendChartData(){
-        var date = FGetDateTime(new Date());
-        dfpTrendChartData.push([date,Math.ceil(Math.random()*100)]);
+    function refreshDFPTrendChartData(trendChartData){
         var option = {
-            series: {data:dfpTrendChartData},
+            series: {data:trendChartData},
         };
         DFPTrendChart.setOption(option);
     }
@@ -200,16 +209,17 @@
     //按钮-OnClick事件-开始预测
     function predictBtnOnClick(){
         var hostNameList = Array.from(selectedItems);
-        for(var i=0;i<tableData["diskFailurePredictInfo"].length;i++){
+        var dfpInfoList = FGetDFPInfoList();
+        for(var i=0;i<dfpInfoList["dfpInfo"].length;i++){
             for(var j=0;j<hostNameList.length;j++){
-                if(tableData["diskFailurePredictInfo"][i]["hostName"] === hostNameList[j]){
-                    tableData["diskFailurePredictInfo"][i]["predictProbability"] = -1;
+                if(dfpInfoList["dfpInfo"][i]["hostName"] === hostNameList[j]){
+                    dfpInfoList["dfpInfo"][i]["predictProbability"] = -1;
                     break;
                 }
             }
         }
         selectedItems.clear();
-        refreshDFPInfoTable(false);
+        refreshDFPInfoTable(false,dfpInfoList["dfpInfo"]);
 
         $('#processCollapseBtn').click();
         $('#predictBtn').prop('disabled', true);
