@@ -1,12 +1,18 @@
 package com.hust.hostmonitor_data_collector.DiskPredict;
 import java.io.BufferedReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 
 import ai.onnxruntime.OrtException;
+import com.alibaba.fastjson.JSONObject;
 import com.csvreader.CsvReader;
+import com.csvreader.CsvWriter;
+import org.json.JSONArray;
 
 /**
  * @author 62786
@@ -95,36 +101,67 @@ public class Disk_Predict {
 		Model_tools.evaluate();
 	}
 
-	public static void readCSV(){
 
+	//获取磁盘预测结果
+	public static void getDiskPredictResult(String readFileName){
 		try {
-			String csvFilePath = System.getProperty("user.dir") + "/DiskPredictData/output/testOutput.csv";
-			CsvReader reader = new CsvReader(csvFilePath, ',', StandardCharsets.UTF_8);
+			String projectPath = System.getProperty("user.dir");
+			CsvReader reader = new CsvReader(projectPath + readFileName, ',', StandardCharsets.UTF_8);
 			reader.readHeaders();
 			while (reader.readRecord()) {
-				//System.out.println(reader.getRawRecord());
 				String[] currentRow = reader.getValues();
+				//字段
 				String hostName = currentRow[2];
 				String diskName = currentRow[3];
-				int isSSD = Integer.parseInt(currentRow[7]);
-
-
 				float probability = Float.parseFloat(currentRow[136]);
-				System.out.println(hostName + "," + diskName+ "," +probability+","+isSSD);
 			}
 			reader.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-
 	}
 
+	//对采样的磁盘预测数据整合
+	public static void diskSampleDataIntegration(String writeFileName, List<String[]> contentData){
+		String projectPath = System.getProperty("user.dir");
+		try {
+			//写表头
+			String titles = "";
+			CsvReader titleReader = new CsvReader(projectPath+ "/ConfigData/Client/title.csv", ',', StandardCharsets.UTF_8);
+			if (titleReader.readRecord()) {
+				titles = titleReader.getRawRecord();
+			}
+			titleReader.close();
+			//写CSV文件
+			FileWriter writer;
+			writer = new FileWriter(projectPath+writeFileName);
+			writer.write(titles+"\n");
 
+			for (String[] currentContent:contentData){
+				for(int j=0;j<currentContent.length;j++){
+					writer.write(currentContent[j]+"\n");
+				}
+			}
+
+			writer.flush();
+			writer.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
 
 	public static void main(String[] args) {
 		//Disk_Predict onnx_Model = new Disk_Predict("testInput.csv", "testOutput.csv");
 
-		Disk_Predict.readCSV();
+		//Disk_Predict.readCSV("/DiskPredictData/input/input.csv");
+
+		/*
+		List<String[]> contentData = new ArrayList<>();
+		contentData.add(new String[]{"615001001,2020/10/5 8:41,WRIGHT,$$+Pdygyg$lJj9j1vv2MvDUC4IJWEX1hJXyU5ULV5n8=,WDC PC SN720 SDAPNTW-512G-1127,NVM Express,10126000,1,512056,,,0,318,100,10,0,\"1,227,352\",\"1,507,992\",\"19,519,866\",\"26,869,868\",47,328,75,10,0,0,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,20201005"});
+		contentData.add(new String[]{"615001001,2020/10/5 8:39,BOHRL,$$$VeUFTzQo2neKVbB5$PKQNyIJF+TPeqTzB3r9eWpM=,SAMSUNG MZVLB512HBJQ-00000,NVM Express,EXF7201Q,1,512056,,,0,317,100,10,0,\"3,054,732\",\"2,928,834\",\"71,261,572\",\"102,382,682\",58,274,77,4,0,845,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,20201005",
+				"615001001,2020/10/5 14:44,KELVINC,$$+NCs7EBxP080wdnLpCQpN6XJSC4sz+H4SAU++izxE=,WDC PC SN730 SDBPNTY-512G-1027,NVM Express,11110000,1,512056,PCIe 3.0 x4,PCIe 3.0 x4,0,311,100,10,0,\"4,212,856\",\"3,242,361\",\"66,390,250\",\"41,243,761\",100,268,86,14,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,20201005"});
+		Disk_Predict.diskSampleDataIntegration("/DiskPredictData/input/input.csv",contentData);
+		*/
 
 		/*
 		java 调用 python
@@ -132,12 +169,6 @@ public class Disk_Predict {
 		interpreter.exec("a=[5,2,3,9,4,0]; ");
 		interpreter.exec("print(sorted(a));");  //此处python语句是3.x版本的语法
 		interpreter.exec("print sorted(a);");   //此处是python语句是2.*/
-
-
-
-
-
-
 
 
 

@@ -337,6 +337,7 @@ function FSendGetRequest(async,url,callbackFunc){
         contentType:"application/json", //发送数据的格式
         async:async,                     //异步
         success:function (resultData) {
+            //alert(JSON.stringify(resultData));
             callbackFunc(resultData);
         },
         error: function (err) {}
