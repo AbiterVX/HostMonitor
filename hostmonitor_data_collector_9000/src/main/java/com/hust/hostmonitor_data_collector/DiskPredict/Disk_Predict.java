@@ -1,4 +1,3 @@
-//import org.python.util.PythonInterpreter;
 package com.hust.hostmonitor_data_collector.DiskPredict;
 import java.io.BufferedReader;
 import java.io.IOException;
