@@ -10,7 +10,7 @@ import java.io.IOException;
 
 public class DispersedConfig {
     //配置文件
-    private final JSONObject configJson = JSONObject.parseObject(readFile("ConfigData/DispersedSampleDataFormat.json"));
+    private final JSONObject configJson = JSONObject.parseObject(readFile("ConfigData/DispersedConfig.json"));
     //配置文件父路径-最终为打包jar的同级目录
     private final String path = System.getProperty("user.dir");
 
@@ -72,7 +72,17 @@ public class DispersedConfig {
         return getConfigJsonObject("speedMeasurementInfo");
     }
 
-    public static void main(String[] args) {
+    //-----当前Data_Collector的IP
+    public String getServerIp(){
+        return configJson.getString("DataCollectorServerIP");
+    }
+    //-----当前Data_Collector采样监听端口
+    public int getServerSampleListenPort(){
+        return configJson.getInteger("ServerSampleListenPort");
+    }
 
+    public static void main(String[] args) {
+        DispersedConfig dispersedConfig = DispersedConfig.getInstance();
+        System.out.println(dispersedConfig.getServerIp());
     }
 }
