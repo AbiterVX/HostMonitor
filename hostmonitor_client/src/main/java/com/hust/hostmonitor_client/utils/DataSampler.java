@@ -7,6 +7,7 @@ import oshi.SystemInfo;
 import oshi.hardware.*;
 import oshi.software.os.FileSystem;
 import oshi.software.os.OSFileStore;
+import oshi.software.os.OSProcess;
 import oshi.software.os.OperatingSystem;
 import oshi.util.FormatUtil;
 import oshi.util.Util;
@@ -16,7 +17,9 @@ import sun.nio.ch.Net;
 import java.sql.Timestamp;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /*
     参考文档：http://oshi.github.io/oshi/oshi-core/apidocs/oshi/hardware/package-summary.html
@@ -38,8 +41,8 @@ import java.util.List;
 public class DataSampler {
     private SystemInfo systemInfo;
     private JSONObject dataObject;
-
     private FormatConfig formatConfig=new FormatConfig();
+    private HashMap<Integer,JSONObject> processMap;
 
     //静态硬件信息采样，不会周期性调用
     public DataSampler(){
@@ -59,25 +62,24 @@ public class DataSampler {
             temp.putAll(formatConfig.getDiskInfoJson());
             dataObject.getJSONArray("diskInfoList").add(temp);
         }
-
         int gpuNumber=systemInfo.getHardware().getGraphicsCards().size();
         for(i=0;i<gpuNumber;i++){
             JSONObject temp=new JSONObject();
             temp.putAll(formatConfig.getGpuInfoJson());
             dataObject.getJSONArray("gpuInfoList").add(temp);
         }
-
         int netInterfaceNumber=systemInfo.getHardware().getNetworkIFs().size();
         for(i=0;i<netInterfaceNumber;i++){
             JSONObject temp=new JSONObject();
             temp.putAll(formatConfig.getNetInterfaceInfoJson());
             dataObject.getJSONArray("netInterfaceList").add(temp);
         }
-
+        processMap=new HashMap<>();
     }
     public void hardWareSample(){
         Timestamp timestamp=new Timestamp(System.currentTimeMillis());
         OperatingSystem os = systemInfo.getOperatingSystem();
+        dataObject.put("hostName",os.getNetworkParams().getHostName());
         dataObject.put("osName",os.toString());
         //CPU部分
         CentralProcessor centralProcessor = systemInfo.getHardware().getProcessor();
@@ -120,11 +122,9 @@ public class DataSampler {
         }
         //Memory利用率
         GlobalMemory globalMemory = systemInfo.getHardware().getMemory();
-
         //double memoryUsage = (totalByte-availableByte)*1.0/totalByte;
         dataObject.put("memoryTotalSize",globalMemory.getTotal());
         dataObject.put("memoryUsedSize",globalMemory.getTotal()-globalMemory.getAvailable());
-
         //Cpu利用率
         CentralProcessor centralProcessor = systemInfo.getHardware().getProcessor();
         long[] ticks = centralProcessor.getSystemCpuLoadTicks();
@@ -138,7 +138,7 @@ public class DataSampler {
         totalCpu=newTotalTicks-oldTotalTicks;
         double cpuUsage = 1.0 - ((ticks[CentralProcessor.TickType.IDLE.getIndex()] - oldIdleTick) * 1.0 / totalCpu);
         dataObject.getJSONArray("cpuInfoList").getJSONObject(0).put("cpuUsage", cpuUsage);
-        dataObject.put("cpuAverageUsage",cpuUsage);
+        dataObject.put("cpuUsageAverage",cpuUsage);
         dataObject.getJSONArray("cpuInfoList").getJSONObject(0).put("TotalTicks",newTotalTicks);
         dataObject.getJSONArray("cpuInfoList").getJSONObject(0).put("idleTick",ticks[CentralProcessor.TickType.IDLE.getIndex()]);
 
@@ -176,15 +176,12 @@ public class DataSampler {
             long ReadBytes=hwInThisLoop.getReadBytes();
             long WriteNumber=hwInThisLoop.getWrites();
             long WriteBytes=hwInThisLoop.getWriteBytes();
-                double iops = (ReadNumber + WriteNumber - previousReadNumber - previousWriteNumber) * 1.0 / period;
-                double ReadRates = (ReadBytes - previousReadBytes) * 1.0 / period;
-                double WriteRates = (WriteBytes - previousWriteBytes) * 1.0 / period;
-                dataObject.getJSONArray("diskInfoList").getJSONObject(j).put("diskIOPS", iops);
-                dataObject.getJSONArray("diskInfoList").getJSONObject(j).put("diskReadSpeed", ReadRates);
-                dataObject.getJSONArray("diskInfoList").getJSONObject(j).put("diskWriteSpeed", WriteRates);
-
-
-
+            double iops = (ReadNumber + WriteNumber - previousReadNumber - previousWriteNumber) * 1.0 / period;
+            double ReadRates = (ReadBytes - previousReadBytes) * 1.0 / period;
+            double WriteRates = (WriteBytes - previousWriteBytes) * 1.0 / period;
+            dataObject.getJSONArray("diskInfoList").getJSONObject(j).put("diskIOPS", iops);
+            dataObject.getJSONArray("diskInfoList").getJSONObject(j).put("diskReadSpeed", ReadRates);
+            dataObject.getJSONArray("diskInfoList").getJSONObject(j).put("diskWriteSpeed", WriteRates);
             dataObject.getJSONArray("diskInfoList").getJSONObject(j).put("diskRead",ReadNumber);
             dataObject.getJSONArray("diskInfoList").getJSONObject(j).put("diskReadBytes",ReadBytes);
             dataObject.getJSONArray("diskInfoList").getJSONObject(j).put("diskWrite",WriteNumber);
@@ -202,14 +199,12 @@ public class DataSampler {
             long previousSentBytes=dataObject.getJSONArray("netInterfaceList").getJSONObject(k).getLong("sentBytes");
             long RecvBytes=networkIF.getBytesRecv();
             long SentBytes=networkIF.getBytesSent();
-
-                double NetRecv = (RecvBytes - previousRecvBytes) * 1.0 / period;
-                double NetSent = (SentBytes - previousSentBytes) * 1.0 / period;
-                totalNetRecv+=NetRecv;
-                totalNetSent+=NetSent;
-                dataObject.getJSONArray("netInterfaceList").getJSONObject(k).put("recvSpeed", NetRecv);
-                dataObject.getJSONArray("netInterfaceList").getJSONObject(k).put("sentSpeed", NetSent);
-
+            double NetRecv = (RecvBytes - previousRecvBytes) * 1.0 / period;
+            double NetSent = (SentBytes - previousSentBytes) * 1.0 / period;
+            totalNetRecv+=NetRecv;
+            totalNetSent+=NetSent;
+            dataObject.getJSONArray("netInterfaceList").getJSONObject(k).put("recvSpeed", NetRecv);
+            dataObject.getJSONArray("netInterfaceList").getJSONObject(k).put("sentSpeed", NetSent);
             dataObject.getJSONArray("netInterfaceList").getJSONObject(k).put("recvBytes",RecvBytes);
             dataObject.getJSONArray("netInterfaceList").getJSONObject(k).put("sentBytes",SentBytes);
 
@@ -229,6 +224,57 @@ public class DataSampler {
             result.add(pInfo);
         }
         return  result;
+    }
+    public void processInfoSample(int period,int processFrequency){
+        List<OSProcess> processesList=systemInfo.getOperatingSystem().getProcesses();
+        Long memory=systemInfo.getHardware().getMemory().getTotal();
+        for(OSProcess osProcess:processesList){
+            JSONObject tempObject=processMap.get(osProcess.getProcessID());
+            if(tempObject==null){
+                tempObject=new JSONObject();
+                tempObject.putAll(formatConfig.getProcessInfoJson());
+                tempObject.put("processId",osProcess.getProcessID());
+                tempObject.put("processName",osProcess.getName());
+                tempObject.put("startTime",osProcess.getStartTime());
+                tempObject.put("cpuUsage",osProcess.getProcessCpuLoadCumulative());
+                double memUsage=osProcess.getResidentSetSize()*1.0/memory;
+                tempObject.put("memoryUsage",memUsage);
+                tempObject.put("ReadBytes",osProcess.getBytesRead());
+                tempObject.put("WriteBytes",osProcess.getBytesWritten());
+                processMap.put(osProcess.getProcessID(),tempObject);
+            }
+            else {
+                if(osProcess.getStartTime()==tempObject.getLong("startTime")){
+                    tempObject.put("startTime",osProcess.getStartTime());
+                    tempObject.put("cpuUsage",osProcess.getProcessCpuLoadCumulative());
+                    double memUsage=osProcess.getResidentSetSize()*1.0/memory;
+                    tempObject.put("memoryUsage",memUsage);
+                    long oldReadBytes=tempObject.getLong("ReadBytes");
+                    long oldWriteBytes=tempObject.getLong("WriteBytes");
+                    long ReadBytes=osProcess.getBytesRead();
+                    long WriteBytes=osProcess.getBytesWritten();
+                    double readSpeed=(ReadBytes-oldReadBytes)*1.0/(processFrequency*period);
+                    double writeSpeed=(WriteBytes-oldWriteBytes)*1.0/(processFrequency*period);
+                    tempObject.put("diskReadSpeed",readSpeed);
+                    tempObject.put("diskWriteSpeed",writeSpeed);
+                    tempObject.put("ReadBytes",ReadBytes);
+                    tempObject.put("WriteBytes",WriteBytes);
+                }
+                else{
+                    tempObject=new JSONObject();
+                    tempObject.putAll(formatConfig.getProcessInfoJson());
+                    tempObject.put("processId",osProcess.getProcessID());
+                    tempObject.put("processName",osProcess.getName());
+                    tempObject.put("startTime",osProcess.getStartTime());
+                    tempObject.put("cpuUsage",osProcess.getProcessCpuLoadCumulative());
+                    double memUsage=osProcess.getResidentSetSize()*1.0/memory;
+                    tempObject.put("memoryUsage",memUsage);
+                    tempObject.put("ReadBytes",osProcess.getBytesRead());
+                    tempObject.put("WriteBytes",osProcess.getBytesWritten());
+                    processMap.put(osProcess.getProcessID(),tempObject);
+                }
+            }
+        }
     }
     private void firstSample(){
         GlobalMemory globalMemory = systemInfo.getHardware().getMemory();
@@ -294,15 +340,30 @@ public class DataSampler {
         }
         System.out.println("Sample Finish");
 
-
     }
     private static String formatUnits(long value, long prefix, String unit) {
         return value % prefix == 0L ? String.format("%d %s", value / prefix, unit) : String.format("%.2f %s", (double)value / (double)prefix, unit);
     }
-    public String outputSampleData(){
+    public String outputSampleData(boolean insertProcessOrNot){
+        System.out.println(insertProcessOrNot);
+        if(insertProcessOrNot){
+            JSONArray processInfoList=new JSONArray();
+            for(Map.Entry<Integer,JSONObject> entry:processMap.entrySet()){
+                processInfoList.add(entry.getValue());
+            }
+            dataObject.put("processInfoList",processInfoList);
+            String result=dataObject.toJSONString();
+            dataObject.remove("processInfoList");
+            return result;
+        }
+
         return dataObject.toJSONString();
+    }
+    public String getHostName(){
+        return dataObject.getString("hostName");
     }
     public static void main(String[] args) {
         DataSampler dataSampler = new DataSampler();
+        dataSampler.processInfoSample(10,1);
     }
 }

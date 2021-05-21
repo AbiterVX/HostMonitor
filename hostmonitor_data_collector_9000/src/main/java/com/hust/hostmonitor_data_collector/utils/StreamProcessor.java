@@ -15,6 +15,7 @@ public class StreamProcessor implements Runnable{
     private String remoteIp;
     private String remotePort;
     private DispersedHostMonitor parent;
+    private String hostName;
     public StreamProcessor(DataInputStream inFromNode,String remoteIp,String remotePort,DispersedHostMonitor parent) {
         this.inFromNode=inFromNode;
         this.remoteIp=remoteIp;
@@ -31,27 +32,31 @@ public class StreamProcessor implements Runnable{
             try {
                 receivedString=inFromNode.readUTF();
                 JSONObject UpdateObject=JSON.parseObject(receivedString);
-                JSONObject oldDataObject=parent.hostInfoMap.get(remoteIp);
+                JSONObject oldDataObject=parent.hostInfoMap.get(hostName);
                 oldDataObject.putAll(UpdateObject);
                 oldDataObject.put("lastUpdateTime",new Timestamp(System.currentTimeMillis()));
                 oldDataObject.put("connected",true);
+                oldDataObject.put("hasPersistent",false);
                 //parent.hostInfoMap.put(remoteIp,UpdateObject);
                 System.out.println("["+remoteIp+"]"+"["+remotePort+"]"+"[Receive]"+receivedString);
             } catch (IOException e) {
                 e.printStackTrace();
                 inFromNode.close();
-                parent.hostInfoMap.get(remoteIp).put("connected",false);
+                parent.hostInfoMap.get(hostName).put("connected",false);
+                break;
             }
-
         }
     }
 
+    @SneakyThrows
     private void detect(){
-        if(parent.hostInfoMap.get(remoteIp)==null){
+       hostName=inFromNode.readUTF();
+        if(parent.hostInfoMap.get(hostName)==null){
             JSONObject hostInfoObject=new JSONObject();
             hostInfoObject.putAll(DispersedConfig.getInstance().getHostInfoJson());
             hostInfoObject.put("ip",remoteIp);
-            parent.hostInfoMap.put(remoteIp,hostInfoObject);
+            hostInfoObject.put("hostName",hostName);
+            parent.hostInfoMap.put(hostName,hostInfoObject);
         }
     }
 }

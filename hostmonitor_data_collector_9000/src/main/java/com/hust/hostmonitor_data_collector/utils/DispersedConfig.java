@@ -43,7 +43,7 @@ public class DispersedConfig {
     }
     //获取配置文件JsonObject
     private JSONObject getConfigJsonObject(String key){
-        return JSONObject.parseObject(configJson.getJSONObject("hostInfo").toJSONString());
+        return JSONObject.parseObject(configJson.getJSONObject(key).toJSONString());
     }
 
     //-----获取配置文件JsonObject-对外接口-----

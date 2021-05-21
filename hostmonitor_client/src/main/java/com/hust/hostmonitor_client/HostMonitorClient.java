@@ -12,11 +12,11 @@ public class HostMonitorClient {
     public static Object lockObject=new Object();
     public static int SamplePeriod=10000;
     public static int sampleIndex=0;
+    private static int processFrequency=10;
+    private static DataSampler mainSampler=new DataSampler();
     @SneakyThrows
     public static void main(String[] args) {
-        DataSampler mainSampler=new DataSampler();
         boolean isTheFirstTimeToSample=true;
-        String sampleResultJson;
         mainSampler.hardWareSample();
         DataSender senderThread=new DataSender();
         senderThread.start();
@@ -31,8 +31,15 @@ public class HostMonitorClient {
                     mainSampler.periodSample(SamplePeriod/1000,true);
                     isTheFirstTimeToSample=false;
                 }
-                sampleIndex++;
-                senderThread.setContextToBeSent(mainSampler.outputSampleData());
+                boolean judgeResult=false;
+                if(sampleIndex%processFrequency==0){
+                    mainSampler.processInfoSample(SamplePeriod/1000,processFrequency);
+                    sampleIndex=1;
+                    judgeResult=true;
+                }else{
+                    sampleIndex++;
+                }
+                senderThread.setContextToBeSent(mainSampler.outputSampleData(judgeResult));
                 lockObject.notifyAll();
                 lockObject.wait();
             }
@@ -50,6 +57,7 @@ public class HostMonitorClient {
             try {
                 Socket clientSocket = new Socket(collectorIP,7000);
                 DataOutputStream outToCollector=new DataOutputStream(clientSocket.getOutputStream());
+                outToCollector.writeUTF(mainSampler.getHostName());
                 synchronized (lockObject) {
                     while (true){
                         outToCollector.writeUTF(contextToBeSent);
@@ -61,10 +69,12 @@ public class HostMonitorClient {
             }
             catch (IOException e) {
                 e.printStackTrace();
-            }
-            catch (InterruptedException e) {
+                System.out.println("Can't connect to the collector,the client exits.Please restart it.");
+                System.exit(0);
+            } catch (InterruptedException e) {
                 e.printStackTrace();
             }
+
 
         }
     }
