@@ -9,12 +9,12 @@ import javax.annotation.Resource;
 import java.util.Map;
 
 
-@RestController
+//@RestController
 @RequestMapping("/Centralized")
 public class CentralizedDataSampleController {
     //@Autowired
     //Service_Implementation service_implementation;
-
+/*
     @Resource
     CentralizedDataService centralizedDataService;
 
@@ -89,4 +89,5 @@ public class CentralizedDataSampleController {
         String result = centralizedDataService.getHostProcessInfoRealTime(index);
         return result;
     }
+    */
 }

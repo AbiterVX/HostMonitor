@@ -10,10 +10,10 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class ApplicationContextBean {
 
-    @Bean
+    /*@Bean
     public CentralizedDataService getCentralizedDataService(){
         return new CentralizedDataServiceImpl();
-    }
+    }*/
 
     @Bean
     public DispersedDataService getDispersedDataService(){

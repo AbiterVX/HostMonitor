@@ -43,7 +43,7 @@ public class DispersedDataServiceImpl implements DispersedDataService{
         }
     };
     private void storeSampleData(){
-        System.out.println("hhhhh"+dispersedHostMonitor.hostInfoMap.size());
+        System.out.println("[hostInfoMap size]"+dispersedHostMonitor.hostInfoMap.size());
         for(Map.Entry<String, JSONObject> entry: dispersedHostMonitor.hostInfoMap.entrySet()){
             JSONObject tempObject=entry.getValue();
 
@@ -64,7 +64,7 @@ public class DispersedDataServiceImpl implements DispersedDataService{
                         tempObject.getDouble("netReceiveSpeed"),
                         tempObject.getDouble("netSendSpeed"),DiskReadRates,DiskWriteRates);
                 entry.getValue().put("hasPersistent",true);
-                System.out.println("insert a record");
+                System.out.println("[Database]Insert a record.");
             }
         }
     }
@@ -132,18 +132,36 @@ public class DispersedDataServiceImpl implements DispersedDataService{
             component[i]=new JSONArray();
         }
         for(DispersedRecord dispersedRecord:dispersedRecordList){
-            component[0].add(dispersedRecord.getCpuUsage());
-            component[0].add(dispersedRecord.getTimestamp());
-            component[1].add(dispersedRecord.getMemUsage());
-            component[1].add(dispersedRecord.getTimestamp());
-            component[2].add(dispersedRecord.getDiskReadRates());
-            component[2].add(dispersedRecord.getTimestamp());
-            component[3].add(dispersedRecord.getDiskWriteRates());
-            component[3].add(dispersedRecord.getTimestamp());
-            component[4].add(dispersedRecord.getNetRecv());
-            component[4].add(dispersedRecord.getTimestamp());
-            component[5].add(dispersedRecord.getNetSent());
-            component[5].add(dispersedRecord.getTimestamp());
+            JSONArray[] jsonArrays=new JSONArray[6];
+            jsonArrays[0]=new JSONArray();
+            jsonArrays[0].add(dispersedRecord.getTimestamp());
+            jsonArrays[0].add(dispersedRecord.getCpuUsage());
+            component[0].add(jsonArrays);
+
+            jsonArrays[1]=new JSONArray();
+            jsonArrays[1].add(dispersedRecord.getTimestamp());
+            jsonArrays[1].add(dispersedRecord.getMemUsage());
+            component[1].add(jsonArrays[1]);
+
+            jsonArrays[2]=new JSONArray();
+            jsonArrays[2].add(dispersedRecord.getTimestamp());
+            jsonArrays[2].add(dispersedRecord.getDiskReadRates());
+            component[2].add(jsonArrays[2]);
+
+            jsonArrays[3]=new JSONArray();
+            jsonArrays[3].add(dispersedRecord.getTimestamp());
+            jsonArrays[3].add(dispersedRecord.getDiskWriteRates());
+            component[3].add(jsonArrays[3]);
+
+            jsonArrays[4]=new JSONArray();
+            jsonArrays[4].add(dispersedRecord.getTimestamp());
+            jsonArrays[4].add(dispersedRecord.getNetRecv());
+            component[4].add(jsonArrays[4]);
+
+            jsonArrays[5]=new JSONArray();
+            jsonArrays[5].add(dispersedRecord.getTimestamp());
+            jsonArrays[5].add(dispersedRecord.getNetSent());
+            component[5].add(jsonArrays[5]);
         }
         for(int i=0;i<6;i++){
             result.add(component[i]);

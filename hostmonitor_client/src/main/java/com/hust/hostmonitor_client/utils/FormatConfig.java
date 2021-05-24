@@ -42,7 +42,9 @@ public class FormatConfig {
     public JSONObject getNetInterfaceInfoJson(){
         return getConfigJsonObject("netInterfaceInfo");
     }
-
+    public JSONObject getOutputInfoJson(){
+        return getConfigJsonObject("outputFormat");
+    }
 
 
 

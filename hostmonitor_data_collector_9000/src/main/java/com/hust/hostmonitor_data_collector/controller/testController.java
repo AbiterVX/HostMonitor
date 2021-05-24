@@ -13,7 +13,8 @@ import javax.annotation.Resource;
 public class testController {
     @Resource
     DispersedDataServiceImpl dispersedDataService;
-        @RequestMapping(value="/test/Dashboard")
+
+    @RequestMapping(value="/test/Dashboard")
     @ResponseBody
     public String getSummary_Dashboard(){
         String result= dispersedDataService.getHostInfoDashboardAll();

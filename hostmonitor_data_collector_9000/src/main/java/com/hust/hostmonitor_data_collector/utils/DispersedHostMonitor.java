@@ -1,5 +1,6 @@
 package com.hust.hostmonitor_data_collector.utils;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import oshi.util.FormatUtil;
 
@@ -38,27 +39,32 @@ public class DispersedHostMonitor {
         return dispersedHostMonitor;
     }
     private DispersedHostMonitor(){
-        System.out.println("???");
+        System.out.println("[Init]DispersedHostMonitor Initialization");
         summaryInfo = dispersedConfig.getSummaryJson();
         dataReceiver.startListening();
     }
     public void UpdateSummaryInfo(){
-        long totalSumCapacity=0;
-        int windowsCount=0,linuxCount=0,HDDCount=0,SSDCount=0;
+        double totalSumCapacity=0;
+        int windowsCount=0,linuxCount=0,HDDCount=0,SSDCount=0,connectedCount=0;
+        JSONArray hostNames=new JSONArray();
         for(Map.Entry<String,JSONObject> hostinfo: hostInfoMap.entrySet()){
-            summaryInfo.getJSONArray("hostName").add(hostinfo.getValue().get("hostName"));
-            totalSumCapacity+=hostinfo.getValue().getLong("diskCapacityTotalSizeSum");
+            hostNames.add(hostinfo.getValue().get("hostName"));
+            totalSumCapacity+=hostinfo.getValue().getJSONArray("diskCapacityTotalUsage").getDouble(1);
             if(hostinfo.getValue().getString("osName").toLowerCase().contains(("windows").toLowerCase())){
                 windowsCount++;
             }
             else{
                 linuxCount++;
             }
+            if(hostinfo.getValue().getBoolean("connected")){
+                connectedCount++;
+            }
         }
-
-        summaryInfo.put("sumCapacity",storageFormatUtils(totalSumCapacity));
+        summaryInfo.put("hostName",hostNames);
+        summaryInfo.put("sumCapacity",totalSumCapacity);
         summaryInfo.put("windowsHostCount",windowsCount);
         summaryInfo.put("linuxHostCount",linuxCount);
+        summaryInfo.put("connectedCount",connectedCount);
         summaryInfo.put("lastUpdateTime",new Timestamp(System.currentTimeMillis()));
 
     }
