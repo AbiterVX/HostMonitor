@@ -47,19 +47,19 @@ public class DispersedDataServiceImpl implements DispersedDataService{
             JSONObject tempObject=entry.getValue();
 
             if(!tempObject.getBoolean("hasPersistent")){
-                double memUsage=tempObject.getLong("memoryUsedSize")*1.0/tempObject.getLong("memoryTotalSize");
+                double memUsage=tempObject.getJSONArray("memoryUsage").getDouble(0)/tempObject.getJSONArray("memoryUsage").getDouble(1);
                 double DiskReadRates=0;
                 double DiskWriteRates=0;
                 for(int i=0;i<tempObject.getJSONArray("diskInfoList").size();i++){
                     DiskWriteRates+=tempObject.getJSONArray("diskInfoList").getJSONObject(i).getDouble("diskWriteSpeed");
                     DiskReadRates+=tempObject.getJSONArray("diskInfoList").getJSONObject(i).getDouble("diskReadSpeed");
                 }
-                if( tempObject.getDouble("cpuUsageAverage")==0){
+                if( tempObject.getDouble("cpuUsage")==0){
                     continue;
                 }
                 dispersedMapper.insertNewRecord(tempObject.getString("hostName"),tempObject.getString("ip"),
                         tempObject.getTimestamp("lastUpdateTime"),memUsage,
-                        tempObject.getDouble("cpuUsageAverage"),
+                        tempObject.getDouble("cpuUsage"),
                         tempObject.getDouble("netReceiveSpeed"),
                         tempObject.getDouble("netSendSpeed"),DiskReadRates,DiskWriteRates);
                 entry.getValue().put("hasPersistent",true);
@@ -118,7 +118,7 @@ public class DispersedDataServiceImpl implements DispersedDataService{
             }
             else{
                 tempObject.put("cpuUsage",doubleTo2bits_double(tempObject.getDouble("cpuUsage")*100));
-                tempObject.put("memUsage",doubleTo2bits_double(tempObject.getDouble("memUsage")*100));
+                tempObject.put("memUsage",doubleTo2bits_double(tempObject.getDouble("memoryUsage")*100));
             }
         }
         return resultObject;

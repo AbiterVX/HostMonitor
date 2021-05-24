@@ -71,7 +71,7 @@ public class DispersedHostMonitor {
     public String storageFormatUtils(long storageSize){
         return storageSize > 0L ? FormatUtil.formatBytesDecimal(storageSize) : "?";
     }
-    private
+
     public static void main(String[] args){
         DispersedHostMonitor.getInstance();
     }
