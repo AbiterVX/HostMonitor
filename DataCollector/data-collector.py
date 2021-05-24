@@ -29,7 +29,7 @@ header = ['oper_id',
           'bsod18', 'bsod18_total', 'bsod19', 'bsod19_total', 'bsod20', 'bsod20_total', 'bsod21', 'bsod21_total',
           'bsod22', 'bsod22_total', 'bsod23', 'bsod23_total',
           'pt_d']
-save_file = "data.csv"
+save_file = "./ConfigData/Client/data.csv"
 
 
 def get_disk_count():
@@ -160,10 +160,10 @@ if __name__ == '__main__':
     get_pt_d()
 
     print(len(lists[0]))
-    self_path = os.path.abspath(__file__)
-    dir_path, filename = os.path.split(self_path)
-    save_path = os.path.join(dir_path, save_file)
-    print(self_path)
-    print(save_path)
+    # self_path = os.path.abspath(__file__)
+    # dir_path, filename = os.path.split(self_path)
+    # save_path = os.path.join(dir_path, save_file)
+    # print(self_path)
+    print(save_file)
 
-    save_data(save_path)
+    save_data(save_file)
