@@ -7,7 +7,7 @@ import java.io.IOException;
 public class DiskPredictDataSampler extends SuperUserApplication {
     private String exeFilePath = "";//ConfigData/Client/data_collector-windows.exe";
     public DiskPredictDataSampler(){
-        exeFilePath = System.getProperty("user.dir") +"/ConfigData/Client/data_collector-windows.exe";
+        exeFilePath = System.getProperty("user.dir") +"/ConfigData/Client/data-collector.exe";
     }
     @Override
     public int run(String[] strings) {
