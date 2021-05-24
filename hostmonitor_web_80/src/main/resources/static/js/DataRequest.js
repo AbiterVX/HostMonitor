@@ -378,51 +378,48 @@ function FRefreshDataSummary(uiRefreshCallbackFunc){
 
 function FRefreshDataHostInfoAll(uiRefreshCallbackFunc){
     var mainInfo = FGetMainInfo();
-    var timestamp=new Date().getTime()
-    if(timestamp-mainInfo["lastUpdateTime"] >= requestCoolDownTime["RefreshDataSummary"]){
-        FSendGetRequest(false,"/Dispersed/getHostInfo/All/Dashboard",function (resultData){
-            var hostConnectedCount = 0;
-            for(var i=0;i<mainInfo["hostName"].length;i++){
-                var hostName = mainInfo["hostName"][i];
-                var hostInfo = FGetHostInfo(hostName);
-                //连接个数
-                if(resultData[hostName]["connected"] === true){
-                    hostConnectedCount+=1;
-                }
-                //hostInfo1
-                for(var key in hostInfo["hostInfo1"]){
-                    hostInfo["hostInfo1"][key] = resultData[hostName][key];
-                }
-                //hostInfo2
-                for(var key in hostInfo["hostInfo2"]){
-                    hostInfo["hostInfo2"][key] = resultData[hostName][key];
-                }
-                //diskInfoList
-                hostInfo["diskInfoList"] = resultData[hostName]["diskInfoList"];
-                for(var j=0;j<hostInfo["diskInfoList"].length;j++){
-                    hostInfo["diskInfoList"][j]["diskCapacityUsage"] = (hostInfo["diskInfoList"][j]["diskCapacitySize"][0] / hostInfo["diskInfoList"][j]["diskCapacitySize"][1]*100).toFixed(2);
-                }
+    FSendGetRequest(false, "/Dispersed/getHostInfo/All/Dashboard", function (resultData) {
+        var hostConnectedCount = 0;
+        for (var i = 0; i < mainInfo["hostName"].length; i++) {
 
-                //connected
-                hostInfo["connected"] = resultData[hostName]["connected"];
-                //cpuInfoList
-                hostInfo["cpuInfoList"] = resultData[hostName]["cpuInfoList"];
-                //gpuInfoList
-                hostInfo["gpuInfoList"] = resultData[hostName]["gpuInfoList"];
-                //processInfoList
-                hostInfo["processInfoList"] = resultData[hostName]["processInfoList"];
-                //lastUpdateTime
-                hostInfo["lastUpdateTime"] = 100000;
+            var hostName = mainInfo["hostName"][i];
+            var hostInfo = FGetHostInfo(hostName);
 
-                //更新hostInfo缓存
-                FSetData("hostInfo_"+hostName,hostInfo);
+            //连接个数
+            if (resultData[hostName]["connected"] === true) {
+                hostConnectedCount += 1;
             }
-            uiRefreshCallbackFunc(mainInfo);
-        });
-    }
-    else{
+            //hostInfo1
+            for (var key in hostInfo["hostInfo1"]) {
+                hostInfo["hostInfo1"][key] = resultData[hostName][key];
+            }
+            //hostInfo2
+            for (var key in hostInfo["hostInfo2"]) {
+                hostInfo["hostInfo2"][key] = resultData[hostName][key];
+            }
+
+            //diskInfoList
+            hostInfo["diskInfoList"] = resultData[hostName]["diskInfoList"];
+            for (var j = 0; j < hostInfo["diskInfoList"].length; j++) {
+                hostInfo["diskInfoList"][j]["diskCapacityUsage"] = (hostInfo["diskInfoList"][j]["diskCapacitySize"][0] / hostInfo["diskInfoList"][j]["diskCapacitySize"][1] * 100).toFixed(2);
+            }
+
+            //connected
+            hostInfo["connected"] = resultData[hostName]["connected"];
+            //cpuInfoList
+            hostInfo["cpuInfoList"] = resultData[hostName]["cpuInfoList"];
+            //gpuInfoList
+            hostInfo["gpuInfoList"] = resultData[hostName]["gpuInfoList"];
+            //processInfoList
+            hostInfo["processInfoList"] = resultData[hostName]["processInfoList"];
+            //lastUpdateTime
+            //hostInfo["lastUpdateTime"] = 100000;
+
+            //更新hostInfo缓存
+            FSetData("hostInfo_" + hostName, hostInfo);
+        }
         uiRefreshCallbackFunc();
-    }
+    });
 }
 
 function FRefreshDataDiskInfoAll(uiRefreshCallbackFunc){
@@ -464,7 +461,7 @@ function FRefreshDataHostInfo(hostName,uiRefreshCallbackFunc){
             //processInfoList
             hostInfo["processInfoList"] = resultData["processInfoList"];
             //lastUpdateTime
-            hostInfo["lastUpdateTime"] = 2000000;
+            //hostInfo["lastUpdateTime"] = 2000000;
 
             //更新hostInfo缓存
             FSetData("hostInfo_"+hostName,hostInfo);

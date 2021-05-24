@@ -335,7 +335,7 @@ const tableColumns = {
             width: 50,
             sortable: true,
             formatter : function (value, row, index) {
-                return FGetKbWithUnit(value);
+                return FGetKbWithUnit(value) +"/s";
             }
         },
         {
@@ -344,7 +344,7 @@ const tableColumns = {
             width: 50,
             sortable: true,
             formatter : function (value, row, index) {
-                return FGetKbWithUnit(value);
+                return FGetKbWithUnit(value) +"/s";
             }
         },
     ],
