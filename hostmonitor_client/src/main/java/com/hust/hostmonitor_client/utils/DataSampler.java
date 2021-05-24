@@ -194,8 +194,8 @@ public class DataSampler {
             double ReadRates = (ReadBytes - previousReadBytes) * 1.0 / period;
             double WriteRates = (WriteBytes - previousWriteBytes) * 1.0 / period;
             dataObject.getJSONArray("diskInfoList").getJSONObject(j).put("diskIOPS", iops);
-            dataObject.getJSONArray("diskInfoList").getJSONObject(j).put("diskReadSpeed", ReadRates);
-            dataObject.getJSONArray("diskInfoList").getJSONObject(j).put("diskWriteSpeed", WriteRates);
+            dataObject.getJSONArray("diskInfoList").getJSONObject(j).put("diskReadSpeed", FormatUtils.doubleTo2bits_double(ReadRates/1024));
+            dataObject.getJSONArray("diskInfoList").getJSONObject(j).put("diskWriteSpeed", FormatUtils.doubleTo2bits_double(WriteRates/1024));
             dataObject.getJSONArray("diskInfoList").getJSONObject(j).put("diskRead",ReadNumber);
             dataObject.getJSONArray("diskInfoList").getJSONObject(j).put("diskReadBytes",ReadBytes);
             dataObject.getJSONArray("diskInfoList").getJSONObject(j).put("diskWrite",WriteNumber);
@@ -219,8 +219,8 @@ public class DataSampler {
             double NetSent = (SentBytes - previousSentBytes) * 1.0 / period;
             totalNetRecv+=NetRecv;
             totalNetSent+=NetSent;
-            dataObject.getJSONArray("netInterfaceList").getJSONObject(k).put("recvSpeed", NetRecv);
-            dataObject.getJSONArray("netInterfaceList").getJSONObject(k).put("sentSpeed", NetSent);
+            dataObject.getJSONArray("netInterfaceList").getJSONObject(k).put("recvSpeed", FormatUtils.doubleTo2bits_double(NetRecv/1024));
+            dataObject.getJSONArray("netInterfaceList").getJSONObject(k).put("sentSpeed", FormatUtils.doubleTo2bits_double(NetSent/1024));
             dataObject.getJSONArray("netInterfaceList").getJSONObject(k).put("recvBytes",RecvBytes);
             dataObject.getJSONArray("netInterfaceList").getJSONObject(k).put("sentBytes",SentBytes);
 

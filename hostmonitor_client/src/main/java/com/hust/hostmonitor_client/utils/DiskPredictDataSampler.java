@@ -15,6 +15,7 @@ public class DiskPredictDataSampler extends SuperUserApplication {
         try {
             Runtime rt = Runtime.getRuntime();
             rt.exec(exeFilePath);
+            System.out.println("finish");
         } catch (IOException e) {
             e.printStackTrace();
         }

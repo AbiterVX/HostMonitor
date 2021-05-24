@@ -44,7 +44,6 @@ public class Test  {
     public static void main(String[] args) {
 
         SU.run(new DiskPredictDataSampler(), args);
-
         /*try {
             Runtime rt = Runtime.getRuntime();
             rt.exec("E:/Code/HostMonitor/ConfigData/Client/data_collector-windows.exe");

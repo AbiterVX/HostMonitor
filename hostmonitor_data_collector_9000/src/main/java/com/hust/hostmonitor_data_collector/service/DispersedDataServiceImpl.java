@@ -8,11 +8,9 @@ import com.hust.hostmonitor_data_collector.utils.DispersedHostMonitor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.util.List;
-import java.util.Map;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.*;
 
 
 public class DispersedDataServiceImpl implements DispersedDataService{
@@ -20,6 +18,7 @@ public class DispersedDataServiceImpl implements DispersedDataService{
     DispersedMapper dispersedMapper;
 
     private final long sampleInterval=10000;
+    private final double cpuThreshold=0.1;
     private DispersedHostMonitor dispersedHostMonitor;
     public final int sampleStoreDelayMS=500;
 
@@ -91,7 +90,7 @@ public class DispersedDataServiceImpl implements DispersedDataService{
     public String getHostInfoDashboardAll() {
         JSONObject resultObject=new JSONObject();
         for(Map.Entry<String, JSONObject> entry: dispersedHostMonitor.hostInfoMap.entrySet()){
-            resultObject.put(entry.getKey(),entry.getValue());
+            resultObject.put(entry.getKey(),selectMainProcess(cpuThreshold, entry.getValue()));
         }
         return resultObject.toJSONString();
     }
@@ -105,10 +104,29 @@ public class DispersedDataServiceImpl implements DispersedDataService{
     //2
     @Override
     public String getHostInfoDetail(String hostName) {
-        String result=dispersedHostMonitor.hostInfoMap.get(hostName).toJSONString();
+        String result=selectMainProcess(cpuThreshold,dispersedHostMonitor.hostInfoMap.get(hostName)).toJSONString();
         return result;
     }
-
+    private JSONObject selectMainProcess(double cpuThreshold,JSONObject jsonObject){
+        JSONObject resultObject=new JSONObject();
+        resultObject.putAll(jsonObject);
+        Iterator iterator=resultObject.getJSONArray("processInfoList").iterator();
+        while(iterator.hasNext()){
+            JSONObject tempObject=(JSONObject) iterator.next();
+            if(tempObject.getDouble("cpuUsage")<cpuThreshold){
+                iterator.remove();
+            }
+            else{
+                tempObject.put("cpuUsage",doubleTo2bits_double(tempObject.getDouble("cpuUsage")*100));
+                tempObject.put("memUsage",doubleTo2bits_double(tempObject.getDouble("memUsage")*100));
+            }
+        }
+        return resultObject;
+    }
+    private double doubleTo2bits_double(double original){
+        BigDecimal b=new BigDecimal(original);
+        return b.setScale(2,BigDecimal.ROUND_HALF_UP).doubleValue();
+    }
 //    @Override
 //    public String getDiskInfoAll() {
 //        return null;
