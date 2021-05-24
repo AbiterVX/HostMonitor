@@ -1,5 +1,6 @@
 {
   "hostInfo": {
+    "hostName":0,
     "osName": "OS",
     "memoryTotalSize": 0,
     "memoryUsedSize": 0,
@@ -11,8 +12,7 @@
     "diskInfoList": [],
     "cpuInfoList": [],
     "gpuInfoList": [],
-    "netInterfaceList": [],
-    "processInfoList": []
+    "netInterfaceList": []
   },
   "diskInfo": {
     "diskName": "",
@@ -45,6 +45,8 @@
     "startTime": 0,
     "cpuUsage": 0,
     "memoryUsage": 0,
+    "ReadBytes": 0,
+    "WriteBytes": 0,
     "diskReadSpeed": 0,
     "diskWriteSpeed": 0
   },

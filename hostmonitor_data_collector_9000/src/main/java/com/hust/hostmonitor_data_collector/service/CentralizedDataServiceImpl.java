@@ -36,9 +36,6 @@ public class CentralizedDataServiceImpl implements CentralizedDataService {
     private final TimerTask hostSampleTask = new TimerTask() {
         @Override
         public void run() {
-            //采样
-            System.out.println("Host Sample");
-            hostMonitorBE.sample();
             try {
                 Thread.sleep(sampleStoreDelayMS);
                 //存储新采样的数据

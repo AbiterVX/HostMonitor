@@ -57,7 +57,7 @@ function FSetCurrentNavItem(leftNavItemIndex){
 
         //MainPart
         var MainPart = document.getElementById("MainPart");
-        var parentPath = ""; //"html/";
+        var parentPath = "html/";  //""; //
         if(leftNavItemIndex ===0){
             MainPart.src = parentPath + "DashBoard.html";
         }

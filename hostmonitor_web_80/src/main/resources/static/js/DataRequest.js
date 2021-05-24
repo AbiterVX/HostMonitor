@@ -15,6 +15,7 @@ var requestCoolDownTime = {
 //发送get请求
 function FSendGetRequest(async,url,callbackFunc){
     //测试
+    /*
     var resultData ="";
     if(url === "/Dispersed/getSummary/Dashboard"){
         resultData = {
@@ -323,10 +324,11 @@ function FSendGetRequest(async,url,callbackFunc){
             resultData.push([currentDate,Math.ceil(Math.random()*10)]);
         }
     }
+
     callbackFunc(resultData);
+*/
 
 
-    /*
     $.ajax({
         type:"get",
         dataType:"json",                //返回数据类型
@@ -335,10 +337,11 @@ function FSendGetRequest(async,url,callbackFunc){
         contentType:"application/json", //发送数据的格式
         async:async,                     //异步
         success:function (resultData) {
+            //alert(JSON.stringify(resultData));
             callbackFunc(resultData);
         },
         error: function (err) {}
-    });*/
+    });
 }
 
 //----------数据更新-显示更新

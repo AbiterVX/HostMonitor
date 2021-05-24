@@ -38,7 +38,7 @@ public interface RecordMapper {
             "where ip=#{ip} and timestamp<#{highbound} and timestamp>#{lowbound} " +
             "order by timestamp")
     List<Record> queryRecordsWithTimeLimit(@Param("lowbound")Timestamp lowbound,
-                                           @Param("highbound")Timestamp highbound,
-                                           @Param("ip")String ip);
+                                                    @Param("highbound")Timestamp highbound,
+                                                    @Param("ip")String ip);
 
 }

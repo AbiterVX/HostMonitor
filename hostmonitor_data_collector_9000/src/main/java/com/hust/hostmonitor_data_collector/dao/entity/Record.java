@@ -1,7 +1,7 @@
 package com.hust.hostmonitor_data_collector.dao.entity;
 
-import java.math.BigDecimal;
 import java.sql.Timestamp;
+
 
 public class Record {
     private String ip;

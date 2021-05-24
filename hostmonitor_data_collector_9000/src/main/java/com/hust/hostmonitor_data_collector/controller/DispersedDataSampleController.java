@@ -1,6 +1,7 @@
 package com.hust.hostmonitor_data_collector.controller;
 
 import com.hust.hostmonitor_data_collector.service.DispersedDataService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -42,8 +43,8 @@ public class DispersedDataSampleController {
     @GetMapping(value="/getDiskInfo/All/Dashboard")
     @ResponseBody
     public String getDiskInfo_All_Dashboard(){
-        String result= dispersedDataService.getDiskInfoAll();
-        return result;
+        //String result= dispersedDataService.getDiskInfoAll();
+        return null;
     }
 
     /**
@@ -78,8 +79,8 @@ public class DispersedDataSampleController {
     @GetMapping(value="/getDiskInfo/{hostName}")
     @ResponseBody
     public String getDiskInfo(@PathVariable Map<String,String> map){
-        String result= dispersedDataService.getDiskInfo(map.get("hostName"));
-        return result;
+        //String result= dispersedDataService.getDiskInfo(map.get("hostName"));
+        return null;
     }
 
 

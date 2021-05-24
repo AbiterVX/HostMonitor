@@ -1,4 +1,4 @@
-//package com.hust.hostmonitor_client.utils;
+package com.hust.hostmonitor_client.utils;
 //
 //import org.slf4j.Logger;
 //import org.slf4j.LoggerFactory;
@@ -14,8 +14,46 @@
 //import java.util.Arrays;
 //import java.util.List;
 //
-//
-//public class Test {
+
+import com.vnetpublishing.java.suapp.SU;
+import com.vnetpublishing.java.suapp.SuperUserApplication;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+
+public class Test  {
+/*
+        final String path = System.getProperty("user.dir");
+        Process process = null;
+        try {
+            process = new ProcessBuilder("E:/Code/HostMonitor/ConfigData/Client/data_collector-windows.exe").start();
+            InputStream is = process.getInputStream();//Get an inputstream from the process which is being executed
+            InputStreamReader isr = new InputStreamReader(is);
+            BufferedReader br = new BufferedReader(isr);
+            String line;
+            while ((line = br.readLine()) != null) {
+                System.out.println(line);//Prints all the outputs.Which is coming from the executed Process
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }*/
+
+    public static void main(String[] args) {
+
+        SU.run(new DiskPredictDataSampler(), args);
+
+        /*try {
+            Runtime rt = Runtime.getRuntime();
+            rt.exec("E:/Code/HostMonitor/ConfigData/Client/data_collector-windows.exe");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }*/
+    }
+}
+
 //    public static void main(String[] args) {
 //        // Options: ERROR > WARN > INFO > DEBUG > TRACE
 //        Logger LOG = LoggerFactory.getLogger(Test.class);

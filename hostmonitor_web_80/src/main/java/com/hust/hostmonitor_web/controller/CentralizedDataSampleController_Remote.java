@@ -9,7 +9,7 @@ import javax.annotation.Resource;
 import java.util.Map;
 
 
-@RestController
+//@RestController
 @RequestMapping("/Centralized")
 public class CentralizedDataSampleController_Remote {
     @Value("${server.port}")

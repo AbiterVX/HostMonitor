@@ -43,20 +43,20 @@ public class CentralizedConfig {
     //Init
     private CentralizedConfig() {
         //解析Json
-        jsonObject = JSONObject.parseObject(readFile("ConfigData/StorageDeviceInfo.json"));
+        jsonObject = JSONObject.parseObject(readFile("CentralizedConfigData/StorageDeviceInfo.json"));
         //采样指令
-        sampleCommands = readFile("ConfigData/SampleCommand.sh");  //test  //SampleCommand
+        sampleCommands = readFile("CentralizedConfigData/SampleCommand.sh");  //test  //SampleCommand
         //进程采样指令
-        processSampleCommand = readFile("ConfigData/ProcessSampleCommand.sh");
+        processSampleCommand = readFile("CentralizedConfigData/ProcessSampleCommand.sh");
         //环境初始化指令
-        initEnvironmentCommand = readFile("ConfigData/InitEnvironment.sh");
+        initEnvironmentCommand = readFile("CentralizedConfigData/InitEnvironment.sh");
         //测试指令
-        testCommand = readFile("ConfigData/test.sh");
+        testCommand = readFile("CentralizedConfigData/test.sh");
         //IO测试指令
-        ioTestCommand = readFile("ConfigData/IOTest.sh");
+        ioTestCommand = readFile("CentralizedConfigData/IOTest.sh");
 
         //Proxy excel
-        EasyExcel.read(path+"/ConfigData/Proxy.xlsx",ProxyConfig.class,new ProxyConfigListener()).sheet().doRead();
+        EasyExcel.read(path+"/CentralizedConfigData/Proxy.xlsx",ProxyConfig.class,new ProxyConfigListener()).sheet().doRead();
 
         /*
         for(ProxyConfig proxyConfig:proxyConfigList){
@@ -67,7 +67,7 @@ public class CentralizedConfig {
         //EasyExcel.write(path+"/ConfigData/Proxy.xlsx",ProxyConfig.class).sheet().doWrite(tempList);
 
         //host excel
-        EasyExcel.read(path+"/ConfigData/Host.xlsx",HostConfigInfo.class,new HostConfigInfoListener()).sheet().doRead();
+        EasyExcel.read(path+"/CentralizedConfigData/Host.xlsx",HostConfigInfo.class,new HostConfigInfoListener()).sheet().doRead();
 
         //写入excel
         //List<HostConfigInfo> tempList = hostConfigInfoList;
