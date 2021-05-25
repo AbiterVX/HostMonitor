@@ -38,25 +38,53 @@
     .form-signin input[type="password"] {margin-bottom: 10px;border-top-left-radius: 0;border-top-right-radius: 0;}
 </style>
 <body class="text-center">
-
     <div class="form-signin">
         <img class="mb-4" src="../images/ProjectIcon.png" alt="" width="72" height="72">
         <h1 class="h3 mb-3 font-weight-normal">管理员登录</h1>
 
-        <input id="InputID" class="form-control" placeholder="账户"  autofocus="">
+        <input id="InputID" class="form-control" placeholder="账户"  autofocus="" >
         <input id="InputPassword" type="password" class="form-control" placeholder="密码">
         <div class="checkbox mb-3"></div>
+
+        <div id="tooltips"></div>
         <button onclick="sigInInBtnOnclick()" class="btn btn-lg btn-primary btn-block" >登录</button>
         <button id="backBtn" onclick="backBtnOnclick()" class="btn btn-lg btn-secondary btn-block ">返回</button>
         <p class="mt-5 mb-3 text-muted">HUST-数据中心资源监控-2021 v3.0</p>
-    </div>
 
+
+    </div>
 
 
 </body>
 <script>
+    var InputID = document.getElementById("InputID");
+    var InputPassword = document.getElementById("InputPassword");
+    var tooltips = document.getElementById("tooltips");
+
+
     function sigInInBtnOnclick(){
-        alert("登录");
+        if(InputID.value === ""){
+            tooltips.innerHTML = '<div class="alert alert-warning" role="alert">账户不能为空！</div>';
+        }
+        else if(InputPassword.value === ""){
+            tooltips.innerHTML = '<div class="alert alert-warning" role="alert">密码不能为空！</div>';
+        }
+        else{
+            var parameterData = {
+                UserID: InputID.value,
+                Password: InputPassword.value
+            };
+            FSendPostRequest(false,"/Dispersed/SignIn",JSON.stringify(parameterData),function (resultData){
+                if(resultData !== "null"){
+                    window.sessionStorage.setItem("UserID",resultData);
+                    window.location.href="/";
+                }
+                else{
+                    tooltips.innerHTML = '<div class="alert alert-danger" role="alert">账户或密码有误！</div>';
+                }
+            });
+        }
+
     }
     function backBtnOnclick(){
         window.location.href="/";

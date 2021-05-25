@@ -26,4 +26,10 @@ public class WebPageController {
     public String getSignInPage(){
         return "html/Signin.html";
     }
+
+    //用户界面
+    @GetMapping(value ="/UserSpace")
+    public String getUserSpacePage(){
+        return "html/UserSpace.html";
+    }
 }

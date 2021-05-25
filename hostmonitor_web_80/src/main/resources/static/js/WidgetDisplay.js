@@ -4,10 +4,25 @@ const icon_bar = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
 const icon_file = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-file"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><polyline points="13 2 13 9 20 9"></polyline></svg>\n';
 
 
-function FInitNavItems(){
+function FInitNav(){
     //标题
     document.getElementById("PageTitle").innerText = "数据中心资源监控";
     document.getElementById("Title").innerText = "数据中心资源监控";
+    //登录按钮
+    var UserBtn = document.getElementById("UserBtn");
+
+    var userID = window.sessionStorage.getItem("UserID");
+    if(userID != null){
+        UserBtn.innerText = userID;
+        UserBtn.href = "/UserSpace";
+    }
+    else{
+        UserBtn.href = "/Signin";
+        UserBtn.innerText = "管理员登录";
+    }
+
+
+
     //导航项
     var NavItems = [
         document.getElementById("NavItem1"),
@@ -31,6 +46,7 @@ function FInitNavItems(){
     NavItems[3].onclick = function (){
         FSetCurrentNavItem(3);
     }
+
 
 }
 
