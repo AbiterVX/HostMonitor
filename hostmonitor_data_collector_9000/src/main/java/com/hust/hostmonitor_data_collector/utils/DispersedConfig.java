@@ -7,6 +7,8 @@ import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class DispersedConfig {
     //配置文件
@@ -71,7 +73,25 @@ public class DispersedConfig {
     public JSONObject getSpeedMeasurementInfoJson(){
         return getConfigJsonObject("speedMeasurementInfo");
     }
+    public float[][] getLoadPartitionJson(){
+        float[][] loadCount = new float[][]{{0,0,0},{0,0,0},{0,0,0}};
+        List<List<Float>> partition = new ArrayList<>();
+        List<JSONArray> loadPartition = new ArrayList<>();
 
+        JSONObject loadPartitionJson = getConfigJsonObject("loadPartition");
+        loadPartition.add(loadPartitionJson.getJSONArray("cpuLoad"));
+        loadPartition.add(loadPartitionJson.getJSONArray("memoryLoad"));
+        loadPartition.add(loadPartitionJson.getJSONArray("diskLoad"));
+
+        for(int i=0;i<loadPartition.size();i++){
+            JSONArray currentLoadPartition = loadPartition.get(i);
+            for(int j=0;j<currentLoadPartition.size();j++){
+                loadCount[i][j] = currentLoadPartition.getFloat(j);
+            }
+        }
+
+        return loadCount;
+    }
     //-----当前Data_Collector的IP
     public String getServerIp(){
         return configJson.getString("DataCollectorServerIP");

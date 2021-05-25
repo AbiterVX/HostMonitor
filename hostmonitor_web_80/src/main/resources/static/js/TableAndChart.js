@@ -874,12 +874,12 @@ var summaryChartOption = {
                 top: '0px',
             },
             {
-                text: "磁盘负载统计",
+                text: "内存负载统计",
                 left: '43%',
                 top: '0px',
             },
             {
-                text: "内存负载统计",
+                text: "磁盘负载统计",
                 left: '75%',
                 top: '0px',
             },

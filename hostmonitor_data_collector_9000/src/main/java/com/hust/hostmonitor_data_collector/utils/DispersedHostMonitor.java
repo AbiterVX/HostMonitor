@@ -12,6 +12,7 @@ public class DispersedHostMonitor {
     private DispersedConfig dispersedConfig = DispersedConfig.getInstance();
     //整体JSON信息
     public JSONObject summaryInfo;
+    public float[][] loadPartition;
     //Host的JSON信息Map
     public Map<String, JSONObject> hostInfoMap = new HashMap<>();
     //磁盘故障预测Info-List
@@ -41,31 +42,80 @@ public class DispersedHostMonitor {
     private DispersedHostMonitor(){
         System.out.println("[Init]DispersedHostMonitor Initialization");
         summaryInfo = dispersedConfig.getSummaryJson();
+        loadPartition = dispersedConfig.getLoadPartitionJson();
         dataReceiver.startListening();
     }
     public void UpdateSummaryInfo(){
         double totalSumCapacity=0;
         int windowsCount=0,linuxCount=0,HDDCount=0,SSDCount=0,connectedCount=0;
+        float[][] loadCount = new float[][]{{0,0,0},{0,0,0},{0,0,0}};
         JSONArray hostNames=new JSONArray();
-        for(Map.Entry<String,JSONObject> hostinfo: hostInfoMap.entrySet()){
-            hostNames.add(hostinfo.getValue().get("hostName"));
-            totalSumCapacity+=hostinfo.getValue().getJSONArray("diskCapacityTotalUsage").getDouble(1);
-            if(hostinfo.getValue().getString("osName").toLowerCase().contains(("windows").toLowerCase())){
+        for(Map.Entry<String,JSONObject> hostInfo: hostInfoMap.entrySet()){
+            JSONObject hostInfoJson = hostInfo.getValue();
+            hostNames.add(hostInfoJson.get("hostName"));
+            totalSumCapacity+=hostInfoJson.getJSONArray("diskCapacityTotalUsage").getDouble(1);
+            if(hostInfoJson.getString("osName").toLowerCase().contains(("windows").toLowerCase())){
                 windowsCount++;
             }
             else{
                 linuxCount++;
             }
-            if(hostinfo.getValue().getBoolean("connected")){
+            if(hostInfoJson.getBoolean("connected")){
                 connectedCount++;
             }
+
+            //-----负载统计
+            //cpu负载统计
+            JSONArray cpuInfoList = hostInfoJson.getJSONArray("cpuInfoList");
+            for(int i=0;i<cpuInfoList.size();i++){
+                float cpuUsage = cpuInfoList.getJSONObject(i).getFloat("cpuUsage");
+                for(int j=0;j<loadPartition[0].length;j++){
+                    if(cpuUsage <= loadPartition[0][j]){
+                        loadCount[0][j] += 1;
+                        break;
+                    }
+                }
+            }
+            //内存负载统计
+            JSONArray memoryUsageJson =  hostInfoJson.getJSONArray("memoryUsage");
+            float memoryUsage = (memoryUsageJson.getFloat(0) / memoryUsageJson.getFloat(1))*100;
+            for(int j=0;j<loadPartition[1].length;j++){
+                if(memoryUsage <= loadPartition[1][j]){
+                    loadCount[1][j] += 1;
+                    break;
+                }
+            }
+            //硬盘负载统计
+            JSONArray diskInfoList = hostInfoJson.getJSONArray("diskInfoList");
+            for(int i=0;i<diskInfoList.size();i++){
+                JSONArray diskCapacitySize =  diskInfoList.getJSONObject(i).getJSONArray("diskCapacitySize");
+                float diskUsage = (diskCapacitySize.getFloat(0) / diskCapacitySize.getFloat(1))*100;
+                for(int j=0;j<loadPartition[2].length;j++){
+                    if(diskUsage <= loadPartition[2][j]){
+                        loadCount[2][j] += 1;
+                        break;
+                    }
+                }
+            }
+
         }
+
         summaryInfo.put("hostName",hostNames);
         summaryInfo.put("sumCapacity",totalSumCapacity);
         summaryInfo.put("windowsHostCount",windowsCount);
         summaryInfo.put("linuxHostCount",linuxCount);
         summaryInfo.put("connectedCount",connectedCount);
         summaryInfo.put("lastUpdateTime",new Timestamp(System.currentTimeMillis()));
+
+
+        JSONArray load = summaryInfo.getJSONArray("load");
+        for(int i=0;i<load.size();i++){
+            JSONArray currentLoad = load.getJSONArray(i);
+            for(int j=0;j<currentLoad.size();j++){
+                currentLoad.set(j,loadCount[i][j]);
+            }
+        }
+
 
     }
     public String storageFormatUtils(long storageSize){

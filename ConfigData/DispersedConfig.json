@@ -1,6 +1,11 @@
 {
   "DataCollectorServerIP": "127.0.0.1",
   "ServerSampleListenPort": 7000,
+  "loadPartition": {
+    "cpuLoad": [30.0,70.0,100.0],
+    "memoryLoad": [30.0,70.0,100.0],
+    "diskLoad": [30.0,70.0,100.0]
+  },
   "summary": {
     "hostName":[],
     "connectedCount": 0,
@@ -11,9 +16,9 @@
     "ssdCount": 0,
     "lastUpdateTime": 0,
     "load": [
-      [2,1,1],
-      [1,2,1],
-      [1,1,2]
+      [0,0,0],
+      [0,0,0],
+      [0,0,0]
     ]
   },
   "hostInfo": {
