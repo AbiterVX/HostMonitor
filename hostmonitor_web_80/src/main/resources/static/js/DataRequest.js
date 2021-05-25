@@ -477,6 +477,7 @@ function FRefreshDataHostInfo(hostName,uiRefreshCallbackFunc){
 }
 
 function FRefreshDataHostDetailTrend(hostName,uiRefreshCallbackFunc){
+
     var hostInfoTrend = FGetHostInfoTrend(hostName);
     var timestamp=new Date().getTime();
 
