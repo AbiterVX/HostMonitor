@@ -29,11 +29,14 @@ function FInitNav(){
         document.getElementById("NavItem2"),
         document.getElementById("NavItem3"),
         document.getElementById("NavItem4"),
+        document.getElementById("NavItem5"),
     ];
     NavItems[0].innerHTML = icon_home + '仪表盘';
     NavItems[1].innerHTML = icon_bar + '主机详情';
     NavItems[2].innerHTML = icon_file + '故障预测';
-    NavItems[3].innerHTML = icon_file + '测速';
+    NavItems[3].innerHTML = icon_file + '模型训练';
+    NavItems[4].innerHTML = icon_file + '测速';
+
     NavItems[0].onclick = function (){
         FSetCurrentNavItem(0);
     }
@@ -45,6 +48,9 @@ function FInitNav(){
     }
     NavItems[3].onclick = function (){
         FSetCurrentNavItem(3);
+    }
+    NavItems[4].onclick = function (){
+        FSetCurrentNavItem(4);
     }
 
 
@@ -59,6 +65,7 @@ function FSetCurrentNavItem(leftNavItemIndex){
             document.getElementById("NavItem2"),
             document.getElementById("NavItem3"),
             document.getElementById("NavItem4"),
+            document.getElementById("NavItem5"),
         ];
         for(var i=0;i<NavItems.length;i++){
             if(i === leftNavItemIndex){
@@ -84,6 +91,9 @@ function FSetCurrentNavItem(leftNavItemIndex){
             MainPart.src = parentPath + "DiskFailurePrediction.html";
         }
         else if(leftNavItemIndex ===3){
+            MainPart.src = parentPath + "DFPModelTraining.html";
+        }
+        else if(leftNavItemIndex ===4){
             MainPart.src = parentPath + "SpeedMeasurement.html";
         }
 
