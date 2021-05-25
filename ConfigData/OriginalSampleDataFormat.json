@@ -67,5 +67,11 @@
       "diskInfoList": [],
       "cpuInfoList": [],
       "gpuInfoList": []
+  },
+  "processFilter": {
+    "cpuUsage": 1,
+    "memoryUsage": 1,
+    "diskReadSpeed": 1,
+    "diskWriteSpeed": 1
   }
 }

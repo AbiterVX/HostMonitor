@@ -1,22 +1,16 @@
 package com.hust.hostmonitor_client.utils;
 
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import oshi.SystemInfo;
 import oshi.hardware.*;
-import oshi.software.os.FileSystem;
 import oshi.software.os.OSFileStore;
 import oshi.software.os.OSProcess;
 import oshi.software.os.OperatingSystem;
-import oshi.util.FormatUtil;
-import oshi.util.Util;
-import sun.nio.ch.Net;
 
 
 import java.sql.Timestamp;
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -43,7 +37,9 @@ public class DataSampler {
     private SystemInfo systemInfo;
     private JSONObject dataObject;
     private FormatConfig formatConfig=new FormatConfig();
-    private HashMap<Integer,JSONObject> processMap;
+    private JSONArray processInfoList;
+    private Map<Integer,OSProcess> processMapLastSample = new HashMap<>();
+    private Map<String, Float> processFilter;
 
     //静态硬件信息采样，不会周期性调用
     public DataSampler(){
@@ -51,6 +47,7 @@ public class DataSampler {
         dataObject= new JSONObject();
         dataObject.putAll(formatConfig.getHostInfoJson());
         dataObjectInitialization();
+        processFilter = formatConfig.getProcessFilter();
     }
     private void dataObjectInitialization(){
         JSONObject cpuObject=new JSONObject();
@@ -75,7 +72,7 @@ public class DataSampler {
             temp.putAll(formatConfig.getNetInterfaceInfoJson());
             dataObject.getJSONArray("netInterfaceList").add(temp);
         }
-        processMap=new HashMap<>();
+
     }
     public void hardWareSample(){
         Timestamp timestamp=new Timestamp(System.currentTimeMillis());
@@ -244,55 +241,44 @@ public class DataSampler {
         return  result;
     }
     public void processInfoSample(int period,int processFrequency){
+        processInfoList = new JSONArray();
+        Map<Integer,OSProcess> tempProcessMap= new HashMap<>();
         List<OSProcess> processesList=systemInfo.getOperatingSystem().getProcesses();
         Long memory=systemInfo.getHardware().getMemory().getTotal();
         for(OSProcess osProcess:processesList){
-            JSONObject tempObject=processMap.get(osProcess.getProcessID());
-            if(tempObject==null){
-                tempObject=new JSONObject();
-                tempObject.putAll(formatConfig.getProcessInfoJson());
-                tempObject.put("processId",osProcess.getProcessID());
-                tempObject.put("processName",osProcess.getName());
-                tempObject.put("startTime",osProcess.getStartTime());
-                tempObject.put("cpuUsage",osProcess.getProcessCpuLoadCumulative());
-                double memUsage=osProcess.getResidentSetSize()*1.0/memory;
-                tempObject.put("memoryUsage",memUsage);
-                tempObject.put("ReadBytes",osProcess.getBytesRead());
-                tempObject.put("WriteBytes",osProcess.getBytesWritten());
-                processMap.put(osProcess.getProcessID(),tempObject);
+            float cpuUsage = 0;
+            float memoryUsage= 100 * osProcess.getResidentSetSize()*1f/memory;
+            memoryUsage = Math.round(memoryUsage*100f)/100f;
+            float diskReadSpeed = 0;
+            float diskWriteSpeed = 0;
+
+            if(processMapLastSample.containsKey(osProcess.getProcessID())){
+                OSProcess processLastSample = processMapLastSample.get(osProcess.getProcessID());
+                cpuUsage = (float) ( osProcess.getProcessCpuLoadBetweenTicks(processLastSample));
+                cpuUsage = Math.round(cpuUsage*100)/100f;
+                diskReadSpeed = (osProcess.getBytesRead() - processLastSample.getBytesRead())  *1f/ (1024*processFrequency*period);
+                diskWriteSpeed = (osProcess.getBytesWritten() - processLastSample.getBytesWritten()) *1f/ (1024*processFrequency*period);
+                diskReadSpeed = Math.round(diskReadSpeed*100)/100f;
+                diskWriteSpeed = Math.round(diskWriteSpeed*100)/100f;
             }
-            else {
-                if(osProcess.getStartTime()==tempObject.getLong("startTime")){
-                    tempObject.put("startTime",osProcess.getStartTime());
-                    tempObject.put("cpuUsage",osProcess.getProcessCpuLoadCumulative());
-                    double memUsage=osProcess.getResidentSetSize()*1.0/memory;
-                    tempObject.put("memoryUsage",memUsage);
-                    long oldReadBytes=tempObject.getLong("ReadBytes");
-                    long oldWriteBytes=tempObject.getLong("WriteBytes");
-                    long ReadBytes=osProcess.getBytesRead();
-                    long WriteBytes=osProcess.getBytesWritten();
-                    double readSpeed=(ReadBytes-oldReadBytes)*1.0/(processFrequency*period);
-                    double writeSpeed=(WriteBytes-oldWriteBytes)*1.0/(processFrequency*period);
-                    tempObject.put("diskReadSpeed",readSpeed);
-                    tempObject.put("diskWriteSpeed",writeSpeed);
-                    tempObject.put("ReadBytes",ReadBytes);
-                    tempObject.put("WriteBytes",WriteBytes);
-                }
-                else{
-                    tempObject=new JSONObject();
-                    tempObject.putAll(formatConfig.getProcessInfoJson());
-                    tempObject.put("processId",osProcess.getProcessID());
-                    tempObject.put("processName",osProcess.getName());
-                    tempObject.put("startTime",osProcess.getStartTime());
-                    tempObject.put("cpuUsage",osProcess.getProcessCpuLoadCumulative());
-                    double memUsage=osProcess.getResidentSetSize()*1.0/memory;
-                    tempObject.put("memoryUsage",memUsage);
-                    tempObject.put("ReadBytes",osProcess.getBytesRead());
-                    tempObject.put("WriteBytes",osProcess.getBytesWritten());
-                    processMap.put(osProcess.getProcessID(),tempObject);
-                }
+
+            //保存
+            tempProcessMap.put(osProcess.getProcessID(),osProcess);
+            //进程过滤
+            if(processFilter.get("cpuUsage") <= cpuUsage || processFilter.get("memoryUsage")<= memoryUsage ||
+                    processFilter.get("diskReadSpeed")<= diskReadSpeed || processFilter.get("diskWriteSpeed")<= diskWriteSpeed){
+                JSONObject newProcess = new JSONObject();
+                newProcess.put("processId",osProcess.getProcessID());
+                newProcess.put("processName",osProcess.getName());
+                newProcess.put("startTime",osProcess.getStartTime());
+                newProcess.put("cpuUsage",cpuUsage);
+                newProcess.put("memoryUsage",memoryUsage);
+                newProcess.put("diskReadSpeed",diskReadSpeed);
+                newProcess.put("diskWriteSpeed",diskWriteSpeed);
+                processInfoList.add(newProcess);
             }
         }
+        processMapLastSample = tempProcessMap;
     }
     private void firstSample(){
         GlobalMemory globalMemory = systemInfo.getHardware().getMemory();
@@ -373,11 +359,7 @@ public class DataSampler {
             outputObject.put(a,dataObject.get(a));
         }
         if(insertProcessOrNot){
-            JSONArray processInfoList=new JSONArray();
-            for(Map.Entry<Integer,JSONObject> entry:processMap.entrySet()){
-                processInfoList.add(entry.getValue());
-            }
-            outputObject.put("processInfoList",processInfoList);
+            outputObject.put("processInfoList", processInfoList);
         }
 
         return outputObject.toJSONString();

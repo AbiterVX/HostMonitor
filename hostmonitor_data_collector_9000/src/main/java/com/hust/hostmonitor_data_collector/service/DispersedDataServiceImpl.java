@@ -90,7 +90,7 @@ public class DispersedDataServiceImpl implements DispersedDataService{
     public String getHostInfoDashboardAll() {
         JSONObject resultObject=new JSONObject();
         for(Map.Entry<String, JSONObject> entry: dispersedHostMonitor.hostInfoMap.entrySet()){
-            resultObject.put(entry.getKey(),selectMainProcess(cpuThreshold, entry.getValue()));
+            resultObject.put(entry.getKey(),entry.getValue());
         }
         return resultObject.toJSONString();
     }
@@ -104,7 +104,7 @@ public class DispersedDataServiceImpl implements DispersedDataService{
     //2
     @Override
     public String getHostInfoDetail(String hostName) {
-        String result=selectMainProcess(cpuThreshold,dispersedHostMonitor.hostInfoMap.get(hostName)).toJSONString();
+        String result=dispersedHostMonitor.hostInfoMap.get(hostName).toJSONString();
         return result;
     }
     private JSONObject selectMainProcess(double cpuThreshold,JSONObject jsonObject){

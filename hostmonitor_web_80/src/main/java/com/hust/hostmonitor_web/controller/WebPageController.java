@@ -20,4 +20,10 @@ public class WebPageController {
     public String getHomePage(){
         return "html/HomePage.html";
     }
+
+    //登录界面
+    @GetMapping(value ="/Signin")
+    public String getSignInPage(){
+        return "html/Signin.html";
+    }
 }

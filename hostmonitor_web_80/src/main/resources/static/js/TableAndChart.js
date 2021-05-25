@@ -52,6 +52,9 @@ function FGetLoadingImg(){
     return "<img style='width: 30px;height: 30px;' src='../images/loading-spin.svg' alt=''>";
 }
 
+var customPartition = [30,70,100];
+var customPartitionColor = ['#92cc76','#fac859','#ee6767'];
+
 //表格标题
 const tableColumns = {
     //概要-1
@@ -317,7 +320,14 @@ const tableColumns = {
             width: 45,
             sortable: true,
             formatter : function (value, row, index) {
-                return FGetPercentageWithUnit(value);
+                var color = "";
+                for(var i=0;i<customPartition.length;i++){
+                    if(value < customPartition[i]){
+                        color = customPartitionColor[i];
+                        break;
+                    }
+                }
+                return '<span style="font-weight:bold;color:'+ color +'">'+FGetPercentageWithUnit(value)+'</span>';
             }
         },
         {
@@ -326,7 +336,14 @@ const tableColumns = {
             width: 45,
             sortable: true,
             formatter : function (value, row, index) {
-                return value + "%";
+                var color = "";
+                for(var i=0;i<customPartition.length;i++){
+                    if(value < customPartition[i]){
+                        color = customPartitionColor[i];
+                        break;
+                    }
+                }
+                return '<span style="font-weight:bold;color:'+ color +'">'+value + "%"+'</span>';
             }
         },
         {

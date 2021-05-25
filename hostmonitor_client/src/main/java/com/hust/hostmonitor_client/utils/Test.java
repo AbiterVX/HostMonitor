@@ -17,11 +17,17 @@ package com.hust.hostmonitor_client.utils;
 
 import com.vnetpublishing.java.suapp.SU;
 import com.vnetpublishing.java.suapp.SuperUserApplication;
+import oshi.SystemInfo;
+import oshi.software.os.OSProcess;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class Test  {
 /*
@@ -42,8 +48,33 @@ public class Test  {
         }*/
 
     public static void main(String[] args) {
+        SystemInfo systemInfo = new SystemInfo();
 
-        SU.run(new DiskPredictDataSampler(), args);
+        List<OSProcess> processesList =systemInfo.getOperatingSystem().getProcesses();
+        Map<Integer,OSProcess> lastProcessListMap = new HashMap<>();
+        for(OSProcess osProcess:processesList){
+            lastProcessListMap.put(osProcess.getProcessID(),osProcess);
+        }
+
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        List<OSProcess> newProcessesList =systemInfo.getOperatingSystem().getProcesses();
+        for(OSProcess osProcess:newProcessesList){
+            if(lastProcessListMap.containsKey(osProcess.getProcessID())){
+                float cupUsage = (float) ( osProcess.getProcessCpuLoadBetweenTicks(lastProcessListMap.get(osProcess.getProcessID())));
+                cupUsage = Math.round(cupUsage*100f)/100f;
+                System.out.println(cupUsage);
+            }
+        }
+        //SU.run(new DiskPredictDataSampler(), args);
+
+
+
+
         /*try {
             Runtime rt = Runtime.getRuntime();
             rt.exec("E:/Code/HostMonitor/ConfigData/Client/data_collector-windows.exe");

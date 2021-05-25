@@ -5,6 +5,8 @@ import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 public class FormatConfig {
     private final JSONObject configJson = JSONObject.parseObject(readFile("ConfigData/OriginalSampleDataFormat.json"));
@@ -46,6 +48,14 @@ public class FormatConfig {
         return getConfigJsonObject("outputFormat");
     }
 
+    public Map<String, Float> getProcessFilter(){
+        JSONObject processFilter = getConfigJsonObject("processFilter");
+        Map<String, Float> result = new HashMap<>();
+        result.put("cpuUsage",processFilter.getFloat("cpuUsage"));
+        result.put("memoryUsage",processFilter.getFloat("memoryUsage"));
+        result.put("diskReadSpeed",processFilter.getFloat("diskReadSpeed"));
+        result.put("diskWriteSpeed",processFilter.getFloat("diskWriteSpeed"));
 
-
+        return result;
+    }
 }
