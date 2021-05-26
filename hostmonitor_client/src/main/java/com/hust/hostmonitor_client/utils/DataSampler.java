@@ -10,6 +10,7 @@ import oshi.software.os.OSProcess;
 import oshi.software.os.OperatingSystem;
 
 
+import java.io.*;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -40,14 +41,18 @@ public class DataSampler {
     private JSONArray processInfoList;
     private Map<Integer,OSProcess> processMapLastSample = new HashMap<>();
     private Map<String, Float> processFilter;
-
+    private String diskDataPath;
     //静态硬件信息采样，不会周期性调用
     public DataSampler(){
+        diskDataPath=System.getProperty("user.dir")+"/ConfigData/Client/data.csv";
         systemInfo = new SystemInfo();
         dataObject= new JSONObject();
         dataObject.putAll(formatConfig.getHostInfoJson());
         dataObjectInitialization();
         processFilter = formatConfig.getProcessFilter();
+    }
+    public String hostName(){
+        return systemInfo.getOperatingSystem().getNetworkParams().getHostName();
     }
     private void dataObjectInitialization(){
         JSONObject cpuObject=new JSONObject();
@@ -83,23 +88,30 @@ public class DataSampler {
         CentralProcessor centralProcessor = systemInfo.getHardware().getProcessor();
         CentralProcessor.ProcessorIdentifier identifier=centralProcessor.getProcessorIdentifier();
         dataObject.getJSONArray("cpuInfoList").getJSONObject(0).put("cpuName",identifier.getName());
-
+        HashMap<String,Integer> types=readDisktypes();
         //磁盘
         List<HWDiskStore> hwDiskStoreList=systemInfo.getHardware().getDiskStores();
         int i=0;
         long totalsize=0;
         for(i=0;i<hwDiskStoreList.size();i++){
             HWDiskStore tempDiskStore=hwDiskStoreList.get(i);
-            dataObject.getJSONArray("diskInfoList").getJSONObject(i).put("diskName",tempDiskStore.getModel());
+            dataObject.getJSONArray("diskInfoList").getJSONObject(i).put("diskName",tempDiskStore.getSerial().trim());
             dataObject.getJSONArray("diskInfoList").getJSONObject(i).put("diskCapacityTotalSize",FormatUtils.doubleTo2bits_double((tempDiskStore.getSize()*1.0/1024/1024/1024)));
             dataObject.getJSONArray("diskInfoList").getJSONObject(i).put("lastUpdateTime",timestamp);
+            String serial=tempDiskStore.getSerial().trim();
+            for(String string:types.keySet()){
+                if(string.contains(serial)){
+                    dataObject.getJSONArray("diskInfoList").getJSONObject(i).put("type",types.get(string));
+                    dataObject.getJSONArray("diskInfoList").getJSONObject(i).put("diskName",string);
+                    break;
+                }
+            }
             totalsize+=tempDiskStore.getSize();
-            //tempDiskObject.put("size",hwDiskStore.getSize() > 0L ? FormatUtil.formatBytesDecimal(hwDiskStore.getSize()) : "?");
-            //diskArray.add(tempDiskObject);
+
         }
+
         //单位GB
-        System.out.println(FormatUtils.doubleTo2bits_double(totalsize*1.0/1024/1024/1024));
-        System.out.println(totalsize);
+
         dataObject.put("diskCapacityTotalSizeSum",FormatUtils.doubleTo2bits_double(totalsize*1.0/1024/1024/1024));
         //resultObject.put("Disks",diskArray);
         //GPU
@@ -117,8 +129,27 @@ public class DataSampler {
             NetworkIF tempNetworkIF=networkIFList.get(i);
             dataObject.getJSONArray("netInterfaceList").getJSONObject(i).put("netInterfaceName",tempNetworkIF.getDisplayName());
         }
-        System.out.println(dataObject.get("diskCapacityTotalSizeSum"));
     }
+    private HashMap<String,Integer> readDisktypes(){
+        HashMap<String,Integer> types=new HashMap<>();
+        File file=new File(diskDataPath);
+        try {
+            FileReader fr=new FileReader(file);
+            BufferedReader br=new BufferedReader(fr);
+            String str=null;
+            while((str=br.readLine())!=null){
+                String[] tokens=str.split(",");
+                types.put(tokens[3],Integer.parseInt(tokens[7]));
+
+            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return types;
+    }
+
     public void periodSample(int period,boolean isTheFirstTimeToSample){
         if(isTheFirstTimeToSample){
             firstSample();
@@ -225,8 +256,8 @@ public class DataSampler {
         //单位MB/s
         dataObject.put("netReceiveSpeed",FormatUtils.doubleTo2bits_double(totalNetRecv/1024/1024));
         dataObject.put("netSendSpeed",FormatUtils.doubleTo2bits_double(totalNetSent/1024/1024));
-        System.out.println(dataObject.get("diskCapacityTotalSizeSum"));
-        System.out.println("Sample Finish");
+
+        System.out.println("[Data Sample]Sample Finish");
     }
     private List<partionInfo> processing(List<OSFileStore> fsList){
         ArrayList<partionInfo> result=new ArrayList<>();
@@ -349,7 +380,7 @@ public class DataSampler {
             dataObject.getJSONArray("netInterfaceList").getJSONObject(k).put("sentBytes",SentBytes);
 
         }
-        System.out.println("Sample Finish");
+        System.out.println("[Data Sample]Sample Finish");
 
     }
     public String outputSampleData(boolean insertProcessOrNot){

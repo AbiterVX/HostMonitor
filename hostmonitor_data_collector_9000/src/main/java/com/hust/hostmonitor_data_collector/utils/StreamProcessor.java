@@ -7,17 +7,24 @@ import lombok.SneakyThrows;
 import javax.xml.crypto.Data;
 import java.io.DataInputStream;
 import java.io.IOException;
+import java.net.Socket;
 import java.sql.Timestamp;
 import java.util.StringTokenizer;
 
 public class StreamProcessor implements Runnable{
+    private Socket socket;
     private DataInputStream inFromNode;
     private String remoteIp;
     private String remotePort;
     private DispersedHostMonitor parent;
     private String hostName;
-    public StreamProcessor(DataInputStream inFromNode,String remoteIp,String remotePort,DispersedHostMonitor parent) {
-        this.inFromNode=inFromNode;
+    public StreamProcessor(Socket socket,String remoteIp,String remotePort,DispersedHostMonitor parent) {
+        this.socket=socket;
+        try {
+            this.inFromNode=new DataInputStream(socket.getInputStream());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         this.remoteIp=remoteIp;
         this.remotePort=remotePort;
         this.parent =parent;
@@ -30,7 +37,13 @@ public class StreamProcessor implements Runnable{
         String receivedString;
         while(true){
             try {
-                receivedString=inFromNode.readUTF();
+                int numberOfSegments=inFromNode.readInt();
+                StringBuilder tempString=new StringBuilder();
+                for(int i=0;i<numberOfSegments;i++){
+                    String temp=inFromNode.readUTF();
+                    tempString.append(temp);
+                }
+                receivedString=tempString.toString();
                 JSONObject UpdateObject=JSON.parseObject(receivedString);
                 JSONObject oldDataObject=parent.hostInfoMap.get(hostName);
                 oldDataObject.putAll(UpdateObject);
@@ -43,6 +56,7 @@ public class StreamProcessor implements Runnable{
                 e.printStackTrace();
                 inFromNode.close();
                 parent.hostInfoMap.get(hostName).put("connected",false);
+                socket.close();
                 break;
             }
         }

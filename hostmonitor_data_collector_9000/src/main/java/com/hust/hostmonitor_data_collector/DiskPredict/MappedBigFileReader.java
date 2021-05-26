@@ -22,7 +22,7 @@ public class MappedBigFileReader {
     private byte[] array;
     private byte[] last_byte = {};
     private int convert = 1024 * 1024;
-
+    private boolean isLastRead=false;
     public MappedBigFileReader(String fileName, int arraySize) throws IOException {
         this.fileIn = new FileInputStream(fileName);
         FileChannel fileChannel = fileIn.getChannel();
@@ -52,6 +52,7 @@ public class MappedBigFileReader {
             mappedBufArray[count].get(array);
             return arraySize;
         } else {// 本内存文件映射最后一次读取数据
+            isLastRead=true;
             array = new byte[limit - position];
             mappedBufArray[count].get(array);
             if (count < number) {
@@ -62,6 +63,7 @@ public class MappedBigFileReader {
     }
 
     public void close() throws IOException {
+
         fileIn.close();
         array = null;
     }
@@ -89,11 +91,16 @@ public class MappedBigFileReader {
         System.arraycopy(array, 0, new_array, last_byte.length, array.length);  
         
     	String s = new String(new_array);
+    	System.out.println(s);
     	List<String> data = Arrays.asList(s.split("\\n"));
+
 //    	System.out.printf("process %d %d%n %s %n %s %n %s %n", data.size(), fileLength,
 //    			data.get(0), data.get(data.size() - 2), data.get(data.size() - 1));
     	last_byte = data.get(data.size() - 1).getBytes();
     	data_count ++;
+    	if(isLastRead){
+    	    return data;
+        }
     	return data.subList(0, data.size() - 1);
     }
     

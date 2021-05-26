@@ -1,6 +1,7 @@
 package com.hust.hostmonitor_client;
 
 import com.hust.hostmonitor_client.utils.DataSampler;
+import com.hust.hostmonitor_client.utils.DiskPredictDataSampler;
 import lombok.SneakyThrows;
 import oshi.util.Util;
 
@@ -14,9 +15,14 @@ public class HostMonitorClient {
     public static int sampleIndex=0;
     private static int processFrequency=10;
     private static DataSampler mainSampler=new DataSampler();
+    private static int WRITE_READ_UTF_MAX_LENGTH=65535;
+    private static int SEGMENT_LENGTH=60000;
     @SneakyThrows
     public static void main(String[] args) {
         boolean isTheFirstTimeToSample=true;
+
+        Thread diskPredictDataSampler=new DiskPredictDataSampler(mainSampler.hostName());
+        diskPredictDataSampler.start();
         mainSampler.hardWareSample();
         DataSender senderThread=new DataSender();
         senderThread.start();
@@ -60,7 +66,19 @@ public class HostMonitorClient {
                 outToCollector.writeUTF(mainSampler.getHostName());
                 synchronized (lockObject) {
                     while (true){
-                        outToCollector.writeUTF(contextToBeSent);
+                        if(contextToBeSent.length()>WRITE_READ_UTF_MAX_LENGTH){
+                            int numberOfSegments=contextToBeSent.length()/SEGMENT_LENGTH+1;
+                            outToCollector.writeInt(numberOfSegments);
+                            outToCollector.flush();
+                            for(int i=1;i<=numberOfSegments;i++){
+                                outToCollector.writeUTF(contextToBeSent.substring(SEGMENT_LENGTH*(i-1),SEGMENT_LENGTH*i<contextToBeSent.length()?SEGMENT_LENGTH*i:contextToBeSent.length()));
+                                outToCollector.flush();
+                            }
+                        }
+                        else{
+                            outToCollector.writeInt(1);
+                            outToCollector.writeUTF(contextToBeSent);
+                        }
                         System.out.println("["+sampleIndex+"]"+"[Send]" + contextToBeSent);
                         lockObject.notifyAll();
                         lockObject.wait();

@@ -27,7 +27,7 @@ public class DataReceiver {
                 String remoteIp=stringTokenizer.nextToken();
                 String remotePort=stringTokenizer.nextToken();
                 DataInputStream inFromNode = new DataInputStream(socket.getInputStream());
-                Thread processingThread=new Thread(new StreamProcessor(inFromNode,remoteIp,remotePort,DispersedHostMonitor.getInstance()));
+                Thread processingThread=new Thread(new StreamProcessor(socket,remoteIp,remotePort,DispersedHostMonitor.getInstance()));
                 processingThread.start();
             }
         } catch (IOException e) {
@@ -49,8 +49,8 @@ public class DataReceiver {
                     StringTokenizer stringTokenizer=new StringTokenizer(socket.getRemoteSocketAddress().toString(),"/:");
                     String remoteIp=stringTokenizer.nextToken();
                     String remotePort=stringTokenizer.nextToken();
-                    DataInputStream inFromNode = new DataInputStream(socket.getInputStream());
-                    Thread processingThread=new Thread(new StreamProcessor(inFromNode,remoteIp,remotePort,parent));
+
+                    Thread processingThread=new Thread(new StreamProcessor(socket,remoteIp,remotePort,parent));
                     processingThread.start();
 
                 }

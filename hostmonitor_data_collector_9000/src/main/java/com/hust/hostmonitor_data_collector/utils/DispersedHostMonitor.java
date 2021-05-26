@@ -26,6 +26,7 @@ public class DispersedHostMonitor {
 
     //serverSocket
     private DataReceiver dataReceiver=new DataReceiver(this);
+    private FileReceiver fileReceiver=new FileReceiver(this);
 
     //单例
     private volatile static DispersedHostMonitor dispersedHostMonitor;
@@ -44,6 +45,7 @@ public class DispersedHostMonitor {
         summaryInfo = dispersedConfig.getSummaryJson();
         loadPartition = dispersedConfig.getLoadPartitionJson();
         dataReceiver.startListening();
+        fileReceiver.startListening();
     }
     public void UpdateSummaryInfo(){
         double totalSumCapacity=0;
@@ -63,6 +65,16 @@ public class DispersedHostMonitor {
             if(hostInfoJson.getBoolean("connected")){
                 connectedCount++;
             }
+            //HDD SSD统计
+            for(int i=0;i<hostInfoJson.getJSONArray("diskInfoList").size();i++){
+                if(hostInfoJson.getJSONArray("diskInfoList").getJSONObject(i).getIntValue("type")==1){
+                    SSDCount++;
+                }
+                else{
+                    HDDCount++;
+                }
+            }
+
 
             //-----负载统计
             //cpu负载统计
@@ -104,6 +116,8 @@ public class DispersedHostMonitor {
         summaryInfo.put("sumCapacity",totalSumCapacity);
         summaryInfo.put("windowsHostCount",windowsCount);
         summaryInfo.put("linuxHostCount",linuxCount);
+        summaryInfo.put("hddCount",HDDCount);
+        summaryInfo.put("ssdCount",SSDCount);
         summaryInfo.put("connectedCount",connectedCount);
         summaryInfo.put("lastUpdateTime",new Timestamp(System.currentTimeMillis()));
 
@@ -126,4 +140,14 @@ public class DispersedHostMonitor {
         DispersedHostMonitor.getInstance();
     }
 
+    public void setDiskDFPState(String hostName, String diskName, boolean b) {
+        if(hostInfoMap.containsKey(hostName)){
+            JSONObject jsonObject=hostInfoMap.get(hostName);
+            for(int i=0;i<jsonObject.getJSONArray("diskInfoList").size();i++){
+                if(jsonObject.getJSONArray("diskInfoList").getJSONObject(i).getString("diskName").equals(diskName)){
+                    jsonObject.getJSONArray("diskInfoList").getJSONObject(i).put("hasLatestDFPRecord",b);
+                }
+            }
+        }
+    }
 }

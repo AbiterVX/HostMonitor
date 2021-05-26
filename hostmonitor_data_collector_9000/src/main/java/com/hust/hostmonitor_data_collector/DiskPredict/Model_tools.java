@@ -273,7 +273,6 @@ public class Model_tools {
 	 * 
 	 * @param data_path 数据路径
 	 * @param sep       分隔符 默认为','
-	 * @param configMap 配置信息
 	 * @throws IOException
 	 * @author: 62786
 	 * @throws OrtException
@@ -309,7 +308,7 @@ public class Model_tools {
 		boolean flag = true;
 		while (reader.read() != -1) {
 			datas = reader.readArray();
-//			System.out.println(datas.toString());
+			System.out.println(datas.toString());
 			for (String temp : datas) {
 				if (flag) {
 					flag = false;
@@ -407,8 +406,7 @@ public class Model_tools {
 
 	/**
 	 * 打印结果
-	 * 
-	 * @param results
+	 *
 	 * @throws OrtException
 	 * @throws IOException
 	 */
@@ -479,8 +477,7 @@ public class Model_tools {
 
 	/**
 	 * 输出不同厂商的告警率
-	 * 
-	 * @param model_counts
+	 *
 	 * @throws OrtException
 	 * @author: wj
 	 * @date: 2020年12月7日 上午9:17:03
@@ -502,8 +499,7 @@ public class Model_tools {
 
 	/**
 	 * 如果是测试则输出模型的评估指标
-	 * 
-	 * @param results
+	 *
 	 * @throws OrtException
 	 */
 	public static void evaluate() throws OrtException {
@@ -581,7 +577,6 @@ public class Model_tools {
 	 * 
 	 * @param input_path
 	 * @param output_path
-	 * @param results
 	 * @throws IOException
 	 * @throws OrtException
 	 */
@@ -641,6 +636,7 @@ public class Model_tools {
 			}
 			output_writer.flush();
 		}
+		reader.close();
 		try {
 			output_writer.close();
 		} catch (IOException e) {
@@ -739,7 +735,6 @@ public class Model_tools {
 	 * TransferModel标签编码
 	 * 
 	 * @param input_data
-	 * @param firmware_table
 	 * @return
 	 */
 	public static List<String> prep_Transfermodel(List<String> input_data, Map<String, String> transfermode_table) {
@@ -908,8 +903,7 @@ public class Model_tools {
 
 	/**
 	 * 获取transfermode映射表
-	 * 
-	 * @param firmware
+	 *
 	 * @return
 	 */
 	public static Map<String, String> get_Transfermode(List<String> transfermode) {

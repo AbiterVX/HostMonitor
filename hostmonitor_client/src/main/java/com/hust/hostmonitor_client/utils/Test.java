@@ -18,6 +18,7 @@ package com.hust.hostmonitor_client.utils;
 import com.vnetpublishing.java.suapp.SU;
 import com.vnetpublishing.java.suapp.SuperUserApplication;
 import oshi.SystemInfo;
+import oshi.hardware.HWDiskStore;
 import oshi.software.os.OSProcess;
 
 import java.io.BufferedReader;
@@ -49,28 +50,12 @@ public class Test  {
 
     public static void main(String[] args) {
         SystemInfo systemInfo = new SystemInfo();
-
-        List<OSProcess> processesList =systemInfo.getOperatingSystem().getProcesses();
-        Map<Integer,OSProcess> lastProcessListMap = new HashMap<>();
-        for(OSProcess osProcess:processesList){
-            lastProcessListMap.put(osProcess.getProcessID(),osProcess);
+        for(HWDiskStore hwDiskStore:systemInfo.getHardware().getDiskStores()){
+            System.out.println(hwDiskStore.getSerial());
         }
 
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        List<OSProcess> newProcessesList =systemInfo.getOperatingSystem().getProcesses();
-        for(OSProcess osProcess:newProcessesList){
-            if(lastProcessListMap.containsKey(osProcess.getProcessID())){
-                float cupUsage = (float) ( osProcess.getProcessCpuLoadBetweenTicks(lastProcessListMap.get(osProcess.getProcessID())));
-                cupUsage = Math.round(cupUsage*100f)/100f;
-                System.out.println(cupUsage);
-            }
-        }
         //SU.run(new DiskPredictDataSampler(), args);
+
 
 
 

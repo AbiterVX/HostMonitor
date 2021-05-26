@@ -43,7 +43,7 @@ public class DispersedDataSampleController {
     @GetMapping(value="/getDiskInfo/All/Dashboard")
     @ResponseBody
     public String getDiskInfo_All_Dashboard(){
-        //String result= dispersedDataService.getDiskInfoAll();
+        String result= dispersedDataService.getDiskInfoAll();
         return null;
     }
 
@@ -79,7 +79,7 @@ public class DispersedDataSampleController {
     @GetMapping(value="/getDiskInfo/{hostName}")
     @ResponseBody
     public String getDiskInfo(@PathVariable Map<String,String> map){
-        //String result= dispersedDataService.getDiskInfo(map.get("hostName"));
+        String result= dispersedDataService.getDiskInfo(map.get("hostName"));
         return null;
     }
 

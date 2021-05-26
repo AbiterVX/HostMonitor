@@ -44,7 +44,8 @@
     "diskReadSpeed": 0,
     "diskWriteSpeed": 0,
     "diskCapacitySize": [0,0],
-    "type": 0
+    "type": 0,
+    "hasLatestDFPRecord": false
   },
   "cpuInfo": {
     "cpuName": "",

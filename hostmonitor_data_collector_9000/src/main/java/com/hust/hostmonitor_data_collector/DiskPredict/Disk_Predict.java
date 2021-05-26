@@ -1,8 +1,5 @@
 package com.hust.hostmonitor_data_collector.DiskPredict;
-import java.io.BufferedReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -103,7 +100,8 @@ public class Disk_Predict {
 
 
 	//获取磁盘预测结果
-	public static void getDiskPredictResult(String readFileName){
+	public static List<JSONObject> getDiskPredictResult(String readFileName, long time){
+		ArrayList<JSONObject> result=new ArrayList<>();
 		try {
 			String projectPath = System.getProperty("user.dir");
 			CsvReader reader = new CsvReader(projectPath + readFileName, ',', StandardCharsets.UTF_8);
@@ -111,18 +109,22 @@ public class Disk_Predict {
 			while (reader.readRecord()) {
 				String[] currentRow = reader.getValues();
 				//字段
-				String hostName = currentRow[2];
-				String diskName = currentRow[3];
-				float probability = Float.parseFloat(currentRow[136]);
+				JSONObject tempObject=new JSONObject();
+				tempObject.put("hostName",currentRow[2]);
+				tempObject.put("diskName",currentRow[3]);
+				tempObject.put("predictTime",time);
+				tempObject.put("predictProbability",Float.parseFloat(currentRow[136]));
+				result.add(tempObject);
 			}
 			reader.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		return result;
 	}
 
 	//对采样的磁盘预测数据整合
-	public static void diskSampleDataIntegration(String writeFileName, List<String[]> contentData){
+	public static void diskSampleDataIntegration(String writeFileName, List<String> contentData){
 		String projectPath = System.getProperty("user.dir");
 		try {
 			//写表头
@@ -137,10 +139,10 @@ public class Disk_Predict {
 			writer = new FileWriter(projectPath+writeFileName);
 			writer.write(titles+"\n");
 
-			for (String[] currentContent:contentData){
-				for(int j=0;j<currentContent.length;j++){
-					writer.write(currentContent[j]+"\n");
-				}
+			for (String currentContent:contentData){
+
+					writer.write(currentContent+"\n");
+
 			}
 
 			writer.flush();
@@ -151,6 +153,15 @@ public class Disk_Predict {
 	}
 
 	public static void main(String[] args) {
+		ArrayList<String> contentData=new ArrayList<>();
+		contentData.add("19980803,2021/05/26 20:27,LAPTOP-A3C9JUCK,WD-WXU2EA0E5XPT,WDC WD50NDZW-11A8JS1,SAT,01.01A01,0,5.00 TB,,,200,253,100,200,200,100,100,100,100,200,193,112,200,200,100,200,100,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,20210526,");
+		Disk_Predict.diskSampleDataIntegration("/DiskPredictData/input/IntegratedData.csv",contentData);
+		Disk_Predict disk_predict=new Disk_Predict("IntegratedData.csv","PredictResult.csv");
+		//Disk_Predict disk_predict=new Disk_Predict("testInput.csv","testOutput.csv");
+		long time=System.currentTimeMillis();
+		//List<JSONObject> result=Disk_Predict.getDiskPredictResult("/DiskPredictData/output/PredictResult.csv",time);
+		Disk_Predict.diskSampleDataIntegration("/DiskPredictData/input/IntegratedData.csv",contentData);
+
 		//Disk_Predict onnx_Model = new Disk_Predict("testInput.csv", "testOutput.csv");
 
 		//Disk_Predict.readCSV("/DiskPredictData/input/input.csv");

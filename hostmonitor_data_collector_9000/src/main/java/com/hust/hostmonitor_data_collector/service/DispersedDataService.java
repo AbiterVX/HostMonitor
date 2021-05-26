@@ -8,9 +8,9 @@ public interface DispersedDataService {
 
     String getHostInfoDetail(String hostName);
 
-//    String getDiskInfoAll();
-//
-//    String getDiskInfo(String hostName);
+    String getDiskInfoAll();
+
+    String getDiskInfo(String hostName);
 
     String getHostInfoDetailTrend(String hostName);
 
