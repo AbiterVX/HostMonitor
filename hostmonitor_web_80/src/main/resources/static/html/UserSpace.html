@@ -56,18 +56,18 @@
                         <strong>3</strong>
                     </li>
                 </ul>
-                <form class="card p-2">
+                <div class="card p-2">
                     <div class="input-group">
                         <input type="text" class="form-control" placeholder="Promo code">
                         <div class="input-group-append">
                             <button type="submit" class="btn btn-secondary">Redeem</button>
                         </div>
                     </div>
-                </form>
+                </div>
             </div>
             <div class="col-md-7 order-md-1">
                 <h4 class="mb-3">个人信息</h4>
-                <form class="needs-validation" novalidate="">
+                <div class="needs-validation" novalidate="">
                     <div class="row">
                       <div class="col-md-6 mb-3">
                           <label for="firstName">ID</label>
@@ -110,14 +110,19 @@
                     </div>
                     <hr class="mb-4">
                     <button class="btn btn-primary btn-lg btn-block" >修改信息</button>
-                    <button class="btn btn-secondary btn-lg btn-block" >返回</button>
-              </form>
+                    <button class="btn btn-secondary btn-lg btn-block" onclick="backBtnOnclick()">返回</button>
+              </div>
             </div>
         </div>
         <footer class="my-5 pt-5 text-muted text-center text-small">
         </footer>
     </div>
 </body>
+<script>
+    function backBtnOnclick(){
+        window.location.href="/";
+    }
+</script>
 </html>
 
 

@@ -161,50 +161,31 @@ public class DispersedDataServiceImpl implements DispersedDataService{
         Timestamp highbound=new Timestamp(System.currentTimeMillis());
         Timestamp lowbound=new Timestamp(System.currentTimeMillis()-hours*3600*1000);
         List<DispersedRecord> dispersedRecordList= dispersedMapper.queryRecordsWithTimeLimit(lowbound,highbound,hostName);
+
         JSONArray result=new JSONArray();
-        JSONArray[] component=new JSONArray[6];
         for(int i=0;i<6;i++){
-            component[i]=new JSONArray();
+            result.add(new JSONArray());
         }
+
         for(DispersedRecord dispersedRecord:dispersedRecordList){
-            JSONArray[] jsonArrays=new JSONArray[6];
-            jsonArrays[0]=new JSONArray();
-            jsonArrays[0].add(dispersedRecord.getTimestamp());
-            jsonArrays[0].add(dispersedRecord.getCpuUsage());
-            component[0].add(jsonArrays);
+            Timestamp timestamp = dispersedRecord.getTimestamp();
 
-            jsonArrays[1]=new JSONArray();
-            jsonArrays[1].add(dispersedRecord.getTimestamp());
-            jsonArrays[1].add(dispersedRecord.getMemUsage());
-            component[1].add(jsonArrays[1]);
-
-            jsonArrays[2]=new JSONArray();
-            jsonArrays[2].add(dispersedRecord.getTimestamp());
-            jsonArrays[2].add(dispersedRecord.getDiskReadRates());
-            component[2].add(jsonArrays[2]);
-
-            jsonArrays[3]=new JSONArray();
-            jsonArrays[3].add(dispersedRecord.getTimestamp());
-            jsonArrays[3].add(dispersedRecord.getDiskWriteRates());
-            component[3].add(jsonArrays[3]);
-
-            jsonArrays[4]=new JSONArray();
-            jsonArrays[4].add(dispersedRecord.getTimestamp());
-            jsonArrays[4].add(dispersedRecord.getNetRecv());
-            component[4].add(jsonArrays[4]);
-
-            jsonArrays[5]=new JSONArray();
-            jsonArrays[5].add(dispersedRecord.getTimestamp());
-            jsonArrays[5].add(dispersedRecord.getNetSent());
-            component[5].add(jsonArrays[5]);
-        }
-        for(int i=0;i<6;i++){
-            result.add(component[i]);
+            result.getJSONArray(0).add(createNewValue(timestamp,dispersedRecord.getCpuUsage()));
+            result.getJSONArray(1).add(createNewValue(timestamp,dispersedRecord.getMemUsage()));
+            result.getJSONArray(2).add(createNewValue(timestamp,dispersedRecord.getDiskReadRates()));
+            result.getJSONArray(3).add(createNewValue(timestamp,dispersedRecord.getDiskWriteRates()));
+            result.getJSONArray(4).add(createNewValue(timestamp,dispersedRecord.getNetRecv()));
+            result.getJSONArray(5).add(createNewValue(timestamp,dispersedRecord.getNetSent()));
         }
         return  result.toJSONString();
     }
 
-
+    private JSONArray createNewValue(Object object1,Object object2){
+        JSONArray jsonArray = new JSONArray();
+        jsonArray.add(object1);
+        jsonArray.add(object2);
+        return  jsonArray;
+    }
 
     /**
      * 获取信息-DFP-Trend-某个Host

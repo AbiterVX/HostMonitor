@@ -51,7 +51,7 @@
 
             <ul class="navbar-nav px-3">
                 <li class="nav-item text-nowrap">
-                    <a class="nav-link" href="/Signin">管理员登录</a>
+                    <a id="UserBtn" class="nav-link"></a>
                 </li>
             </ul>
         </div>
@@ -75,6 +75,9 @@
                         </li>
                         <li class="nav-item">
                             <a id="NavItem4" class="nav-link" href="#"></a>
+                        </li>
+                        <li class="nav-item">
+                            <a id="NavItem5" class="nav-link" href="#"></a>
                         </li>
                     </ul>
                 </div>
@@ -101,8 +104,8 @@
     window.onload=function (){
         //主页面导入时，请求Summary数据
         FRefreshDataSummary(function (){
-            //[左侧导航栏]设置当前选中的导航项
-            FInitNavItems();
+            //[导航栏]设置当前选中的导航项
+            FInitNav();
             //设置初始界面
             FSetCurrentNavItem(0);
         });

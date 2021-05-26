@@ -72,21 +72,6 @@
         </div>
     </div>
 
-    <div id="DFPCollapse" class="collapse">
-        <div class="row" >
-            <div class="col-md-auto">
-                <h4 class="h4">进度:</h4>
-            </div>
-            <div class="col-sm">
-                <div class="progress" style="width: 100%;height: 32px;" >
-                    <div id="progressBar" style="width: 0%;" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100"></div>
-                    <h4 id="progressPercentage" class="justify-content-center d-flex position-absolute w-100">60%</h4>
-                </div>
-            </div>
-        </div>
-    </div>
-
-
     <table id="diskFailurePredictInfo" style="table-layout: fixed;word-break: break-all;"></table>
     <div style="height: 100px;width: 100%"></div>
 </body>
@@ -104,10 +89,7 @@
     var currentDiskIndex = 0;
     //table选中项
     var selectedItems = new Set();
-    //进度条
-    var progressBar = $('#progressBar');
-    var progressPercentage = document.getElementById("progressPercentage");
-    var currentProgressPercentage = 0;
+
     //MainInfo
     var mainInfo = FGetMainInfo();
 
@@ -230,43 +212,19 @@
         }
         selectedItems.clear();
         refreshDFPInfoTable(false,dfpInfoList["dfpInfo"]);
-
-        $('#processCollapseBtn').click();
         $('#predictBtn').prop('disabled', true);
-        setProgressUpdate();
+        setTimeout(function (){
+            predictComplete();
+        },2000);
     }
 
-    //开启进度条更新-Test
-    function setProgressUpdate(){
-        var progressUpdate = window.setInterval(function (){
-            if(currentProgressPercentage <= 100){
-                var percentage = FGetPercentageWithUnit(currentProgressPercentage);
-                progressBar.css("width",percentage);
-                progressPercentage.innerText = percentage;
-                currentProgressPercentage+=2;
-            }
-            else{
-                progressBar.css("width","100%");
-                progressPercentage.innerText = "完成";
-                predictComplete();
-                clearInterval(progressUpdate);
-            }
-        },50);
-    }
+
 
     //预测完成
     function predictComplete(){
         setTimeout(function (){
-            $('#processCollapseBtn').click();
-            refreshDFPInfoTable(false);
-            setTimeout(function (){
-                currentProgressPercentage = 0;
-                progressBar.css("width","0%");
-                progressPercentage.innerText = "0%";
-                $('#predictBtn').prop('disabled', false);
-
-            },2000);
-
+            $('#predictBtn').prop('disabled', false);
+            //refreshDFPInfoTable(false);
         },2000);
     }
 

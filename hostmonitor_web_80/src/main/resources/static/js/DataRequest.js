@@ -344,6 +344,29 @@ function FSendGetRequest(async,url,callbackFunc){
     });
 }
 
+//发送get请求
+function FSendPostRequest(async,url,parameterData,callbackFunc){
+    $.ajax({
+        type:"post",
+        dataType:"text",                //返回数据类型
+        url:url,
+        data:parameterData,
+        processData :false,             //发送的数据是否转为对象
+        contentType:"application/json", //发送数据的格式
+        async:async,                     //异步
+        success:function (resultData) {
+            callbackFunc(resultData);
+        },
+        error: function (err) {}
+    });
+
+
+
+}
+
+
+
+
 //----------数据更新-显示更新
 
 function FRefreshDataSummary(uiRefreshCallbackFunc){
@@ -477,6 +500,7 @@ function FRefreshDataHostInfo(hostName,uiRefreshCallbackFunc){
 }
 
 function FRefreshDataHostDetailTrend(hostName,uiRefreshCallbackFunc){
+
     var hostInfoTrend = FGetHostInfoTrend(hostName);
     var timestamp=new Date().getTime();
 
@@ -569,6 +593,4 @@ function FRefreshDataSpeedMeasurementInfoAll(uiRefreshCallbackFunc){
         uiRefreshCallbackFunc(speedMeasurementInfoList["speedMeasurementInfo"]);
     }
 }
-
-
 
