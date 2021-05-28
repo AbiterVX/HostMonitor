@@ -9,7 +9,7 @@ import java.net.Socket;
 import java.util.Date;
 
 public class DiskPredictDataSampler extends Thread {
-    private String exeFilePath = "";//ConfigData/Client/data_collector-windows.exe";
+    private String sampleFilePath = "";
     private String dataFilePath="";
     private final long sampleInterval=12*3600*1000;
     private Socket fileSocket;
@@ -17,8 +17,8 @@ public class DiskPredictDataSampler extends Thread {
     private String hostName;
     public DiskPredictDataSampler(String name){
         this.hostName=name;
-        exeFilePath = System.getProperty("user.dir") +"/ConfigData/Client/data-collector.exe";
-        dataFilePath=System.getProperty("user.dir") +"/ConfigData/Client/data.csv";
+        sampleFilePath = System.getProperty("user.dir") +"/DiskPredict/client/data_collector.py";
+        dataFilePath=System.getProperty("user.dir") +"/DiskPredict/client/sampleData/data.csv";
     }
     @SneakyThrows
     public void run(){
@@ -58,7 +58,7 @@ public class DiskPredictDataSampler extends Thread {
             System.out.println("RUN-AS-ADMIN");
             try {
                 Runtime rt = Runtime.getRuntime();
-                rt.exec(exeFilePath);
+                rt.exec("python " + sampleFilePath);
                 System.out.println(new Date());
             } catch (IOException e) {
                 e.printStackTrace();

@@ -6,7 +6,7 @@ SpringCloud项目。
 
 ### 1.1 结构
 
-**（1）项目结构**
+#### 1.1.1 项目结构
 
 父工程：HostMonitor
 
@@ -16,31 +16,109 @@ SpringCloud项目。
 
 ​	|__ 子工程：hostmonitor_web_80
 
-**（2）模块**
+​	|__ 子工程：hostmonitor_client
 
-hostmonitor_commons：公共对象模块，若工程公共对象过多会移动到common并集中打包（目前暂时不用）
+#### 1.1.2 模块
 
-hostmonitor_data_collector_9000：对host采样，数据库CRUD。位于9000端口
+**hostmonitor_commons：**公共对象模块，若工程公共对象过多会移动到common并集中打包（目前暂时不用）
 
-hostmonitor_web_80：显示web界面，位于80端口（从而可直接输入域名/ip直接访问页面）
+**hostmonitor_data_collector_9000：**通过socket接受client的采样数据，数据库CRUD。位于9000端口
 
-**（3）外部依赖**
+**hostmonitor_web_80：**显示web界面，位于80端口（从而可直接输入域名/ip直接访问页面），向9000请求数据，具有数据缓存功能。
+
+**hostmonitor_client：**运行在被监控节点上，用于采样数据并通过socket发送到hostmonitor_data_collector_9000。
+
+#### 1.1.3 外部依赖
 
 nacos：用于注册中心（可选项）
+
+#### 1.1.4 配置文件
+
+##### 1.1.4.1 CentralizedConfigData（暂不用）
+
+中心式配置文件（目前为离散式）
+
+##### 1.1.4.2 ConfigData
+
+配置文件
+
+（1）DispersedConfig.json  ：data_collector_9000 数据采样格式
+
+（2）OriginalSampleDataFormat.json ：client数据采样格式
+
+（3）/Client/smartmontools-7.2-1.win32-setup.exe：故障预测数据采样依赖工具
+
+​		 windows：安装同级目录下的smartmontools-7.2-1.win32-setup.exe
+
+​		 Linux：apt-get install smartmontools  或  yum install smartmontools
+
+​		 在windows上安装smartmontools之后，包含 smartctl.exe必须添加到系统路径，可能需重启。
+
+##### 1.1.4.3 DiskPredict
+
+磁盘故障预测文件
+
+**（1）client：**
+
+​		 **SampleData：**采样后的数据以及title.csv（采样表头），的存放位置。
+
+​		 **data_collector.py：**故障预测采样程序。
+
+**（2）DiskPredictModule：**
+
+​		故障预测python文件。进行模型训练、预测、数据处理等操作时会通过java 调用python。
+
+​		**/Lib/site-packages：**运行py文件所需的依赖库文件，为方便配置可直接在python/Lib/site-packages下解压
+
+**（3）original_data：**故障预测原数据文件。需要将采样的数据放置此处。可参考original_data_test的格式
+
+**（4）original_data_test：**用于测试的数据
+
+**（5）processed_data：**数据预处理后的文件
+
+**（6）train_data：**预处理后的训练文件
+
+**（7）models：**训练好的模型文件
+
+**（8）predict_data：**预测文件，当用户需要进行磁盘故障预测时，将当前的磁盘采样数据放置到此文件夹下。
+
+**（9）result：**预测文件的结果，会根据当前预测的时间放在对应时间格式（年/月）下的文件夹里，结果文件与预测文件同名。
+
+
 
 
 
 ## 2. 环境
 
-### 2.1 JDK环境
+### 2.1 host客户端
 
-JDK1.8
+**（1） JDK1.8**
 
-### 2.2 Nacos
+**（2）python3.7**
 
-github：https://github.com/alibaba/nacos/tree/develop
+**（3）python库：**pySMART
 
-下载：https://github.com/alibaba/nacos/releases  选择 nacos-servewr-2.0.0.zip
+**（4）smartmontools：** 根据操作系统安装 smartmontools-7.2-1.win32-setup.exe 或 apt-get install smartmontools
+
+### 2.2 服务端
+
+**（1） JDK1.8**
+
+**（2） Nacos（暂不用）**
+
+​		github：https://github.com/alibaba/nacos/tree/develop
+
+​		下载：https://github.com/alibaba/nacos/releases  选择 nacos-servewr-2.0.0.zip
+
+**（3）python3.7**（3.7.6）
+
+**（4）python库：**scipy，numpy，sklearn，pandas，prettytable等。
+
+可以将打包好的库文件解压覆盖到python的Lib/site-packages下
+
+### 2.3 用户端
+
+（1）浏览器
 
 
 
@@ -50,9 +128,15 @@ github：https://github.com/alibaba/nacos/tree/develop
 
 
 
+
+
 ## 4. 部署
 
-**（1）先运行nacos注册中心**
+需依照顺序
+
+### 4.1 启动nacos（暂不用）
+
+（目前直接忽略此步骤）
 
 进入nacos/bin，windows下以单机版运行
 
@@ -60,16 +144,20 @@ github：https://github.com/alibaba/nacos/tree/develop
 startup.cmd -m standalone
 ```
 
-**（2）运行所有子项目**
+### 4.2 启动服务端
 
 ```
 java -jar HostMonitor_DataCollector.jar
 java -jar HostMonitor_Web.jar
 ```
 
-需要确保ConfigData及内部配置文件在HostMonitor_DataCollector.jar相同目录中。
+需要确保ConfigData、DiskPredict及内部配置文件在HostMonitor_DataCollector.jar同级目录中。
 
-**（3）查看注册中心内的服务项**
+确保python3.7安装完成，且DiskPredict\DiskPredictModule的依赖库已安装
+
+**注意：**windows 可能会存在 IIS占用80端口，需要关闭功能。  https://www.laoliang.net/jsjh/technology/4016.html
+
+### 4.3 查看注册中心服务项（暂不用）
 
 进入nacos默认网页。默认账户：nacos，密码：nacos。
 
@@ -77,29 +165,41 @@ java -jar HostMonitor_Web.jar
 http://localhost:8848/nacos/#/login
 ```
 
-**（4）正常执行流程**
-
-进入网页
+### 4.4 启动客户端数据采样程序
 
 ```
+java -jar HostMonitor_Client.jar
+```
+
+在每个被监控Host上，以管理员身份运行 hostmonitor_client。如使用IDEA调试，需要以管理员身份运行IDEA。
+
+需保证ConfigData，DiskPredict 配置文件在.jar同级目录中。
+
+### 4.5 用户访问
+
+**进入网页**
+
+```
+//本机上：直接在浏览器内输入
 localhost
+//部署在服务器上：浏览器输入服务器ip或域名
 ```
-
-windows 可能会存在 IIS占用80端口，需要关闭功能
-
-https://www.laoliang.net/jsjh/technology/4016.html
 
 
 
 ## 5.注册中心
 
-​	项目默认不使用Nacos，当然由于未移除@EnableDiscoveryClient等配置，会导致运行报错，但不影响项目正常执行。
+项目默认不使用Nacos，当然由于未移除@EnableDiscoveryClient等配置，会导致运行报错，但不影响项目正常执行。
 
 （1）若需开启注册中心，需要修改hostmonitor_web_80中的配置
 
 ​	application.yml：data_collector_service字段，改为名字
 
 ​	ApplicationContextBean：使用@LoadBalanced
+
+
+
+
 
 ## 6.Todo
 
@@ -171,5 +271,7 @@ web后端内数据缓存。
 
 使用OSHI进行硬件采样。
 
+#### v3.1
 
+故障预测全流程接入
 

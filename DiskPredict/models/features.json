@@ -1,0 +1,20 @@
+{
+  "ST4000DM000": [
+    "smart_1_normalized",
+    "smart_1_raw",
+    "smart_5_raw",
+    "smart_7_normalized",
+    "smart_7_raw",
+    "smart_9_normalized",
+    "smart_9_raw",
+    "smart_12_raw",
+    "smart_187_normalized",
+    "smart_187_raw",
+    "smart_193_raw",
+    "smart_194_normalized",
+    "smart_197_raw",
+    "smart_198_raw",
+    "smart_241_raw",
+    "smart_242_raw"
+  ]
+}

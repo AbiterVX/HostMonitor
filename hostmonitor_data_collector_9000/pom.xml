@@ -233,11 +233,11 @@
 
 
         <!--java调用python-->
-        <!--<dependency>
+        <dependency>
             <groupId>org.python</groupId>
             <artifactId>jython-standalone</artifactId>
             <version>2.7.0</version>
-        </dependency>-->
+        </dependency>
 
         <dependency>
             <groupId>com.github.oshi</groupId>

@@ -105,4 +105,7 @@ public class DispersedConfig {
         DispersedConfig dispersedConfig = DispersedConfig.getInstance();
         System.out.println(dispersedConfig.getServerIp());
     }
+
+
+
 }

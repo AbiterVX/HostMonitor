@@ -36,3 +36,15 @@ build/
 
 
 *.iml
+
+###故障预测-库文件
+/DiskPredict/DiskPredictModule/Lib/**
+!/DiskPredict/DiskPredictModule/Lib/site-packages.rar
+/DiskPredict/DiskPredictModule/__pycache__/**
+### 故障预测-数据
+/DiskPredict/original_data/**
+/DiskPredict/processed_data/**
+/DiskPredict/train_data/**
+/DiskPredict/result/**
+/DiskPredict/predict_data/**
+/DiskPredict/client/sampleData/data.csv
