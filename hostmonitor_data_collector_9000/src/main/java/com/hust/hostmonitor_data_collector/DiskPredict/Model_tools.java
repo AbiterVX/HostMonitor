@@ -112,7 +112,16 @@ public class Model_tools {
 	static public void set_PATH_OUTPUT(String path_output) {
 		PATH_OUTPUT = path_output;
 	}
-
+	static public void clean(){
+		Result=new ArrayList<>();
+		True_Label=new ArrayList<>();
+		Default_Firmware=new HashMap<>();
+		Lost_Transfer_mode=0;
+		Model_counts=new HashMap<>();
+		feature_filter=new ArrayList<>();
+		All_rows=0;
+		Lost_Firmware=0;
+	}
 	/**
 	 * 读取模型 保存结果至 Models
 	 * 
@@ -121,6 +130,7 @@ public class Model_tools {
 	 * @author: 62786
 	 * @date: 2020年12月7日 上午11:16:49
 	 */
+
 	static public void load_Model(String model_path) throws OrtException {
 		OrtEnvironment env = OrtEnvironment.getEnvironment();
 		System.out.println(env.toString());

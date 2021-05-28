@@ -143,11 +143,15 @@ public class DispersedHostMonitor {
     public void setDiskDFPState(String hostName, String diskName, boolean b) {
         if(hostInfoMap.containsKey(hostName)){
             JSONObject jsonObject=hostInfoMap.get(hostName);
-            for(int i=0;i<jsonObject.getJSONArray("diskInfoList").size();i++){
-                if(jsonObject.getJSONArray("diskInfoList").getJSONObject(i).getString("diskName").equals(diskName)){
-                    jsonObject.getJSONArray("diskInfoList").getJSONObject(i).put("hasLatestDFPRecord",b);
-                }
-            }
+            jsonObject.getJSONObject("DFPList").put(diskName,b);
         }
+    }
+    public boolean canGetDFPRecord(String hostName,String diskName){
+        boolean result=false;
+        if(hostInfoMap.containsKey(hostName)){
+            if(hostInfoMap.get(hostName).getJSONObject("DFPList").containsKey(diskName))
+                result=hostInfoMap.get(hostName).getJSONObject("DFPList").getBoolean(diskName);
+        }
+        return result;
     }
 }

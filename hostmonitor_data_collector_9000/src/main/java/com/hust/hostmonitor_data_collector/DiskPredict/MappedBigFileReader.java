@@ -1,6 +1,10 @@
 package com.hust.hostmonitor_data_collector.DiskPredict;
+import lombok.SneakyThrows;
+import sun.nio.ch.FileChannelImpl;
+
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.Arrays;
@@ -39,6 +43,7 @@ public class MappedBigFileReader {
             curLength += regionSize;// 下一片区域的开始
         }
         this.arraySize = arraySize;
+        fileChannel.close();
     }
 
     public int read() throws IOException {
@@ -62,8 +67,13 @@ public class MappedBigFileReader {
         }
     }
 
+    @SneakyThrows
     public void close() throws IOException {
-
+            Method m = FileChannelImpl.class.getDeclaredMethod("unmap", MappedByteBuffer.class);
+            m.setAccessible(true);
+            for (MappedByteBuffer buffer : mappedBufArray) {
+                m.invoke(FileChannelImpl.class, buffer);
+            }
         fileIn.close();
         array = null;
     }

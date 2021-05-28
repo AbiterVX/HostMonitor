@@ -233,7 +233,7 @@ public class DispersedDataServiceImpl implements DispersedDataService{
             Iterator iterator=diskListArray[i].iterator();
             while(iterator.hasNext()){
                 JSONObject tempObject=(JSONObject) iterator.next();
-                if(tempObject.getBoolean("hasLatestDFPRecord")){
+                if(dispersedHostMonitor.canGetDFPRecord(jsonObject.getString("hostName"), tempObject.getString("diskName"))){
                     String queryResult=getDFPInfoTrend(jsonObject.getString("hostName"),tempObject.getString("diskName"));
                     if(queryResult!=null)
                         resultArray.add(JSONObject.parse(queryResult));
@@ -243,6 +243,7 @@ public class DispersedDataServiceImpl implements DispersedDataService{
 
         return resultArray.toJSONString();
     }
+    //有待实现对预测范围的选择
     private void diskPredict(){
         long time=System.currentTimeMillis();
         ArrayList<String> contentData=new ArrayList<>();

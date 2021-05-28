@@ -25,8 +25,7 @@
     "diskWrite": 0,
     "diskReadBytes": 0,
     "diskWriteBytes": 0,
-    "type": 1,
-    "hasLatestDFPRecord": false
+    "type": 1
   },
   "cpuInfo": {
     "cpuName": "",

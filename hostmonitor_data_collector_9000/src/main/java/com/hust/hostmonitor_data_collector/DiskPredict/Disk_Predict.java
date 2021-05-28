@@ -36,12 +36,17 @@ public class Disk_Predict {
 			onnx_Model.evaluate();
 			// 写回结果
 			onnx_Model.write_back();
+			onnx_Model.clean();
 		} catch (OrtException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
+
+	private void clean() {
+		Model_tools.clean();
 	}
 
 	public Disk_Predict(String path_model, String path_conf, String path_data) {
@@ -162,6 +167,7 @@ public class Disk_Predict {
 		//List<JSONObject> result=Disk_Predict.getDiskPredictResult("/DiskPredictData/output/PredictResult.csv",time);
 		Disk_Predict.diskSampleDataIntegration("/DiskPredictData/input/IntegratedData.csv",contentData);
 
+		disk_predict=new Disk_Predict("IntegratedData.csv","PredictResult.csv");
 		//Disk_Predict onnx_Model = new Disk_Predict("testInput.csv", "testOutput.csv");
 
 		//Disk_Predict.readCSV("/DiskPredictData/input/input.csv");
