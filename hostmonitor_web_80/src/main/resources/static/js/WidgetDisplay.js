@@ -3,6 +3,17 @@ const icon_home = '<svg xmlns="http://www.w3.org/2000/svg"  width="24" height="2
 const icon_bar = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-bar-chart-2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>\n'
 const icon_file = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-file"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><polyline points="13 2 13 9 20 9"></polyline></svg>\n';
 
+function FGetNavItems(){
+    return [
+        document.getElementById("NavItem1"),
+        document.getElementById("NavItem2"),
+        document.getElementById("NavItem3"),
+        document.getElementById("NavItem4"),
+        document.getElementById("NavItem5"),
+        document.getElementById("NavItem6"),
+        document.getElementById("NavItem7"),
+    ];
+}
 
 function FInitNav(){
     //标题
@@ -21,52 +32,32 @@ function FInitNav(){
         UserBtn.innerText = "管理员登录";
     }
 
-
-
     //导航项
-    var NavItems = [
-        document.getElementById("NavItem1"),
-        document.getElementById("NavItem2"),
-        document.getElementById("NavItem3"),
-        document.getElementById("NavItem4"),
-        document.getElementById("NavItem5"),
+    var NavItems = FGetNavItems();
+    var innerHTMLList = [
+        icon_home + '首页',
+        icon_bar + '主机详情',
+        icon_file + '故障预测',
+        icon_file + '模型构建',
+        icon_file + '测速',
+        icon_file + '系统设置',
+        icon_file + '用户管理',
     ];
-    NavItems[0].innerHTML = icon_home + '仪表盘';
-    NavItems[1].innerHTML = icon_bar + '主机详情';
-    NavItems[2].innerHTML = icon_file + '故障预测';
-    NavItems[3].innerHTML = icon_file + '模型训练';
-    NavItems[4].innerHTML = icon_file + '测速';
 
-    NavItems[0].onclick = function (){
-        FSetCurrentNavItem(0);
+    for(var i=0;i<NavItems.length;i++){
+        NavItems[i].innerHTML = innerHTMLList[i];
+        const index = i;
+        NavItems[i].onclick = function (){
+            FSetCurrentNavItem(index);
+        }
     }
-    NavItems[1].onclick = function (){
-        FSetCurrentNavItem(1);
-    }
-    NavItems[2].onclick = function (){
-        FSetCurrentNavItem(2);
-    }
-    NavItems[3].onclick = function (){
-        FSetCurrentNavItem(3);
-    }
-    NavItems[4].onclick = function (){
-        FSetCurrentNavItem(4);
-    }
-
-
 }
 
 //[左侧导航栏]设置当前选中的导航项
 function FSetCurrentNavItem(leftNavItemIndex){
     if(currentIndex !== leftNavItemIndex){
         currentIndex = leftNavItemIndex;
-        var NavItems = [
-            document.getElementById("NavItem1"),
-            document.getElementById("NavItem2"),
-            document.getElementById("NavItem3"),
-            document.getElementById("NavItem4"),
-            document.getElementById("NavItem5"),
-        ];
+        var NavItems = FGetNavItems();
         for(var i=0;i<NavItems.length;i++){
             if(i === leftNavItemIndex){
                 NavItems[i].style.color ="black";
@@ -81,22 +72,17 @@ function FSetCurrentNavItem(leftNavItemIndex){
         //MainPart
         var MainPart = document.getElementById("MainPart");
         var parentPath = "html/";  //""; //
-        if(leftNavItemIndex ===0){
-            MainPart.src = parentPath + "DashBoard.html";
-        }
-        else if(leftNavItemIndex ===1){
-            MainPart.src = parentPath + "HostDetail.html";
-        }
-        else if(leftNavItemIndex ===2){
-            MainPart.src = parentPath + "DiskFailurePrediction.html";
-        }
-        else if(leftNavItemIndex ===3){
-            MainPart.src = parentPath + "DFPModelTraining.html";
-        }
-        else if(leftNavItemIndex ===4){
-            MainPart.src = parentPath + "SpeedMeasurement.html";
-        }
+        var srcHtml = [
+            "DashBoard.html",
+            "HostDetail.html",
+            "DiskFailurePrediction.html",
+            "DFPModelTraining.html",
+            "SpeedMeasurement.html",
+            "Settings.html",
+            "UserManagement.html",
+        ];
 
+        MainPart.src = parentPath + srcHtml[leftNavItemIndex];
     }
 
 }

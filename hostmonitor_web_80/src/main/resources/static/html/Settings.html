@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <!-- JQuery -->
+    <script type="text/javascript" src="../JQuery/jquery-3.3.1.min.js"></script>
+    <!-- popper 用于下拉框 -->
+    <script type="text/javascript" src="../popper/popper.min.js"></script>
+    <!-- BootStrap -->
+    <link rel="stylesheet" href= "../bootstrap-4.3.1-dist/css/bootstrap.min.css" >
+    <script type="text/javascript" src="../bootstrap-4.3.1-dist/js/bootstrap.js"></script>
+
+    <!-- ECharts -->
+    <script type="text/javascript" src="../echarts/echarts.min.js"></script>
+    <!-- functionLibrary -->
+    <script type="text/javascript" src="../js/DataRequest.js"></script>
+    <script type="text/javascript" src="../js/WidgetDisplay.js"></script>
+    <script type="text/javascript" src="../js/TableAndChart.js"></script>
+
+    <!-- Bootstrap-table -->
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="../bootstrap-table/bootstrap-table.min.css">
+
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="../bootstrap-table/bootstrap-table.min.js"></script>
+    <!-- Latest compiled and minified Locales -->
+    <script src="../bootstrap-table/bootstrap-table-zh-CN.min.js"></script>
+</head>
+<body>
+    <!--标题-->
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
+        <h2 class="h2">报告</h2>
+    </div>
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <label>定时报告-间隔</label>
+            <div class="input-group mb-3">
+                <div class="input-group-prepend">
+                    <div class="input-group-text">
+                        <input id="ReportTiming" type="checkbox" aria-label="Checkbox for following text input">
+                    </div>
+                    <span class="input-group-text">每</span>
+                </div>
+                <input id="ReportTimingInterval" type="number" class="form-control" placeholder="天数">
+                <div class="input-group-append">
+                    <span class="input-group-text">天</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 mb-3">
+            <label>紧急报告-故障率阈值</label>
+            <div class="input-group mb-3">
+                <div class="input-group-prepend">
+                    <div class="input-group-text">
+                        <input id="ReportEmergency" type="checkbox" aria-label="Checkbox for following text input">
+                    </div>
+                    <span class="input-group-text">硬盘故障率</span>
+                </div>
+                <input id="ReportFailureRateThreshold" type="number" class="form-control" placeholder="故障率">
+                <div class="input-group-append">
+                    <span class="input-group-text">%</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!--标题-->
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
+        <h2 class="h2">备份</h2>
+    </div>
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <label>定时备份-间隔</label>
+            <div class="input-group mb-3">
+                <div class="input-group-prepend">
+                    <div class="input-group-text">
+                        <input id="BackupTiming" type="checkbox" aria-label="Checkbox for following text input">
+                    </div>
+                    <span class="input-group-text">每</span>
+                </div>
+                <input id="BackupTimingInterval" type="number" class="form-control" placeholder="天数">
+                <div class="input-group-append">
+                    <span class="input-group-text">天</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 mb-3">
+            <label>紧急备份-故障率阈值</label>
+            <div class="input-group mb-3">
+                <div class="input-group-prepend">
+                    <div class="input-group-text">
+                        <input id="BackupEmergency" type="checkbox" aria-label="Checkbox for following text input">
+                    </div>
+                    <span class="input-group-text">硬盘故障率</span>
+                </div>
+                <input id="BackupFailureRateThreshold" type="number" class="form-control" placeholder="故障率">
+                <div class="input-group-append">
+                    <span class="input-group-text">%</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <hr class="mb-4">
+    <button class="btn btn-secondary btn-lg btn-block" onclick="">保存修改</button>
+    <footer class="my-5 pt-5 text-muted text-center text-small"></footer>
+
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+

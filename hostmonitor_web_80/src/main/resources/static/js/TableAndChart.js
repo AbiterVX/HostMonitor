@@ -505,7 +505,85 @@ const tableColumns = {
             }
         },
     ],
+    //用户管理
+    userManagement: [
+        {
+            field: 'Id',
+            title: '序号',
+            sortable: true,
+            width: 100,
+        },
+        {
+            field: 'UserName',
+            title: '用户名',
+            width: 100,
+        },
+        {
+            field: 'UserID',
+            title: '用户ID',
+            width: 100,
+        },
+        {
+            field: 'UserType',
+            title: '用户类型',
+            width: 100,
+        },
+        {
+            field: 'UserState',
+            title: '状态',
+            width: 100,
+        },
+        {
+            field: 'LastEditTime',
+            title: '最后编辑时间',
+            width: 100,
+            formatter : function (value, row, index) {
+                return FGetDateTime(value);
+            }
+        },
+        {
+            field: 'operate',
+            title: '操作',
+            align: 'center',
+            width: 100,
+            clickToSelect: false,
+            events: {
+                'click .display': function (e, value, row, index) {
+                    $('#UserInfoModal').modal('show')
+                },
+
+                'click .delete': function (e, value, row, index) {
+                    alert('3');
+                },
+            },
+            formatter: function operateFormatter(value, row, index) {
+                return [
+                    '<a class="display"  style="color:#5470c6;text-decoration:none;" href="javascript:void(0)" title="Like">查看</a>      ',
+                    '<a class="delete" style="color:#ee6767;text-decoration:none;" href="javascript:void(0)" title="Remove">删除</a>',
+                ].join('')
+            }
+        }
+
+
+    ],
+    userInfoDisplay:[
+        {
+            field: 'Field',
+            title: '字段',
+            align : 'right',
+            width: 10,
+        },
+        {
+            field: 'content',
+            title: '内容',
+            width: 100,
+        },
+    ],
+
 };
+
+
+
 
 //----------获取Format
 function FGetFormat(key){
