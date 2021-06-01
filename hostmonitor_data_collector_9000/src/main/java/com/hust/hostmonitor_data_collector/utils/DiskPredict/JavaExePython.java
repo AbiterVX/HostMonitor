@@ -19,7 +19,7 @@ import com.alibaba.fastjson.*;
 
 public class JavaExePython {
 
-    public static void execPython(String filePath, JSONObject param){
+    public static void execPython(String filePath, JSONObject param, DiskPredictProgress progress){
         // filePath :待执行的python文件
         // param :以JSON格式组织参数
         try {
@@ -32,7 +32,7 @@ public class JavaExePython {
             cmd.add(param.toJSONString());  // 需要执行的python参数 这是sys.argv[1]
             proc = runtime.exec(cmd.toArray(new String[0]));
             
-            Thread thread = writeBackMsg(proc.getInputStream(), proc.getErrorStream());
+            Thread thread = writeBackMsg(proc.getInputStream(), proc.getErrorStream(), progress);
             thread.join();
             
             proc.waitFor();
@@ -43,7 +43,7 @@ public class JavaExePython {
         }
     }
     
-    public static Thread writeBackMsg(final InputStream in, final InputStream err){
+    private static Thread writeBackMsg(final InputStream in, final InputStream err, DiskPredictProgress progress){
         Thread thread = new Thread(new Runnable(){
 
             @Override

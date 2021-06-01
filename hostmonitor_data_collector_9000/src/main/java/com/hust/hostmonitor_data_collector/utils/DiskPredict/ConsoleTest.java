@@ -7,12 +7,14 @@
  * @LastEditTime: 2021-05-26 17:25:25
  */
 package com.hust.hostmonitor_data_collector.utils.DiskPredict;
+import java.io.File;
 import java.util.Scanner;
 
 import com.alibaba.fastjson.JSONObject;
 
 public class ConsoleTest {
     public static void main(String[] args) {
+
         String cmd = "";
         Scanner input = new Scanner(System.in);
         while (!cmd.equalsIgnoreCase("exit")) {
@@ -27,10 +29,10 @@ public class ConsoleTest {
             }
             switch (Integer.valueOf(cmd)){
                 case 1:
-                    DiskPredict.DataPreProcess("\"2016\"", 0);
+                    DiskPredict.DataPreProcess("\"2016\"", 0,null);
                     break;
                 case 2:
-                    DiskPredict.GetTrainData("\"2016\"", 1.0f/3, 0.1f);
+                    DiskPredict.GetTrainData("\"2016\"", 1.0f/3, 0.1f,null);
                     break;
                 case 3:
                     JSONObject params = new JSONObject();
@@ -38,10 +40,10 @@ public class ConsoleTest {
                     params.put("max_features", new int[]{4, 7, 10});
                     params.put("n_estimators", new int[]{10, 20, 30, 40});
                     
-                    DiskPredict.Train("\"2016\"", "\"ST4000DM000\"", params);
+                    DiskPredict.Train("\"2016\"", "\"ST4000DM000\"", params,null);
                     break;
                 case 4:
-                    DiskPredict.Predict("\""+ System.getProperty("user.dir") + "/DiskPredict/predict_data" +"\"");
+                    DiskPredict.Predict("\""+ System.getProperty("user.dir") + "/DiskPredict/predict_data" +"\"",null);
                     break;
                 default:
                     System.out.println("没有该函数！");
