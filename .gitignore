@@ -45,6 +45,7 @@ build/
 /DiskPredict/original_data/**
 /DiskPredict/processed_data/**
 /DiskPredict/train_data/**
+/DiskPredict/models/**
 /DiskPredict/result/**
 /DiskPredict/predict_data/**
 /DiskPredict/client/sampleData/data.csv

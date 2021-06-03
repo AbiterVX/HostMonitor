@@ -187,6 +187,16 @@ localhost
 
 
 
+### 4.6故障预测测试数据
+
+https://www.backblaze.com/b2/hard-drive-test-data.html#downloading-the-raw-hard-drive-test-data
+
+最下面，找到 Downloading the Raw Hard Drive Test Data，下载数据。解压到DiskPredict/original_data
+
+格式应形如：DiskPredict/original_data_test，保证具有年份，月份文件夹。
+
+
+
 ## 5.注册中心
 
 项目默认不使用Nacos，当然由于未移除@EnableDiscoveryClient等配置，会导致运行报错，但不影响项目正常执行。
