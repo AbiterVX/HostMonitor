@@ -53,12 +53,8 @@
         </div>
     </div>
     <div class="row"  style="margin-bottom: 10px;">
-        <!--Chart-->
-        <div class="col-sm-3">
-            <div id="DFPSummaryChart" style="width: 300px;height: 300px;"></div>
-        </div>
         <!--摘要Chart-->
-        <div class="col-sm-9">
+        <div class="col-sm-12">
             <div id="DFPTrendChart" style="width: 100%;height: 300px;"></div>
         </div>
     </div>
@@ -72,24 +68,19 @@
         </div>
     </div>
 
-    <table id="diskFailurePredictInfo" style="table-layout: fixed;word-break: break-all;"></table>
+    <table id="diskFailurePredictInfo" style="table-layout: fixed;word-break: break-all;"
+           data-search="true"
+           data-pagination="true" data-page-size="20" data-page-list="[10,20]"></table>
     <div style="height: 100px;width: 100%"></div>
 </body>
 
 <script>
-    //概要Chart
-    var DFPSummaryChart = echarts.init(document.getElementById("DFPSummaryChart"));
     //趋势Chart
     var DFPTrendChart = echarts.init(document.getElementById("DFPTrendChart"));
-    //Data
-    var dfpTrendChartData = [];
     //当前HostIndex
     var currentHostIndex = 0;
     //当前DiskIndex
     var currentDiskIndex = 0;
-    //table选中项
-    var selectedItems = new Set();
-
     //MainInfo
     var mainInfo = FGetMainInfo();
 
@@ -100,18 +91,9 @@
         FInitDropDown("DiskNameDropDownMenu","DiskNameDropDownBtn",FGetDiskNameList(mainInfo["hostName"][currentHostIndex]),"dropDownSelectDiskName",currentDiskIndex);
 
         //设置Chart
-        DFPSummaryChart.setOption(FGetDFPSummaryChartOption());
         DFPTrendChart.setOption(FGetDFPTrendChartOption());
         //-----更新DFPInfo数据
         FRefreshDataDFPInfoAll(function (dfpInfoList,dfpSummaryChart){
-            //刷新Summary Chart
-            //alert(JSON.stringify(dfpSummaryChart));
-            //刷新SummaryChart
-            setTimeout(function(){
-                FRefreshDFPSummaryChart(DFPSummaryChart,dfpSummaryChart);
-            }, 1000);
-
-
             //刷新Table
             refreshDFPInfoTable(true,dfpInfoList);
         });
@@ -121,8 +103,6 @@
         var diskName = FGetHostInfo(hostName)["diskInfoList"][0]["diskName"];
         refreshDFPInfoTrend(hostName,diskName);
     }
-
-
 
     //[DropDown]选择-HostName
     function dropDownSelectHostName(index){
@@ -153,6 +133,7 @@
             refreshDFPInfoTrend(hostName,hostInfo["diskInfoList"][index]["diskName"]);
         }
     }
+
     //刷新故障Trend
     function refreshDFPInfoTrend(hostName,diskName){
         FRefreshDataDFPInfoTrend(hostName,diskName,function (trendChartData){
@@ -174,23 +155,6 @@
             $('#diskFailurePredictInfo').bootstrapTable({
                 columns: tableColumns["diskFailurePredictInfo"],
                 data: dfpInfoList,
-                onCheck:function(row, $element){
-                    selectedItems.add(row["hostName"]);
-                },
-                onUncheck:function(row, $element){
-                    selectedItems.delete(row["hostName"]);
-                },
-                onCheckAll: function (rowsAfter,rowsBefore) {
-                    selectedItems.clear();
-                    for(var i=0;i<rowsAfter.length;i++){
-                        if(rowsAfter[i]["predictProbability"] !== -1){
-                            selectedItems.add(rowsAfter[i]["hostName"]);
-                        }
-                    }
-                },
-                onUncheckAll: function (rowsAfter,rowsBefore) {
-                    selectedItems.clear();
-                }
             });
         }
         else{
@@ -198,35 +162,6 @@
         }
     }
 
-    //按钮-OnClick事件-开始预测
-    function predictBtnOnClick(){
-        var hostNameList = Array.from(selectedItems);
-        var dfpInfoList = FGetDFPInfoList();
-        for(var i=0;i<dfpInfoList["dfpInfo"].length;i++){
-            for(var j=0;j<hostNameList.length;j++){
-                if(dfpInfoList["dfpInfo"][i]["hostName"] === hostNameList[j]){
-                    dfpInfoList["dfpInfo"][i]["predictProbability"] = -1;
-                    break;
-                }
-            }
-        }
-        selectedItems.clear();
-        refreshDFPInfoTable(false,dfpInfoList["dfpInfo"]);
-        $('#predictBtn').prop('disabled', true);
-        setTimeout(function (){
-            predictComplete();
-        },2000);
-    }
-
-
-
-    //预测完成
-    function predictComplete(){
-        setTimeout(function (){
-            $('#predictBtn').prop('disabled', false);
-            //refreshDFPInfoTable(false);
-        },2000);
-    }
 
 </script>
 </html>

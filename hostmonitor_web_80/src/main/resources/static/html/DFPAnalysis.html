@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <!-- JQuery -->
+    <script type="text/javascript" src="../JQuery/jquery-3.3.1.min.js"></script>
+    <!-- popper 用于下拉框 -->
+    <script type="text/javascript" src="../popper/popper.min.js"></script>
+    <!-- BootStrap -->
+    <link rel="stylesheet" href= "../bootstrap-4.3.1-dist/css/bootstrap.min.css" >
+    <script type="text/javascript" src="../bootstrap-4.3.1-dist/js/bootstrap.js"></script>
+
+    <!-- ECharts -->
+    <script type="text/javascript" src="../echarts/echarts.min.js"></script>
+    <!-- functionLibrary -->
+    <script type="text/javascript" src="../js/DataRequest.js"></script>
+    <script type="text/javascript" src="../js/WidgetDisplay.js"></script>
+    <script type="text/javascript" src="../js/TableAndChart.js"></script>
+
+    <!-- Bootstrap-table -->
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="../bootstrap-table/bootstrap-table.min.css">
+
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="../bootstrap-table/bootstrap-table.min.js"></script>
+    <!-- Latest compiled and minified Locales -->
+    <script src="../bootstrap-table/bootstrap-table-zh-CN.min.js"></script>
+</head>
+<body>
+    <!--标题-->
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
+        <h2 class="h2">当前故障统计</h2>
+    </div>
+
+    <div class="row"  style="margin-bottom: 10px;">
+        <!--Chart-->
+        <div class="col-sm-3">
+            <table id="dfpComparison"></table>
+        </div>
+        <div class="col-sm-3">
+            <div id="DFPSummaryChart" style="width: 300px;height: 300px;"></div>
+        </div>
+        <div class="col-sm-6">
+            <div id="FailureTypeStatisticsChart" style="width: 100%;height: 300px;"></div>
+        </div>
+    </div>
+
+
+    <!--标题-->
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
+        <h2 class="h2">故障盘统计</h2>
+    </div>
+
+    <div class="row">
+        <div id="FailureCountStatisticsChart" style="width: 100%;height: 350px;"></div>
+    </div>
+</body>
+
+<script>
+    var testData = [
+        {
+            field:"FDR",
+            predict:0.5546,
+            reality:0.6813,
+        },
+        {
+            field:"FAR",
+            predict:0.782,
+            reality:0.54358,
+        },
+        {
+            field:"FDR",
+            predict:0.5546,
+            reality:0.6813,
+        },
+        {
+            field:"FDR",
+            predict:0.5546,
+            reality:0.6813,
+        },
+        {
+            field:"FDR",
+            predict:0.5546,
+            reality:0.6813,
+        },
+    ];
+
+    var testData2 = [
+
+    ];
+
+    //概要Chart
+    var DFPSummaryChart = echarts.init(document.getElementById("DFPSummaryChart"));
+    var FailureTypeStatisticsChart = echarts.init(document.getElementById("FailureTypeStatisticsChart"));
+    var FailureCountStatisticsChart = echarts.init(document.getElementById("FailureCountStatisticsChart"));
+
+    window.onload=function (){
+        DFPSummaryChart.setOption(FGetDFPSummaryChartOption());
+
+        //刷新SummaryChart
+        /*setTimeout(function(){
+            FRefreshDFPSummaryChart(DFPSummaryChart,dfpSummaryChart);
+        }, 1000);*/
+
+        $('#dfpComparison').bootstrapTable({
+            columns: tableColumns["dfpComparison"],
+            data: testData,
+        });
+
+        FailureTypeStatisticsChart.setOption(FGetFailureTypeStatisticsChartOption());
+
+        FailureCountStatisticsChart.setOption(FGetFailureCountStatisticsChartOption());
+    }
+</script>
+</html>

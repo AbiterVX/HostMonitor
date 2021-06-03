@@ -2,6 +2,8 @@
 const icon_home = '<svg xmlns="http://www.w3.org/2000/svg"  width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-home"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>\n';
 const icon_bar = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-bar-chart-2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>\n'
 const icon_file = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-file"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><polyline points="13 2 13 9 20 9"></polyline></svg>\n';
+const icon_empty = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-file"></svg>\n';
+
 
 function FGetNavItems(){
     return [
@@ -19,6 +21,10 @@ function FInitNav(){
     //标题
     document.getElementById("PageTitle").innerText = "数据中心资源监控";
     document.getElementById("Title").innerText = "数据中心资源监控";
+
+    //折叠栏
+    document.getElementById("NavCollapse1").innerHTML = icon_empty + '故障预测';
+
     //登录按钮
     var UserBtn = document.getElementById("UserBtn");
 
@@ -35,11 +41,11 @@ function FInitNav(){
     //导航项
     var NavItems = FGetNavItems();
     var innerHTMLList = [
-        icon_home + '首页',
+        icon_home + '资源监控',
         icon_bar + '主机详情',
-        icon_file + '故障预测',
-        icon_file + '模型构建',
-        icon_file + '测速',
+        icon_empty + icon_file + '故障分析',
+        icon_empty + icon_file + '故障查询',
+        icon_empty + icon_file + '模型重构',
         icon_file + '系统设置',
         icon_file + '用户管理',
     ];
@@ -69,15 +75,16 @@ function FSetCurrentNavItem(leftNavItemIndex){
             }
         }
 
+
         //MainPart
         var MainPart = document.getElementById("MainPart");
         var parentPath = "html/";  //""; //
         var srcHtml = [
             "DashBoard.html",
             "HostDetail.html",
+            "DFPAnalysis.html",
             "DiskFailurePrediction.html",
             "DFPModelTraining.html",
-            "SpeedMeasurement.html",
             "Settings.html",
             "UserManagement.html",
         ];

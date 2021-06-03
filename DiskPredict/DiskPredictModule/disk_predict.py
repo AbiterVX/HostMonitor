@@ -152,9 +152,15 @@ class predict:
                         data = data.iloc[:, index_dict['data']:]
                         data = pd.DataFrame(best_model['scale'].transform(data))
                         data = data.iloc[:, best_model['feature_index']]
-                        result = best_model['model'].predict(data)
-                        group['result'] = result
-                        self.write_back(save_path=save_path, result=group[['date', 'serial_number', 'model', 'is_ssd', 'result']], file_name=data_file)
+                        result = best_model['model'].predict_proba(data)
+                        group['result'] = result[:,1]
+
+                        group['model_name'] = model_name
+                        #print(group)
+
+                        #,'model_name'
+                        #print(best_model)
+                        self.write_back(save_path=save_path, result=group[['date', 'serial_number', 'model', 'is_ssd', 'result','model_name']], file_name=data_file)
 
         except FileNotFoundError:
             print(self.data_path_, ': data not found.')
@@ -162,8 +168,7 @@ class predict:
 
 if __name__ == '__main__':
 
-    sys.argv.append("{\"file_path\":\"E:/Code/HostMonitor/DiskPredict/predict_data\",\"root_path\":\"E:/Code/HostMonitor/DiskPredict\"}")
-    print(sys.argv)
+
 
     if len(sys.argv) != 2:
         print('parameter transport error:', sys.argv)

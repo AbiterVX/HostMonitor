@@ -55,6 +55,13 @@ function FGetLoadingImg(){
 var customPartition = [30,70,100];
 var customPartitionColor = ['#92cc76','#fac859','#ee6767'];
 
+var dfpModelNames = ["随机森林"];
+var diskType = ["HDD","SSD"];
+
+
+
+
+
 //表格标题
 const tableColumns = {
     //概要-1
@@ -368,28 +375,31 @@ const tableColumns = {
     //故障预测信息
     diskFailurePredictInfo:[
         {
-            field: 'state',
-            checkbox: true,
-            align: 'center',
-            valign: 'middle',
-            width: 15,
-            formatter: function(value, row, index) {
-                if(row.predictProbability === -1){
-                    return { disabled : true,}
-                }else{
-                    return { disabled : false,}
-                }
-            },
-        },
-        {
             field: 'hostName',
             title: '主机',
             width: 100,
+            sortable: true,
         },
         {
             field: 'diskName',
             title: '硬盘名称',
             width: 100,
+            sortable: true,
+        },
+        {
+            field: 'diskType',
+            title: '类型',
+            width: 100,
+            sortable: true,
+            formatter : function (value, row, index) {
+                return diskType[value];
+            }
+        },
+        {
+            field: 'manufacturer',
+            title: '厂商',
+            width: 100,
+            sortable: true,
         },
         {
             field: 'diskCapacity',
@@ -400,6 +410,13 @@ const tableColumns = {
                 return FGetGBWithUnit(value);
             }
         },
+        {
+            field: 'model',
+            title: '硬盘Model',
+            width: 100,
+            sortable: true,
+        },
+
         {
             field: 'predictTime',
             title: '预测时间',
@@ -579,9 +596,105 @@ const tableColumns = {
             width: 100,
         },
     ],
-
+    //构建记录
+    buildRecords:[
+        {
+            field: 'buildTime',
+            title: '构建时间',
+            sortable: true,
+            width:80,
+            formatter : function (value, row, index) {
+                return FGetDateTime(value);
+            }
+        },
+        {
+            field: 'model',
+            title: '预测模型',
+            sortable: true,
+            width:80,
+            formatter : function (value, row, index) {
+                return dfpModelNames[value];
+            }
+        },
+        {
+            field: 'diskModel',
+            title: '硬盘Model',
+            sortable: true,
+            width:80,
+        },
+        {
+            field: 'FDR',
+            title: 'FDR',
+            sortable: true,
+            width:50,
+        },
+        {
+            field: 'FAR',
+            title: 'FAR',
+            sortable: true,
+            width:50,
+        },
+        {
+            field: 'AUC',
+            title: 'AUC',
+            sortable: true,
+            width:50,
+        },
+        {
+            field: 'FNR',
+            title: 'FNR',
+            sortable: true,
+            width:50,
+        },
+        {
+            field: 'Accuracy',
+            title: 'Accuracy',
+            sortable: true,
+            width:50,
+        },
+        {
+            field: 'Precision',
+            title: 'Precision',
+            sortable: true,
+            width:50,
+        },
+        {
+            field: 'Specificity',
+            title: 'Specificity',
+            sortable: true,
+            width:50,
+        },
+        {
+            field: 'ErrorRate',
+            title: 'ErrorRate',
+            sortable: true,
+            width:50,
+        },
+    ],
+    //
+    dfpComparison:[
+        {
+            field: 'field',
+            title: '',
+        },
+        {
+            field: 'predict',
+            title: '预期',
+        },
+        {
+            field: 'reality',
+            title: '实际',
+        },
+    ]
 };
 
+
+//buildRecords表格详情
+function buildRecordsDetailFormatter(index, row) {
+    var html = [];
+    html = "参数：" + row.params;
+    return html
+}
 
 
 
@@ -834,7 +947,7 @@ var loadPartition ={
     disk:[30,70,100],
 };
 
-var dfpPartition = [30,70,100];
+var dfpPartition = [30,60,100];
 var dfpPartitionColor = ['#92cc76','#fac859','#ee6767'];
 //数据间隔时间
 var DateInterval = [24,1];
@@ -1251,5 +1364,148 @@ function FGetDFPTrendChartOption(){
         },
     };
     return DFPTrendChartOption;
+}
+
+//故障类型统计chart
+function FGetFailureTypeStatisticsChartOption(){
+    var diskType = ["类型1","类型2","类型3","类型4","类型5",];
+    var hddCount = [0,2,8,6,3];
+    var ssdCount = [6,2,8,3,7];
+
+    var emphasisStyle = {
+        itemStyle: {
+            shadowBlur: 10,
+            shadowColor: 'rgba(0,0,0,0.3)'
+        }
+    };
+    var FailureTypeStatisticsChartOption = {
+        title: {
+            text: "故障类型统计",
+            left: '48%',
+        },
+        grid: {
+            left: '0%',
+            right: '99%',
+            width: '99%',
+            top: '40px',
+            height:'260px',
+            containLabel: true
+        },
+        toolbox: {
+            feature: {
+                magicType: {
+                    type: ['stack', 'tiled']
+                },
+                dataView: {}
+            }
+        },
+        tooltip: {},
+        legend: {
+            left: '10%'
+        },
+        xAxis: {
+            data: diskType,
+            name: '厂商',
+            axisLine: {onZero: true},
+            splitLine: {show: false},
+            splitArea: {show: false}
+        },
+        yAxis: {
+            type: 'value',
+            splitLine: {
+                show: true
+            },
+        },
+        series: [
+            {
+                name: 'HDD',
+                type: 'bar',
+                stack: 'one',
+                emphasis: emphasisStyle,
+                data: hddCount,
+            },
+            {
+                name: 'SSD',
+                type: 'bar',
+                stack: 'one',
+                emphasis: emphasisStyle,
+                data: ssdCount,
+            },
+        ]
+    };
+    return FailureTypeStatisticsChartOption;
+}
+
+//
+function FGetFailureCountStatisticsChartOption(){
+    var dataLength = 100;
+    var timestamp=new Date().getTime();
+    var resultData = [];
+    for(var i=0;i<dataLength;i++){
+        var currentDate = timestamp - (dataLength-i)*120000;
+        resultData.push([currentDate,Math.ceil(Math.random()*10)]);
+    }
+
+
+    var FailureCountStatisticsChartOption = {
+        title: {
+            text: "故障盘数量统计",
+            left: '48%',
+        },
+        grid: {
+            left: '1%',
+            right: '99%',
+            width: '98%',
+            top: '40px',
+            height:'300px',
+            containLabel: true
+        },
+        tooltip:{
+            trigger: 'axis',
+            formatter: function(params){
+                var returnTxt = "时间: "+ FGetDateTime(params[0].value[0]) +"<br/>";
+                for(var i =0; i< params.length; i++){
+                    returnTxt += params[i].marker+" "+params[i].seriesName+ " "+params[i].value[1] + "" + "<br/>";
+                }
+                return returnTxt;
+            }
+        },
+        xAxis: {
+            type: 'time',
+            splitLine: {
+                show: false
+            },
+            axisLabel: {
+                formatter: {
+                    year: '{yyyy}年',
+                    month: '{MM}月',
+                    day: '{MM}月{dd}日',
+                    hour: '{HH}:{mm}',
+                    minute: '{HH}:{mm}',
+                    second: '{HH}:{mm}:{ss}',
+                    millisecond: '{HH}:{mm}:{ss} ',
+                    none: '{yyyy}-{MM}-{dd} {HH}:{mm}:{ss}'
+                }
+            },
+        },
+        yAxis: {
+            type: 'value',
+            splitLine: {
+                show: true
+            },
+            axisLabel: {
+                formatter: '{value}'
+            },
+        },
+        series: {
+            name: "故障数量",
+            smooth:true,
+            type: 'line',
+            showSymbol: false,
+            hoverAnimation: false,
+            data: resultData,
+        },
+    };
+    return FailureCountStatisticsChartOption;
 }
 

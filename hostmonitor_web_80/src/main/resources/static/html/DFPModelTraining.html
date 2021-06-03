@@ -25,6 +25,7 @@
     <script src="../bootstrap-table/bootstrap-table.min.js"></script>
     <!-- Latest compiled and minified Locales -->
     <script src="../bootstrap-table/bootstrap-table-zh-CN.min.js"></script>
+
 </head>
 <body>
     <!--标题-->
@@ -35,7 +36,7 @@
             <button hidden id="processCollapseBtn" data-toggle="collapse"  data-target="#DFPCollapse"></button>
         </div>
     </div>
-
+    <!--进度条-->
     <div id="DFPCollapse" class="collapse">
         <div class="row" >
             <div class="col-md-auto">
@@ -49,40 +50,286 @@
             </div>
         </div>
     </div>
-
+    <!--模型选择-->
     <div class="row"  style="margin-bottom: 10px;">
-        <div class="col-sm-6">
-            <div class="input-group mb-6" style="margin-bottom: 10px;">
-                <input type="text" class="form-control" placeholder="Username" aria-label="Username" aria-describedby="basic-addon1">
-                <input type="text" class="form-control" placeholder="Username" aria-label="Username" aria-describedby="basic-addon1">
-            </div>
-            <div class="input-group mb-6">
+        <div class="col-sm-4">
+            <div class="input-group mb-4">
                 <div class="input-group-prepend">
                     <label class="input-group-text" for="inputGroupSelect01">模型</label>
                 </div>
                 <select class="custom-select" id="inputGroupSelect01">
-                    <option value="1">模型1</option>
-                    <option value="2">模型2</option>
-                    <option value="3">模型3</option>
+                    <option value="1">随机森林</option>
                 </select>
             </div>
         </div>
-        <div class="col-sm-3">
 
+        <div class="col-sm-4">
+            <div class="input-group mb-6" style="margin-bottom: 10px;">
+                <div class="input-group-prepend">
+                    <label class="input-group-text" for="inputGroupSelect01">正负样本比</label>
+                </div>
+                <input id="scale" type="text" class="form-control" value="1">
+                <div class="input-group-prepend">
+                    <span class="input-group-text">/</span>
+                </div>
+                <input id="scale2" type="text" class="form-control" value="3">
+            </div>
+        </div>
+
+        <div class="col-sm-4">
+            <div class="input-group mb-6" style="margin-bottom: 10px;">
+                <div class="input-group-prepend">
+                    <label class="input-group-text" for="inputGroupSelect01">验证集占比</label>
+                </div>
+                <input id="verifySize" type="text" class="form-control" value="10">
+                <div class="input-group-append">
+                    <span class="input-group-text">%</span>
+                </div>
+            </div>
         </div>
     </div>
+    <!--参数-->
+    <div class="row"  style="margin-bottom: 10px;">
+        <div class="col-sm-12">
+            <label >主要参数 （传入数组可使用“,”隔开）</label>
+        </div>
+        <div class="col-sm-4">
+            <div class="input-group mb-6" style="margin-bottom: 10px;">
+                <div class="input-group-prepend">
+                    <label class="input-group-text" for="inputGroupSelect01">Max Depth</label>
+                </div>
+                <input id="maxDepth" type="text" class="form-control" value="10,20,30">
+            </div>
+        </div>
+        <div class="col-sm-4">
+            <div class="input-group mb-6" style="margin-bottom: 10px;">
+                <div class="input-group-prepend">
+                    <label class="input-group-text" for="inputGroupSelect01">Max Features</label>
+                </div>
+                <input id="maxFeatures" type="text" class="form-control" value="4,7,10">
+            </div>
+        </div>
+        <div class="col-sm-4">
+            <div class="input-group mb-6" style="margin-bottom: 10px;">
+                <div class="input-group-prepend">
+                    <label class="input-group-text" for="inputGroupSelect01">N Estimators</label>
+                </div>
+                <input id="nEstimators" type="text" class="form-control" value="10,20,30,40">
+            </div>
+        </div>
+    </div>
+
+    <!--标题-->
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
+        <h2 class="h2">构建记录</h2>
+    </div>
+
+
+    <table id="buildRecords"
+           data-search="true"
+           data-detail-view="true" data-pagination="true" data-page-size="25" data-page-list="[10,25]"></table>
 
 
 
     <div style="height: 100px;width: 100%"></div>
 </body>
 <script>
+
+
+
+    var testData = [
+        {
+            buildTime:1621065263000,
+            model:0,
+            diskModel:"ST4",
+            FDR:0.63157,
+            FAR:0.0185185,
+            AUC:0.8065302,
+            FNR:0.3684210,
+            Accuracy:0.890410,
+            Precision:0.923076,
+            Specificity:0.981481,
+            ErrorRate: 0.109589,
+            params:"sdfsegfsgs,segsegs,segsegs",
+        },
+        {
+            buildTime:1629065263000,
+            model:0,
+            diskModel:"ST5",
+            FDR:0.7417,
+            FAR:0.783,
+            AUC:0.8282,
+            FNR:0.45378,
+            Accuracy:0.23752,
+            Precision:0.873275,
+            Specificity:0.87527,
+            ErrorRate: 0.89378,
+            params:"sdfsegfsgs,segsegs,segsegs",
+        },
+
+        {
+            buildTime:1629065263000,
+            model:0,
+            diskModel:"ST5",
+            FDR:0.7417,
+            FAR:0.783,
+            AUC:0.8282,
+            FNR:0.45378,
+            Accuracy:0.23752,
+            Precision:0.873275,
+            Specificity:0.87527,
+            ErrorRate: 0.89378,
+            params:"sdfsegfsgs,segsegs,segsegs",
+        },
+        {
+            buildTime:1629065263000,
+            model:0,
+            diskModel:"ST5",
+            FDR:0.7417,
+            FAR:0.783,
+            AUC:0.8282,
+            FNR:0.45378,
+            Accuracy:0.23752,
+            Precision:0.873275,
+            Specificity:0.87527,
+            ErrorRate: 0.89378,
+            params:"sdfsegfsgs,segsegs,segsegs",
+        },
+        {
+            buildTime:1629065263000,
+            model:0,
+            diskModel:"ST5",
+            FDR:0.7417,
+            FAR:0.783,
+            AUC:0.8282,
+            FNR:0.45378,
+            Accuracy:0.23752,
+            Precision:0.873275,
+            Specificity:0.87527,
+            ErrorRate: 0.89378,
+            params:"sdfsegfsgs,segsegs,segsegs",
+        },
+        {
+            buildTime:1629065263000,
+            model:0,
+            diskModel:"ST5",
+            FDR:0.7417,
+            FAR:0.783,
+            AUC:0.8282,
+            FNR:0.45378,
+            Accuracy:0.23752,
+            Precision:0.873275,
+            Specificity:0.87527,
+            ErrorRate: 0.89378,
+            params:"sdfsegfsgs,segsegs,segsegs",
+        },
+        {
+            buildTime:1629065263000,
+            model:0,
+            diskModel:"ST5",
+            FDR:0.7417,
+            FAR:0.783,
+            AUC:0.8282,
+            FNR:0.45378,
+            Accuracy:0.23752,
+            Precision:0.873275,
+            Specificity:0.87527,
+            ErrorRate: 0.89378,
+            params:"sdfsegfsgs,segsegs,segsegs",
+        },
+        {
+            buildTime:1629065263000,
+            model:0,
+            diskModel:"ST5",
+            FDR:0.7417,
+            FAR:0.783,
+            AUC:0.8282,
+            FNR:0.45378,
+            Accuracy:0.23752,
+            Precision:0.873275,
+            Specificity:0.87527,
+            ErrorRate: 0.89378,
+            params:"sdfsegfsgs,segsegs,segsegs",
+        },
+        {
+            buildTime:1629065263000,
+            model:0,
+            diskModel:"ST5",
+            FDR:0.7417,
+            FAR:0.783,
+            AUC:0.8282,
+            FNR:0.45378,
+            Accuracy:0.23752,
+            Precision:0.873275,
+            Specificity:0.87527,
+            ErrorRate: 0.89378,
+            params:"sdfsegfsgs,segsegs,segsegs",
+        },
+        {
+            buildTime:1629065263000,
+            model:0,
+            diskModel:"ST5",
+            FDR:0.7417,
+            FAR:0.783,
+            AUC:0.8282,
+            FNR:0.45378,
+            Accuracy:0.23752,
+            Precision:0.873275,
+            Specificity:0.87527,
+            ErrorRate: 0.89378,
+            params:"sdfsegfsgs,segsegs,segsegs",
+        },
+        {
+            buildTime:1629065263000,
+            model:0,
+            diskModel:"ST5",
+            FDR:0.7417,
+            FAR:0.783,
+            AUC:0.8282,
+            FNR:0.45378,
+            Accuracy:0.23752,
+            Precision:0.873275,
+            Specificity:0.87527,
+            ErrorRate: 0.89378,
+            params:"sdfsegfsgs,segsegs,segsegs",
+        },
+        {
+            buildTime:1629065263000,
+            model:0,
+            diskModel:"ST5",
+            FDR:0.7417,
+            FAR:0.783,
+            AUC:0.8282,
+            FNR:0.45378,
+            Accuracy:0.23752,
+            Precision:0.873275,
+            Specificity:0.87527,
+            ErrorRate: 0.89378,
+            params:"sdfsegfsgs,segsegs,segsegs",
+        },
+    ];
+
     //进度条
     var progressBar = $('#progressBar');
     var progressPercentage = document.getElementById("progressPercentage");
     var currentProgressPercentage = 0;
     var modelTrainingBtn = $('#modelTrainingBtn');
     var processCollapseBtn = $('#processCollapseBtn');
+
+
+    //加载后执行
+    window.onload=function (){
+        $('#buildRecords').bootstrapTable({
+            columns: tableColumns["buildRecords"],
+            data: testData,
+            onClickRow: function(row, element){
+                $(element[0]).find('.detail-icon').triggerHandler("click")
+            },
+            detailFormatter:"buildRecordsDetailFormatter",
+            detailViewIcon:false,
+            detailViewByClick:true,
+        });
+    }
 
     //按钮-OnClick事件-开始预测
     function modelTrainingBtnOnClick(){
