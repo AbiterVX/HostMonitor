@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.Resource;
+import java.util.List;
 import java.util.Map;
 
 @Controller
@@ -39,22 +40,29 @@ public class UserOperationController {
         return user;
     }
 
+    @GetMapping(value = "/getUsers")
+    @ResponseBody
+    public List<SystemUser> getUsers(){
+        return userService.getUsers();
+    }
+
     @PostMapping(value = "/updateUserInfo")
     @ResponseBody
     public String updateUserInfo(@RequestBody Map<String,String> params) {
+        System.out.println(params);
+
         String userName = params.get("userName");
         int userType = Integer.parseInt(params.get("userType"));
-        int validState = Integer.parseInt(params.get("validState"));
-        String userPhone = params.get("userPhone");
-        String userEmail = params.get("userEmail");
-        int phoneValidState = Integer.parseInt(params.get("phoneValidState"));
-        int emailValidState = Integer.parseInt(params.get("emailValidState"));
+        int validState = Boolean.parseBoolean(params.get("validState"))?1:0;
+        String phone = params.get("phone");
+        String email = params.get("email");
+        int phoneValidState = Boolean.parseBoolean(params.get("phoneValidState"))?1:0;
+        int emailValidState = Boolean.parseBoolean(params.get("emailValidState"))?1:0;
         String userID = params.get("userID");
-        String password = params.get("password");
         String operateUserID = params.get("operateUserID");
         String operateUserPassword = params.get("operateUserPassword");
-        userService.updateUserInfo(operateUserID,operateUserPassword,userName,userType,validState,userPhone,userEmail,phoneValidState,emailValidState,userID,password);
-        return "";
+        userService.updateUserInfo(operateUserID,operateUserPassword,userName,userType,validState,phone,email,phoneValidState,emailValidState,userID);
+        return "Complete";
     }
 
     @PostMapping(value = "/updateUserPassword")

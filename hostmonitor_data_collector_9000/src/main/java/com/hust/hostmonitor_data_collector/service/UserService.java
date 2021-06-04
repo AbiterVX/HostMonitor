@@ -30,18 +30,22 @@ public class UserService {
     }
 
     public void updateUserInfo(String operateUserID,String operateUserPassword,String userName,int userType,int validState, String userPhone,String userEmail,
-                        int phoneValidState,int emailValidState, String userID,String password){
+                        int phoneValidState,int emailValidState, String userID){
         SystemUser operateUser = userDao.signIn(operateUserID,operateUserPassword);
+        System.out.println("[updateUserInfo:]" + operateUser.isSuperAdmin());
+
+
         if(operateUser!=null){
             if(operateUserID.equals(userID)){
+                //无法修改自己用户类型
                 int originValidState = operateUser.isValidState()?1:0;
                 userDao.updateUserInfo(userName,operateUser.getUserType(),originValidState,userPhone,userEmail,
-                        phoneValidState,emailValidState,userID,password);
+                        phoneValidState,emailValidState,userID);
             }
             else{
                 if(operateUser.isSuperAdmin()){
                     userDao.updateUserInfo(userName,userType,validState,userPhone,userEmail,
-                            phoneValidState,emailValidState,userID,password);
+                            phoneValidState,emailValidState,userID);
                 }
             }
         }

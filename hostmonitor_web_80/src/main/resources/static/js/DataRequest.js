@@ -609,5 +609,10 @@ function FGetUser(){
     else{
         return JSON.parse(user);
     }
+}
 
+function FGetUserList(uiRefreshCallbackFunc){
+    FSendGetRequest(false,"/Dispersed/getUsers",function (resultData){
+        uiRefreshCallbackFunc(resultData);
+    });
 }

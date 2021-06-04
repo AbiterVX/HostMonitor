@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.Resource;
+import java.util.List;
 import java.util.Map;
 
 @Controller
@@ -43,4 +44,9 @@ public class UserOperationController_Remote {
         return restTemplate.postForObject(dataCollectorUrl + "/Dispersed/updateUserPassword", params,String.class);
     }
 
+    @GetMapping(value = "/getUsers")
+    @ResponseBody
+    public String getUsers(){
+        return restTemplate.getForObject(dataCollectorUrl + "/Dispersed/getUsers",String.class);
+    }
 }

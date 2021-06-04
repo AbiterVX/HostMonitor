@@ -25,11 +25,11 @@ public interface UserDao {
     @Select("select * from UserTable")
     List<SystemUser> getUsers();
 
-    @Select("UPDATE UserTable" +
-            "SET UserName=#{user_name},UserType=#{user_type},ValidState=#{valid_state},LastEditTime=now() \n" +
-            ",Phone=#{user_phone},Email=#{user_email}" +
-            ",PhoneValidState=#{phone_valid_state},EmailValidState=#{email_valid_state}" +
-            "WHERE UserID=#{user_id} and Password=#{user_password};")
+    @Select("UPDATE UserTable " +
+            "SET UserName=#{user_name},UserType=#{user_type},ValidState=#{valid_state},LastEditTime=now() " +
+            ",Phone=#{user_phone},Email=#{user_email} " +
+            ",PhoneValidState=#{phone_valid_state},EmailValidState=#{email_valid_state} " +
+            "WHERE UserID=#{user_id};")
     void updateUserInfo(@Param("user_name") String user_name,
                         @Param("user_type") int user_type,
                         @Param("valid_state") int valid_state,
@@ -37,8 +37,7 @@ public interface UserDao {
                         @Param("user_email") String user_email,
                         @Param("phone_valid_state") int phone_valid_state,
                         @Param("email_valid_state") int email_valid_state,
-                        @Param("user_id") String user_id,
-                        @Param("user_password") String user_password);
+                        @Param("user_id") String user_id);
 
 
     @Select("UPDATE UserTable" +

@@ -67,15 +67,13 @@
                             <input id="UserID" class="form-control" readonly="readonly" value="102582">
                         </div>
                     </div>
-
                     <!-- 用户名 -->
                     <div class="form-group row">
                         <label for="UserName" class="col-sm-2 col-form-label">用户名:</label>
                         <div class="col-sm-10">
-                            <input id="UserName" class="form-control" readonly="readonly" value="用户名1">
+                            <input id="UserName" class="form-control" value="用户名1">
                         </div>
                     </div>
-
                     <!-- 角色 -->
                     <div class="form-group row">
                         <label for="UserType" class="col-sm-2 col-form-label">角色:</label>
@@ -87,7 +85,6 @@
                             </select>
                         </div>
                     </div>
-
                     <!-- 手机号 -->
                     <div class="form-group row">
                         <label for="UserPhone" class="col-sm-2 col-form-label">手机号:</label>
@@ -95,7 +92,6 @@
                             <input id="UserPhone" class="form-control" value="sdasdasd">
                         </div>
                     </div>
-
                     <!-- Email -->
                     <div class="form-group row">
                         <label for="UserEmail" class="col-sm-2 col-form-label">邮箱:</label>
@@ -103,7 +99,6 @@
                             <input id="UserEmail" class="form-control" value="sdasdasd">
                         </div>
                     </div>
-
                     <!-- 状态 -->
                     <fieldset class="form-group">
                         <div class="row">
@@ -116,32 +111,25 @@
                             </div>
                         </div>
                     </fieldset>
-
                     <!-- 报告发送 -->
                     <fieldset class="form-group">
                         <div class="row">
                             <legend class="col-form-label col-sm-2 pt-0">报告:</legend>
                             <div class="col-sm-10">
                                 <div class="form-check form-check-inline">
-                                    <input class="form-check-input" type="checkbox" id="inlineCheckbox1" value="option1">
-                                    <label class="form-check-label" for="inlineCheckbox1">邮箱</label>
+                                    <input class="form-check-input" type="checkbox" id="emailValid" value="option1">
+                                    <label class="form-check-label" for="emailValid">邮箱</label>
                                 </div>
                                 <div class="form-check form-check-inline">
-                                    <input class="form-check-input" type="checkbox" id="inlineCheckbox2" value="option2">
-                                    <label class="form-check-label" for="inlineCheckbox2">短信</label>
+                                    <input class="form-check-input" type="checkbox" id="smsValid" value="option2">
+                                    <label class="form-check-label" for="smsValid">短信</label>
                                 </div>
                             </div>
                         </div>
                     </fieldset>
-
-
-
-
-
-
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-primary">保存</button>
+                    <button type="button" class="btn btn-primary" onclick="updateUserInfo()">保存</button>
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
                 </div>
             </div>
@@ -152,37 +140,93 @@
 <script>
     var UserManagementTable = $('#UserManagementTable');
 
+    var currentUserInfo = "";
+    //Modal
+    var UserID = document.getElementById("UserID");
+    var UserName = document.getElementById("UserName");
+    var UserType = document.getElementById("UserType");
+    var UserPhone = document.getElementById("UserPhone");
+    var UserEmail = document.getElementById("UserEmail");
+    var UserState = document.getElementById("UserState");
+    var emailValid = document.getElementById("emailValid");
+    var smsValid = document.getElementById("smsValid");
+
+
     //加载后执行
     window.onload=function (){
-        var testData = [
-            {
-                Id:1,
-                UserName:"用户1",
-                UserID:"10001",
-                UserType:0,
-                UserState:0,
-                LastEditTime:1621065263000,
-            },
-        ];
-        refreshUserManagementTable(true,testData);
+        FGetUserList(function (resultData){
+            refreshUserManagementTable(true,resultData);
+        });
     }
 
-
-
-
     //刷新Table-HostDetailTable
-    function refreshUserManagementTable(init,testData){
+    function refreshUserManagementTable(init,userListData){
         if(init){
             UserManagementTable.bootstrapTable({
                 columns: tableColumns["userManagement"],
-                data: testData,
-
+                data: userListData,
             });
         }
         else{
-            UserManagementTable.bootstrapTable("load",testData);
+            UserManagementTable.bootstrapTable("load",userListData);
         }
     }
+    //显示用户详情
+    function displayUserInfo(row,index){
+
+        currentUserInfo = row;
+        UserID.value = row["userID"];
+        UserName.value = row["userName"];
+        UserType.value = row["userType"];
+        UserPhone.value = row["phone"];
+        UserEmail.value = row["email"];
+        UserState.checked = row["validState"];
+        emailValid.checked = row["emailValidState"];
+        smsValid.checked = row["phoneValidState"];
+
+
+        $('#UserInfoModal').modal('show');
+    }
+    //删除用户
+    function deleteUser(row,index){
+        alert(index);
+    }
+
+    //修改用户信息
+    function updateUserInfo(){
+        var tempUserInfo =  JSON.parse(JSON.stringify(currentUserInfo));
+        var isUpdated = false;
+        function setField(field,currentValue){
+            if(tempUserInfo[field] != currentValue){
+                tempUserInfo[field] = currentValue;
+                isUpdated = true;
+            }
+        };
+
+        setField("userName",UserName.value);
+        setField("userType",UserType.value);
+        setField("phone",UserPhone.value);
+        setField("email",UserEmail.value);
+        setField("validState",UserState.checked);
+        setField("emailValidState",emailValid.checked);
+        setField("phoneValidState",smsValid.checked);
+
+        var user = FGetUser();
+        if(isUpdated && user != null){
+            tempUserInfo["operateUserID"] = user["userName"];
+            tempUserInfo["operateUserPassword"] = user["password"];
+
+            FSendPostRequest(false,"/Dispersed/updateUserInfo",JSON.stringify(tempUserInfo),function (resultData){
+                FGetUserList(function (UserListResultData){
+                    refreshUserManagementTable(false,UserListResultData);
+                    $('#UserInfoModal').modal('hide');
+                });
+
+            });
+        }
+
+    }
+
 
 </script>
 </html>

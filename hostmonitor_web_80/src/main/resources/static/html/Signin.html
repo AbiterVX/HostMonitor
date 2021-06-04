@@ -78,7 +78,6 @@
                 password: InputPassword.value
             };
             FSendPostRequest(false,"/Dispersed/SignIn",JSON.stringify(parameterData),function (resultData){
-                alert(resultData);
                 if(resultData == null || resultData === ""){
                     tooltips.innerHTML = '<div class="alert alert-danger" role="alert">账户或密码有误！</div>';
                 }
