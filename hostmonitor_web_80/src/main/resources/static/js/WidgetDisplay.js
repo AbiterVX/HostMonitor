@@ -28,13 +28,13 @@ function FInitNav(){
     //登录按钮
     var UserBtn = document.getElementById("UserBtn");
 
-    var userID = window.sessionStorage.getItem("UserID");
-    if(userID != null){
-        UserBtn.innerText = userID;
+    var user = FGetUser();
+    if(user != null){
+        UserBtn.innerText = user["userName"];
         UserBtn.href = "/UserSpace";
     }
     else{
-        UserBtn.href = "/Signin";
+        UserBtn.href =  signInSrc;
         UserBtn.innerText = "管理员登录";
     }
 
@@ -54,10 +54,33 @@ function FInitNav(){
         NavItems[i].innerHTML = innerHTMLList[i];
         const index = i;
         NavItems[i].onclick = function (){
-            FSetCurrentNavItem(index);
+            if(index === 4 || index === 5 || index === 6){
+                var user = FGetUser();
+                if(user == null){
+                    window.location.href = signInSrc;
+                }
+                else{
+                    FSetCurrentNavItem(index);
+                }
+            }
+            else{
+                FSetCurrentNavItem(index);
+            }
         }
     }
 }
+
+var signInSrc = "/Signin";
+var parentPath = "html/";
+var srcHtml = [
+    "DashBoard.html",
+    "HostDetail.html",
+    "DFPAnalysis.html",
+    "DiskFailurePrediction.html",
+    "DFPModelTraining.html",
+    "Settings.html",
+    "UserManagement.html",
+];
 
 //[左侧导航栏]设置当前选中的导航项
 function FSetCurrentNavItem(leftNavItemIndex){
@@ -74,21 +97,8 @@ function FSetCurrentNavItem(leftNavItemIndex){
                 NavItems[i].style.fontWeight = '';
             }
         }
-
-
         //MainPart
         var MainPart = document.getElementById("MainPart");
-        var parentPath = "html/";  //""; //
-        var srcHtml = [
-            "DashBoard.html",
-            "HostDetail.html",
-            "DFPAnalysis.html",
-            "DiskFailurePrediction.html",
-            "DFPModelTraining.html",
-            "Settings.html",
-            "UserManagement.html",
-        ];
-
         MainPart.src = parentPath + srcHtml[leftNavItemIndex];
     }
 

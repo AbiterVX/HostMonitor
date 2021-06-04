@@ -359,10 +359,8 @@ function FSendPostRequest(async,url,parameterData,callbackFunc){
         },
         error: function (err) {}
     });
-
-
-
 }
+
 
 
 
@@ -594,3 +592,22 @@ function FRefreshDataSpeedMeasurementInfoAll(uiRefreshCallbackFunc){
     }
 }
 
+
+
+
+//-----用户
+
+function FSetUser(resultData){
+    window.sessionStorage.setItem("User",resultData);
+}
+
+function FGetUser(){
+    var user = window.sessionStorage.getItem("User");
+    if(user == null){
+        return null;
+    }
+    else{
+        return JSON.parse(user);
+    }
+
+}

@@ -8,10 +8,14 @@ import com.hust.hostmonitor_data_collector.dao.entity.DispersedRecord;
 import com.hust.hostmonitor_data_collector.utils.DispersedHostMonitor;
 import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
+import javax.annotation.Resource;
 import java.io.*;
 import java.math.BigDecimal;
+import java.net.URLEncoder;
 import java.sql.Timestamp;
 import java.util.*;
 
@@ -292,4 +296,7 @@ public class DispersedDataServiceImpl implements DispersedDataService{
     public String getSpeedMeasurementInfoAll() {
         return null;
     }
+
+
+
 }

@@ -6,7 +6,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.Resource;
-import java.util.HashMap;
 import java.util.Map;
 
 @Controller
@@ -25,4 +24,23 @@ public class UserOperationController_Remote {
     public String signIn(@RequestBody Map<String,String> params) {
         return restTemplate.postForObject(dataCollectorUrl + "/Dispersed/SignIn", params,String.class);
     }
+
+    @PostMapping(value = "/SignUp")
+    @ResponseBody
+    public String signUp(@RequestBody Map<String,String> params) {
+        return restTemplate.postForObject(dataCollectorUrl + "/Dispersed/SignUp", params,String.class);
+    }
+
+    @PostMapping(value = "/updateUserInfo")
+    @ResponseBody
+    public String updateUserInfo(@RequestBody Map<String,String> params) {
+        return restTemplate.postForObject(dataCollectorUrl + "/Dispersed/updateUserInfo", params,String.class);
+    }
+
+    @PostMapping(value = "/updateUserPassword")
+    @ResponseBody
+    public String updateUserPassword(@RequestBody Map<String,String> params) {
+        return restTemplate.postForObject(dataCollectorUrl + "/Dispersed/updateUserPassword", params,String.class);
+    }
+
 }

@@ -1,6 +1,7 @@
 package com.hust.hostmonitor_data_collector;
 
 
+import com.hust.hostmonitor_data_collector.config.ApplicationContextBean;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
@@ -16,12 +17,4 @@ public class HostMonitorDataCollector {
     public static void main(String[] args) {
         SpringApplication.run(HostMonitorDataCollector.class,args);
     }
-
-    //获取RestTemplate
-    @Bean
-    public RestTemplate getRestTemplate(){
-        return new RestTemplate();
-    }
-
-
 }
