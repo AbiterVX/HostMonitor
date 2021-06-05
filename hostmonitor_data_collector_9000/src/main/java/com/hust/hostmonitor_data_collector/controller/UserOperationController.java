@@ -22,6 +22,7 @@ public class UserOperationController {
     public String signUp(@RequestBody Map<String,String> params) {
         String userName = params.get("userName");
         String password = params.get("password");
+        System.out.println("[注册] "+params);
         if(!userName.equals("") && !password.equals("")){
             return userService.signUp(userName,password);
         }
@@ -71,6 +72,7 @@ public class UserOperationController {
         String userID = params.get("userID");
         String password = params.get("password");
         String newPassword = params.get("newPassword");
+        System.out.println("[更新密码]:"+params);
         userService.updateUserPassword(userID,password,newPassword);
         return "";
     }

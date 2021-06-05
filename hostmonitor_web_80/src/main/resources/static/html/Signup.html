@@ -41,33 +41,33 @@
                     <img class="mb-4" src="../images/ProjectIcon.png" alt="" width="72" height="72">
                     <h1 class="h3 mb-3 font-weight-normal">用户注册</h1>
                 </div>
-                <div>
+                <div id="UserIdSetUp">
                     <div class="InputBlock">
                         <h5>用户名</h5>
-                        <input type="text" class="form-control">
+                        <input id="UserName" type="text" class="form-control">
                     </div>
                     <div class="InputBlock">
                         <h5>密码</h5>
-                        <input type="text" class="form-control">
+                        <input id="Password" type="text" class="form-control">
                     </div>
                     <div class="InputBlock">
                         <h5>确认密码</h5>
-                        <input type="text" class="form-control">
+                        <input id="ConfirmPassword" type="text" class="form-control">
                     </div>
                     <hr class="mb-4">
                 </div>
 
-                <div> <!--style="display: none"-->
+                <div id="userIdDisplay" hidden> <!--style="display: none"-->
                     <div class="InputBlock">
                         <h5>用户ID</h5>
-                        <input type="text" class="form-control" readonly value="111231">
+                        <input id="UserIdResult" type="text" class="form-control" readonly value="111231">
                     </div>
                     <hr class="mb-4">
                 </div>
 
                 <div class="mb-3">
-                    <button class="btn btn-primary btn-lg btn-block" >注册</button>
-                    <button class="btn btn-primary btn-lg btn-block" >确定</button>
+                    <button id="signupBtn" onclick="signupBtnOnclick()" class="btn btn-primary btn-lg btn-block" >注册</button>
+                    <button id="confirmBtn" onclick="backBtnOnclick()" class="btn btn-primary btn-lg btn-block" >确定</button>
                     <button id="backBtn" onclick="backBtnOnclick()" class="btn btn-lg btn-secondary btn-block ">返回</button>
                 </div>
 
@@ -80,4 +80,53 @@
 
     </div>
 </body>
+<script>
+    //输入
+    var UserName = document.getElementById("UserName");
+    var Password = document.getElementById("Password");
+    var ConfirmPassword = document.getElementById("ConfirmPassword");
+    //显示
+    var signupBtn = document.getElementById("signupBtn");
+    var confirmBtn = document.getElementById("confirmBtn");
+    var userIdDisplay = document.getElementById("userIdDisplay");
+    var UserIdSetUp = document.getElementById("UserIdSetUp");
+
+    //加载后执行
+    window.onload=function (){
+        confirmBtn.hidden = true;
+        userIdDisplay.hidden = true;
+
+    }
+
+    function signupBtnOnclick(){
+        if(UserName.value!=="" && Password.value!=="" && ConfirmPassword.value!==""
+                && Password.value === ConfirmPassword.value){
+            var paramData = {
+                userName:UserName.value,
+                password:Password.value,
+            };
+            FSendPostRequest(false,"/Dispersed/SignUp",JSON.stringify(paramData),function (resultData){
+                confirmBtn.hidden = false;
+                userIdDisplay.hidden = false;
+                signupBtn.hidden = true;
+                UserIdSetUp.hidden = true;
+
+                var UserIdResult = document.getElementById("UserIdResult");
+                UserIdResult.value = resultData;
+
+                userSignIn(resultData,Password.value,function (resultData){
+                    //null;
+                });
+            });
+        }
+
+
+
+    }
+
+    function backBtnOnclick(){
+        window.location.href="/";
+    }
+
+</script>
 </html>

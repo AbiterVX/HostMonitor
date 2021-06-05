@@ -616,3 +616,20 @@ function FGetUserList(uiRefreshCallbackFunc){
         uiRefreshCallbackFunc(resultData);
     });
 }
+
+//用户登录
+function userSignIn(userIDValue,passwordValue,callbackFunc){
+    var parameterData = {
+        userID: userIDValue,
+        password: passwordValue,
+    };
+    FSendPostRequest(false,"/Dispersed/SignIn",JSON.stringify(parameterData),function (resultData){
+        if(resultData == null || resultData === ""){
+            //wrong!
+        }
+        else{
+            FSetUser(resultData);
+        }
+        callbackFunc(resultData);
+    });
+}

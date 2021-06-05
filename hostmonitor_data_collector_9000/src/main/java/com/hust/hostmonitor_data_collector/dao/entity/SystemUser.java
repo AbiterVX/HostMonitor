@@ -76,6 +76,10 @@ public class SystemUser {
         return (userType == 1);
     }
 
+    public void clearPassword(){
+        password = "";
+    }
+
     @Override
     public String toString() {
         return "SystemUser{" +

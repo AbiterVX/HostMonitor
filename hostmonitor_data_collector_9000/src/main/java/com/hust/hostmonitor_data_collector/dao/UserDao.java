@@ -10,16 +10,16 @@ import java.util.List;
 @Mapper
 public interface UserDao {
     // user
-    @Select("set @new_id=0;" +
-            "call p_getId(@new_id);" +
-            "set @date=now();" +
-            "INSERT INTO UserTable values(@new_id,#{user_name},#{user_password},0,0,@date,'','',0,0)"+
-            "select @new_id")
+    @Select("set @new_id=0;\n " +
+            "call p_getId(@new_id);\n " +
+            "set @date=now();\n " +
+            "INSERT INTO UserTable values(@new_id,#{user_name},#{user_password},0,0,@date,'','',0,0);\n " +
+            "select @new_id; ")
     String signUp(@Param("user_name") String user_name, @Param("user_password") String Password);
 
     @Select("select * " +
             "from UserTable " +
-            "where UserID=#{user_id} and Password=#{user_password};")
+            "where UserID=#{user_id} and Password=#{user_password}; ")
     SystemUser signIn(@Param("user_id") String UserID, @Param("user_password") String Password);
 
     @Select("select * from UserTable")
@@ -40,9 +40,9 @@ public interface UserDao {
                         @Param("user_id") String user_id);
 
 
-    @Select("UPDATE UserTable" +
-            "SET Password=#{new_password}" +
-            "WHERE UserID=#{user_id} and Password=#{user_password};")
+    @Select("UPDATE UserTable " +
+            "SET Password=#{new_password} " +
+            "WHERE UserID=#{user_id} and Password=#{user_password}; ")
     void updateUserPassword(@Param("user_id") String user_id, @Param("user_password") String user_password,
                             @Param("new_password") String new_password);
 

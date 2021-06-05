@@ -27,6 +27,12 @@ public class WebPageController {
         return "html/Signin.html";
     }
 
+    //登录界面
+    @GetMapping(value ="/Signup")
+    public String getSignupPage(){
+        return "html/Signup.html";
+    }
+
     //用户界面
     @GetMapping(value ="/UserSpace")
     public String getUserSpacePage(){

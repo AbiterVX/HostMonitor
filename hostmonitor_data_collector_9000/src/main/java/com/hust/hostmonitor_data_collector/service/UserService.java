@@ -18,6 +18,8 @@ public class UserService {
     UserDao userDao;
 
     public String signUp(String userName,String password){
+        System.out.println(userName);
+        System.out.println(password);
         return userDao.signUp(userName,password);
     }
 
@@ -26,16 +28,19 @@ public class UserService {
     }
 
     public List<SystemUser> getUsers(){
-        return userDao.getUsers();
+        List<SystemUser> userList = userDao.getUsers();
+        for (SystemUser currentUser:userList){
+            currentUser.clearPassword();
+        }
+        return userList;
     }
 
     public void updateUserInfo(String operateUserID,String operateUserPassword,String userName,int userType,int validState, String userPhone,String userEmail,
                         int phoneValidState,int emailValidState, String userID){
         SystemUser operateUser = userDao.signIn(operateUserID,operateUserPassword);
-        System.out.println("[updateUserInfo:]" + operateUser.isSuperAdmin());
-
-
         if(operateUser!=null){
+            System.out.println("[updateUserInfo:]" + operateUser.isSuperAdmin());
+
             if(operateUserID.equals(userID)){
                 //无法修改自己用户类型
                 int originValidState = operateUser.isValidState()?1:0;
