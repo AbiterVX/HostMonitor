@@ -17,58 +17,25 @@ function FGetNavItems(){
     ];
 }
 
-function FInitNav(){
-    //标题
-    document.getElementById("PageTitle").innerText = "数据中心资源监控";
-    document.getElementById("Title").innerText = "数据中心资源监控";
+var minRequireUserType = [
+    0,
+    0,
+    0,
+    0,
+    1,
+    2,
+    2,
+];
 
-    //折叠栏
-    document.getElementById("NavCollapse1").innerHTML = icon_empty + '故障预测';
-
-    //登录按钮
-    var UserBtn = document.getElementById("UserBtn");
-
-    var user = FGetUser();
-    if(user != null){
-        UserBtn.innerText = user["userName"];
-        UserBtn.href = "/UserSpace";
-    }
-    else{
-        UserBtn.href =  signInSrc;
-        UserBtn.innerText = "管理员登录";
-    }
-
-    //导航项
-    var NavItems = FGetNavItems();
-    var innerHTMLList = [
-        icon_home + '资源监控',
-        icon_bar + '主机详情',
-        icon_empty + icon_file + '故障分析',
-        icon_empty + icon_file + '故障查询',
-        icon_empty + icon_file + '模型重构',
-        icon_file + '系统设置',
-        icon_file + '用户管理',
-    ];
-
-    for(var i=0;i<NavItems.length;i++){
-        NavItems[i].innerHTML = innerHTMLList[i];
-        const index = i;
-        NavItems[i].onclick = function (){
-            if(index === 4 || index === 5 || index === 6){
-                var user = FGetUser();
-                if(user == null){
-                    window.location.href = signInSrc;
-                }
-                else{
-                    FSetCurrentNavItem(index);
-                }
-            }
-            else{
-                FSetCurrentNavItem(index);
-            }
-        }
-    }
-}
+var innerHTMLList = [
+    icon_home + '资源监控',
+    icon_bar + '主机详情',
+    icon_empty + icon_file + '故障分析',
+    icon_empty + icon_file + '故障查询',
+    icon_empty + icon_file + '模型重构',
+    icon_file + '系统设置',
+    icon_file + '用户管理',
+];
 
 var signInSrc = "/Signin";
 var parentPath = "html/";
@@ -81,6 +48,62 @@ var srcHtml = [
     "Settings.html",
     "UserManagement.html",
 ];
+
+
+
+
+function FInitNav(){
+    //标题
+    document.getElementById("PageTitle").innerText = "数据中心资源监控";
+    document.getElementById("Title").innerText = "数据中心资源监控";
+
+    //折叠栏
+    document.getElementById("NavCollapse1").innerHTML = icon_empty + '故障预测';
+
+    //登录按钮
+    var UserBtn = document.getElementById("UserBtn");
+    var SignInBtn = document.getElementById("SignInBtn");
+    var user = FGetUser();
+    if(user != null){
+        UserBtn.innerText = user["userName"];
+        UserBtn.href = "/UserSpace";
+
+        SignInBtn.innerText = "| 登录";
+        SignInBtn.href = signInSrc;
+    }
+    else{
+        UserBtn.href =  signInSrc;
+        UserBtn.innerText = "登录";
+    }
+
+    //导航项
+    var NavItems = FGetNavItems();
+
+    for(var i=0;i<NavItems.length;i++){
+        NavItems[i].innerHTML = innerHTMLList[i];
+        const index = i;
+        NavItems[i].onclick = function (){
+            if(index === 4 || index === 5 || index === 6){
+                var user = FGetUser();
+                if(user == null){
+                    window.location.href = signInSrc;
+                }
+                else{
+                    if(minRequireUserType[index] <= user["userType"]){
+                        FSetCurrentNavItem(index);
+                    }
+                    else{
+                        $('#UserTypeWarningModal').modal('show');
+                    }
+                }
+            }
+            else{
+                FSetCurrentNavItem(index);
+            }
+        }
+    }
+
+}
 
 //[左侧导航栏]设置当前选中的导航项
 function FSetCurrentNavItem(leftNavItemIndex){

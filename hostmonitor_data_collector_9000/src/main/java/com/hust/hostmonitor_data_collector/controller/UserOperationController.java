@@ -1,5 +1,6 @@
 package com.hust.hostmonitor_data_collector.controller;
 
+import com.alibaba.fastjson.JSONObject;
 import com.hust.hostmonitor_data_collector.dao.entity.SystemUser;
 import com.hust.hostmonitor_data_collector.service.UserService;
 import org.springframework.beans.factory.annotation.Value;
@@ -94,4 +95,43 @@ public class UserOperationController {
         userService.sendEmail(emailAddress);
         return "";
     }
+
+
+
+
+
+    @GetMapping(value = "/SystemSetting/Get")
+    @ResponseBody
+    public String getSystemSetting() {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("ReportTiming",false);
+        jsonObject.put("ReportTimingInterval",0);
+        jsonObject.put("ReportEmergency",true);
+        jsonObject.put("ReportFailureRateThreshold",70);
+
+        jsonObject.put("BackupTiming",false);
+        jsonObject.put("BackupTimingInterval",10);
+        jsonObject.put("BackupEmergency",true);
+        jsonObject.put("BackupFailureRateThreshold",90);
+
+        return jsonObject.toJSONString();
+    }
+
+    @PostMapping(value = "/SystemSetting/Reset")
+    @ResponseBody
+    public String resetSystemSetting(@RequestBody Map<String,String> params) {
+        boolean ReportTiming = Boolean.parseBoolean(params.get("ReportTiming"));
+        int ReportTimingInterval = Integer.parseInt(params.get("ReportTimingInterval"));
+        boolean ReportEmergency =  Boolean.parseBoolean(params.get("ReportEmergency"));
+        int ReportFailureRateThreshold = Integer.parseInt(params.get("ReportFailureRateThreshold"));
+
+        boolean BackupTiming =  Boolean.parseBoolean(params.get("BackupTiming"));
+        int BackupTimingInterval = Integer.parseInt(params.get("BackupTimingInterval"));
+        boolean BackupEmergency =  Boolean.parseBoolean(params.get("BackupEmergency"));
+        int BackupFailureRateThreshold = Integer.parseInt(params.get("BackupFailureRateThreshold"));
+
+        System.out.println("[SystemSetting] "+params);
+        return "Complete";
+    }
+
 }

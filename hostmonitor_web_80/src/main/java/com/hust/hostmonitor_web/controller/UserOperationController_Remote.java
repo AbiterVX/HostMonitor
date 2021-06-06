@@ -49,4 +49,17 @@ public class UserOperationController_Remote {
     public String getUsers(){
         return restTemplate.getForObject(dataCollectorUrl + "/Dispersed/getUsers",String.class);
     }
+
+
+    @GetMapping(value = "/SystemSetting/Get")
+    @ResponseBody
+    public String getSystemSetting() {
+        return restTemplate.getForObject(dataCollectorUrl + "/Dispersed/SystemSetting/Get",String.class);
+    }
+
+    @PostMapping(value = "/SystemSetting/Reset")
+    @ResponseBody
+    public String resetSystemSetting(@RequestBody Map<String,String> params) {
+        return restTemplate.postForObject(dataCollectorUrl + "/Dispersed/SystemSetting/Reset", params,String.class);
+    }
 }

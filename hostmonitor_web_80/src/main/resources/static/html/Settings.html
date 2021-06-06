@@ -29,9 +29,15 @@
 <body>
     <!--标题-->
     <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
-        <h2 class="h2">报告</h2>
+        <h2 class="h2">系统设定</h2>
         <div class="btn-toolbar mb-2 mb-md-0" role="toolbar" style="margin-right: 5px;">
-            <button class="btn btn-secondary" onclick="">保存修改</button>
+            <button class="btn btn-secondary" onclick="updateSettingBtnOnclick()">保存修改</button>
+        </div>
+    </div>
+    <!--标题-->
+    <div class="row">
+        <div class="col-12">
+            <h4 class="mb-3">报告</h4>
         </div>
     </div>
     <div class="row">
@@ -68,11 +74,12 @@
         </div>
     </div>
 
+    <hr class="mb-4">
+
     <!--标题-->
-    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
-        <h2 class="h2">备份</h2>
-        <div class="btn-toolbar mb-2 mb-md-0" role="toolbar" style="margin-right: 5px;">
-            <button class="btn btn-secondary" onclick="">保存修改</button>
+    <div class="row">
+        <div class="col-12">
+            <h4 class="mb-3">备份</h4>
         </div>
     </div>
     <div class="row">
@@ -112,6 +119,55 @@
     <footer class="my-5 pt-5 text-muted text-center text-small"></footer>
 
 </body>
+<script>
+    var ReportTiming = document.getElementById("ReportTiming");
+    var ReportTimingInterval = document.getElementById("ReportTimingInterval");
+    var ReportEmergency = document.getElementById("ReportEmergency");
+    var ReportFailureRateThreshold = document.getElementById("ReportFailureRateThreshold");
+    var BackupTiming = document.getElementById("BackupTiming");
+    var BackupTimingInterval = document.getElementById("BackupTimingInterval");
+    var BackupEmergency = document.getElementById("BackupEmergency");
+    var BackupFailureRateThreshold = document.getElementById("BackupFailureRateThreshold");
+
+    //刷新-UI-系统设定
+    function refreshSystemSettingDisplay(resultData){
+        ReportTiming.checked = resultData["ReportTiming"];
+        ReportTimingInterval.value = resultData["ReportTimingInterval"];
+        ReportEmergency.checked = resultData["ReportEmergency"];
+        ReportFailureRateThreshold.value = resultData["ReportFailureRateThreshold"];
+        BackupTiming.checked = resultData["BackupTiming"];
+        BackupTimingInterval.value = resultData["BackupTimingInterval"];
+        BackupEmergency.checked = resultData["BackupEmergency"];
+        BackupFailureRateThreshold.value = resultData["BackupFailureRateThreshold"];
+    }
+
+    //加载后执行
+    window.onload=function (){
+        FSendGetRequest(false,"/Dispersed/SystemSetting/Get",function (resultData){
+            refreshSystemSettingDisplay(resultData);
+        });
+    }
+
+    //更新系统设定
+    function updateSettingBtnOnclick(){
+        var paramData = {
+            ReportTiming: ReportTiming.checked,
+            ReportTimingInterval: ReportTimingInterval.value,
+            ReportEmergency: ReportEmergency.checked,
+            ReportFailureRateThreshold: ReportFailureRateThreshold.value,
+            BackupTiming: BackupTiming.checked,
+            BackupTimingInterval: BackupTimingInterval.value,
+            BackupEmergency: BackupEmergency.checked,
+            BackupFailureRateThreshold: BackupFailureRateThreshold.value,
+        };
+        FSendPostRequest(false,"/Dispersed/SystemSetting/Reset",JSON.stringify(paramData),function (resultData){
+            refreshSystemSettingDisplay();
+        });
+    }
+
+
+
+</script>
 </html>
 
 
