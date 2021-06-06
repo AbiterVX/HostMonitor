@@ -169,7 +169,6 @@ class predict:
 if __name__ == '__main__':
 
 
-
     if len(sys.argv) != 2:
         print('parameter transport error:', sys.argv)
         sys.exit(0)

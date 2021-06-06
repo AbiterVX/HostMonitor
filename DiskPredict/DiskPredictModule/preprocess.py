@@ -45,7 +45,7 @@ class preProcess:
                         
                     group.dropna(axis=1, how='all', inplace=True)
                     group.to_csv(os.path.join(save_path, file), header=True, index=False)
-                    
+
     
 if __name__ == '__main__':
     if len(sys.argv) != 2:

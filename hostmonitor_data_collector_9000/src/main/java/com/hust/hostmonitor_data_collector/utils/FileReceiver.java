@@ -6,14 +6,19 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.StringTokenizer;
 
 public class FileReceiver {
     private DispersedHostMonitor parent;
     private ServerSocket server;
     private String fileRepository;
+    public final SimpleDateFormat sdf =new SimpleDateFormat("yyyy-MM-dd");
     public FileReceiver(DispersedHostMonitor parent){
-        fileRepository = System.getProperty("user.dir") +"/DiskPredictData/input/";
+        fileRepository = System.getProperty("user.dir") +"/DiskPredict/";
         this.parent=parent;
         try {
             this.server=new ServerSocket(7001);
@@ -71,8 +76,19 @@ public class FileReceiver {
             try {
                 hostName=inFromNode.readUTF();
                 long fileLength=inFromNode.readLong();
-
-                File file=new File(fileRepository+hostName+"-data.csv");
+                Calendar calendar= Calendar.getInstance();
+                String path=fileRepository+"original_data/"+calendar.get(Calendar.YEAR);
+                File file=new File(path);
+                if(!file.exists()){
+                    file.mkdir();
+                }
+                path=path+"/"+(calendar.get(Calendar.MONTH)+1);
+                file=new File(path);
+                if(!file.exists()){
+                    file.mkdir();
+                }
+                path=path+"/"+hostName+"-"+sdf.format(calendar.getTime())+".csv";
+                file=new File(path);
                 FileOutputStream fos=new FileOutputStream(file);
                 byte[] bytes=new byte[1024];
                 int length=0;
@@ -83,7 +99,25 @@ public class FileReceiver {
                 fos.close();
                 inFromNode.close();
                 socket.close();
-                System.out.println("[File]Receive "+hostName+"-data.csv");
+                System.out.println("[File]Receive "+path);
+                File file2;
+                path=fileRepository+"predict_data";
+                file2=new File(path);
+                if(!file2.exists()){
+                    file2.mkdir();
+                }
+                path=path+"/"+hostName;
+                file2=new File(path);
+                if(!file2.exists()){
+                    file2.mkdir();
+                }
+                path=path+"/"+hostName+".csv";
+                file2=new File(path);
+                Files.copy(file.toPath(),file2.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                System.out.println("[File]And a copy has been put into: "+path);
+                synchronized (parent.hostInfoMap) {
+                    parent.setAllDiskDFPState(hostName, false);
+                }
             } catch (IOException e) {
                 e.printStackTrace();
             }

@@ -50,8 +50,7 @@ class getData:
                     neg_num = neg_data.shape[0]
                 neg_data = neg_data.sample(n=neg_num, random_state=18).fillna(method='ffill', axis=1)
                 train_data = pd.concat([train_data, pos_data, neg_data])
-
-
+            print(train_data)
             if train_data.shape[0] >= min_data_num:
                 self.useful_model_.append(sub_dirs)
                 verify_num = int(train_data.shape[0] * (1 - self.verifySize_))
@@ -60,9 +59,10 @@ class getData:
                 save_path = os.path.join(save_root, sub_dirs)
                 if not os.path.exists(save_path):
                     os.makedirs(save_path)
+                print(save_path)
                 train_data.to_csv(os.path.join(save_path, 'train.csv'), index=False, header=True)
                 verify_data.to_csv(os.path.join(save_path, 'verify.csv'), index=False, header=True)
-        
+
         print('\n[info --> ] useful_mode-%d:%s' % (len(self.useful_model_), self.useful_model_))
 
 

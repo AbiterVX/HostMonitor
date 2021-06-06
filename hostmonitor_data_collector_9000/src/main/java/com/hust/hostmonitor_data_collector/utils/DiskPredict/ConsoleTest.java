@@ -43,7 +43,7 @@ public class ConsoleTest {
                     DiskPredict.Train("\"2016\"", "\"ST4000DM000\"", params,null);
                     break;
                 case 4:
-                    DiskPredict.Predict("\""+ System.getProperty("user.dir") + "/DiskPredict/predict_data" +"\"",null);
+                    DiskPredict.Predict("\""+ System.getProperty("user.dir") + "/DiskPredict/predict_data/2021/5" +"\"",null);
                     break;
                 default:
                     System.out.println("没有该函数！");

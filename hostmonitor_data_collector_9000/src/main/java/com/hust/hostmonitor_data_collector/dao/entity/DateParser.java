@@ -36,9 +36,5 @@ public class DateParser implements Comparable<DateParser>{
     public int compareTo(DateParser o) {
         return this.getCalendarFormat().compareTo(o.getCalendarFormat());
     }
-    public static void main(String[] args){
-        for(String string:new DateParser("Mar  1 05:50:26").getToken()){
-            System.out.println(string);
-        }
-    }
+
 }

@@ -15,8 +15,7 @@ public class DispersedHostMonitor {
     public float[][] loadPartition;
     //Host的JSON信息Map
     public Map<String, JSONObject> hostInfoMap = new HashMap<>();
-    //磁盘故障预测Info-List
-    public Map<String, JSONObject> dfpInfoList = new HashMap<>();
+
     //测速Info-List
     public Map<String, JSONObject> speedMeasurementInfoList = new HashMap<>();
 
@@ -146,12 +145,23 @@ public class DispersedHostMonitor {
             jsonObject.getJSONObject("DFPList").put(diskName,b);
         }
     }
-    public boolean canGetDFPRecord(String hostName,String diskName){
+    public boolean getDiskDFPState(String hostName,String diskName){
         boolean result=false;
         if(hostInfoMap.containsKey(hostName)){
             if(hostInfoMap.get(hostName).getJSONObject("DFPList").containsKey(diskName))
                 result=hostInfoMap.get(hostName).getJSONObject("DFPList").getBoolean(diskName);
         }
         return result;
+    }
+
+    public void setAllDiskDFPState(String hostName, boolean b) {
+        if(hostInfoMap.containsKey(hostName)){
+            JSONObject jsonObject=hostInfoMap.get(hostName);
+            JSONArray diskArray=jsonObject.getJSONArray("diskInfoList");
+            for(int i=0;i<diskArray.size();i++) {
+                String diskName=diskArray.getJSONObject(i).getString("diskName");
+                jsonObject.getJSONObject("DFPList").put(diskName, b);
+            }
+        }
     }
 }

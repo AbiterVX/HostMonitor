@@ -103,7 +103,8 @@ public class DispersedDataSampleController {
     @GetMapping(value="/getDFPInfo/All")
     @ResponseBody
     public String getDFPInfo_List(){
-        String result= dispersedDataService.getDFPInfoAll();
+        String result= dispersedDataService.getDFPInfoAll(true);
+        result+=dispersedDataService.getDFPInfoAll(false);
         return result;
     }
 

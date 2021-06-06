@@ -44,7 +44,7 @@ public class DataSampler {
     private String diskDataPath;
     //静态硬件信息采样，不会周期性调用
     public DataSampler(){
-        diskDataPath=System.getProperty("user.dir")+"/ConfigData/Client/data.csv";
+        diskDataPath=System.getProperty("user.dir")+"/DiskPredict/client/sampleData/data.csv";
         systemInfo = new SystemInfo();
         dataObject= new JSONObject();
         dataObject.putAll(formatConfig.getHostInfoJson());
@@ -96,6 +96,7 @@ public class DataSampler {
         for(i=0;i<hwDiskStoreList.size();i++){
             HWDiskStore tempDiskStore=hwDiskStoreList.get(i);
             dataObject.getJSONArray("diskInfoList").getJSONObject(i).put("diskName",tempDiskStore.getSerial().trim());
+            dataObject.getJSONArray("diskInfoList").getJSONObject(i).put("diskModel",tempDiskStore.getModel());
             dataObject.getJSONArray("diskInfoList").getJSONObject(i).put("diskCapacityTotalSize",FormatUtils.doubleTo2bits_double((tempDiskStore.getSize()*1.0/1024/1024/1024)));
             dataObject.getJSONArray("diskInfoList").getJSONObject(i).put("lastUpdateTime",timestamp);
             String serial=tempDiskStore.getSerial().trim();
@@ -133,13 +134,19 @@ public class DataSampler {
     private HashMap<String,Integer> readDisktypes(){
         HashMap<String,Integer> types=new HashMap<>();
         File file=new File(diskDataPath);
+
         try {
             FileReader fr=new FileReader(file);
             BufferedReader br=new BufferedReader(fr);
             String str=null;
+            boolean flag=true;
             while((str=br.readLine())!=null){
+                if(flag){
+                    flag=false;
+                    continue;
+                }
                 String[] tokens=str.split(",");
-                types.put(tokens[3],Integer.parseInt(tokens[7]));
+                types.put(tokens[1],Integer.parseInt(tokens[5]));
 
             }
         } catch (FileNotFoundException e) {

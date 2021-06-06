@@ -87,10 +87,10 @@ public class HostMonitorClient {
             }
             catch (IOException e) {
                 e.printStackTrace();
-                System.out.println("Can't connect to the collector,the client exits.Please restart it.");
-                System.exit(0);
+                System.out.println("Can't connect to the collector.The client keeps sampling but don't upload.If you want to try again,please restart the client");
             } catch (InterruptedException e) {
                 e.printStackTrace();
+                System.out.println("Can't connect to the collector.The client keeps sampling but don't upload.If you want to try again,please restart the client");
             }
 
 

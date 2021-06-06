@@ -9,8 +9,15 @@ package com.hust.hostmonitor_data_collector.utils.DiskPredict;
  * @LastEditTime: 2021-05-26 11:52:56
  */
 import com.alibaba.fastjson.JSONObject;
+import com.csvreader.CsvReader;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.sql.Timestamp;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -20,7 +27,7 @@ public class DiskPredict {
     private static final String root_path = "\"" + userDirPath + "/DiskPredict" +"\"";
     private static final String diskPredictModulePath = userDirPath + "/DiskPredict/DiskPredictModule";
     private static final String trainDataPath = userDirPath + "/DiskPredict/train_data/";
-
+    private static final SimpleDateFormat sdf=new SimpleDateFormat("yyyy/MM/dd HH:mm");
     //-----对外接口
     //模型训练
     public static List<DiskPredictProgress> ModelTraining(String filePath, ModelTrainingParam param, DiskPredictProgress diskPredictProgress){
@@ -104,5 +111,86 @@ public class DiskPredict {
         param.put("\"root_path\"", root_path);
         JavaExePython.execPython(diskPredictModulePath + "/disk_predict.py", param, progress);
         System.out.println("[JAVA--> ] Complete.\n");
+    }
+    public static List<JSONObject> getDiskPredictResult(String readFileName,String hostName){
+        JSONObject jsonObject=new JSONObject();
+        ArrayList<JSONObject> result=new ArrayList<>();
+
+            String projectPath = System.getProperty("user.dir");
+            try {
+                CsvReader reader = new CsvReader(projectPath + readFileName, ',', StandardCharsets.UTF_8);
+                reader.readHeaders();
+                while (reader.readRecord()) {
+                    jsonObject=new JSONObject();
+                    String[] currentRow = reader.getValues();
+                    jsonObject.put("diskSerial",currentRow[1]);
+                    jsonObject.put("modelName",currentRow[5]);
+                    jsonObject.put("hostName",hostName);
+                    try {
+                        jsonObject.put("timestamp",new Timestamp(sdf.parse(currentRow[0]).getTime()));
+                    } catch (ParseException e) {
+                        e.printStackTrace();
+                        jsonObject.put("timestamp",new Timestamp(System.currentTimeMillis()));
+                    }
+                    jsonObject.put("predictProbability",Float.parseFloat(currentRow[4]));
+                    result.add(jsonObject);
+                }
+                reader.close();
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        return result;
+    }
+    public static long getRecordTime(String readFileName,String hostName,String diskSerial){
+
+        String projectPath = System.getProperty("user.dir");
+        try {
+            CsvReader reader = new CsvReader(projectPath + readFileName, ',', StandardCharsets.UTF_8);
+            reader.readHeaders();
+            while (reader.readRecord()) {
+
+                String[] currentRow = reader.getValues();
+                if(!diskSerial.equals(currentRow[1])){
+                    continue;
+                }
+                try {
+                    return sdf.parse(currentRow[0]).getTime();
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+
+            }
+            reader.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
+    public static boolean checkLatestRecordExists(String readFileName,String hostName,String diskSerial) {
+
+        String projectPath = System.getProperty("user.dir");
+        try {
+            CsvReader reader = new CsvReader(projectPath + readFileName, ',', StandardCharsets.UTF_8);
+            reader.readHeaders();
+            while (reader.readRecord()) {
+
+                String[] currentRow = reader.getValues();
+                if(!diskSerial.equals(currentRow[1])){
+                    return true;
+                }
+
+            }
+            reader.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 }

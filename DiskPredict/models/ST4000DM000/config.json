@@ -1,6 +1,8 @@
 {
+
   "current_model": "2021-06-02\\RandomForestClassifier.pkl",
   "2021-06-02\\RandomForestClassifier.pkl": {
+
     "feature": [
       "date",
       "serial_number",

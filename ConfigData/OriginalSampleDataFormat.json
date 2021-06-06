@@ -25,6 +25,7 @@
     "diskWrite": 0,
     "diskReadBytes": 0,
     "diskWriteBytes": 0,
+    "diskModel":"",
     "type": 1
   },
   "cpuInfo": {

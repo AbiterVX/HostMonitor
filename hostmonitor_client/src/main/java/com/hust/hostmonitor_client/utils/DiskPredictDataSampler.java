@@ -11,7 +11,7 @@ import java.util.Date;
 public class DiskPredictDataSampler extends Thread {
     private String sampleFilePath = "";
     private String dataFilePath="";
-    private final long sampleInterval=12*3600*1000;
+    private final long sampleInterval=24*3600*1000;
     private Socket fileSocket;
     private String collectorString="127.0.0.1";
     private String hostName;
@@ -20,15 +20,26 @@ public class DiskPredictDataSampler extends Thread {
         sampleFilePath = System.getProperty("user.dir") +"/DiskPredict/client/data_collector.py";
         dataFilePath=System.getProperty("user.dir") +"/DiskPredict/client/sampleData/data.csv";
     }
-    @SneakyThrows
+
     public void run(){
         while(true) {
             SU.setDaemon(true);
             SU.run(new DiskSampler());
-            fileSocket=new Socket(collectorString,7001);
-            sendFile(dataFilePath);
-            fileSocket.close();
-            Thread.sleep(sampleInterval);
+            try {
+                fileSocket=new Socket(collectorString,7001);
+                sendFile(dataFilePath);
+                fileSocket.close();
+
+            } catch (IOException e) {
+                e.printStackTrace();
+                System.out.println("Can't connect to the collector.The disk sample file isn't uploaded in time");
+            }
+            try {
+                Thread.sleep(sampleInterval);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
 
         }
     }
