@@ -69,48 +69,61 @@
                 <h4 class="mb-3">个人信息</h4>
                 <div class="needs-validation" novalidate="">
                     <div class="row">
-                      <div class="col-md-6 mb-3">
-                          <label for="firstName">ID</label>
-                          <input type="text" class="form-control" id="firstName" placeholder="" value="" required="">
-                          <div class="invalid-feedback">
-                              Valid first name is required.
-                          </div>
-                      </div>
-                      <div class="col-md-6 mb-3">
-                          <label for="lastName">用户名</label>
-                          <input type="text" class="form-control" id="lastName" placeholder="" value="" required="">
-                          <div class="invalid-feedback">
-                              Valid last name is required.
-                          </div>
-                      </div>
+                        <div class="col-md-6 mb-3">
+                            <label>ID</label>
+                            <input id="UserID" type="text" class="form-control"  readonly>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="UserType">角色:</label>
+                            <select id="UserType" class="custom-select" disabled="disabled">
+                                <option value="0" >普通用户</option>
+                                <option value="1" selected>管理员</option>
+                                <option value="2">超级管理员</option>
+                            </select>
+                        </div>
+
+                    </div>
+                    <div class="mb-3">
+
+                            <label>用户名</label>
+                            <input id="UserName" type="text" class="form-control">
+
                     </div>
 
-                <div class="mb-3">
-                    <label>Email</label>
-                    <input type="email" class="form-control" id="email" placeholder="you@example.com">
-                </div>
-
-                <div class="mb-3">
-                    <label>Phone</label>
-                    <input type="number" class="form-control" id="address" placeholder="1234">
-                </div>
-
-                <hr class="mb-4">
+                    <div class="mb-3">
+                        <label>Email</label>
+                        <input id="email" type="email" class="form-control"  placeholder="you@example.com">
+                    </div>
+                    <div class="mb-3">
+                        <label>Phone</label>
+                        <input id="phone" type="number" class="form-control" >
+                    </div>
+                    <hr class="mb-4">
                     <h4 class="mb-3">修改密码</h4>
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label for="cc-name">新密码</label>
-                            <input type="text" class="form-control" id="cc-name" placeholder="">
+                            <label>新密码</label>
+                            <input type="text" class="form-control" id="newPassword" >
                             <small class="text-muted">保证两次密码输入一致</small>
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label for="cc-number">确认密码</label>
-                            <input type="text" class="form-control" id="cc-number" placeholder="" >
+                            <label>确认密码</label>
+                            <input type="text" class="form-control" id="confirmPassword" >
+                            <small id="passwordTips" class="text-muted" style="color:#ee6767!important"></small>
                         </div>
                     </div>
                     <hr class="mb-4">
-                    <button class="btn btn-primary btn-lg btn-block" >修改信息</button>
-                    <button class="btn btn-secondary btn-lg btn-block" onclick="backBtnOnclick()">返回</button>
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <button class="btn btn-primary btn-lg btn-block" onclick="updateUserInfo()">修改信息</button>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <button class="btn btn-secondary btn-lg btn-block" onclick="updatePassword()">修改密码</button>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <button class="btn btn-secondary btn-lg btn-block" onclick="backBtnOnclick()">返回</button>
+                        </div>
+                    </div>
               </div>
             </div>
         </div>
@@ -119,9 +132,88 @@
     </div>
 </body>
 <script>
+    var UserID = document.getElementById("UserID");
+    var UserName = document.getElementById("UserName");
+    var UserType = document.getElementById("UserType");
+    var UserPhone = document.getElementById("phone");
+    var UserEmail = document.getElementById("email");
+    var newPassword = document.getElementById("newPassword");
+    var confirmPassword = document.getElementById("confirmPassword");
+    var passwordTips = document.getElementById("passwordTips");
+
     function backBtnOnclick(){
         window.location.href="/";
     }
+
+    //加载后执行
+    window.onload=function (){
+        refreshUserInfoUI();
+    }
+
+    function refreshUserInfoUI(){
+        var user = FGetUser();
+        if(user != null){
+            UserID.value = user["userID"];
+            UserName.value = user["userName"];
+            UserType.value = user["userType"];
+            UserPhone.value = user["phone"];
+            UserEmail.value = user["email"];
+        }
+    }
+
+    //修改用户信息
+    function updateUserInfo(){
+        var user = FGetUser();
+
+        var tempUserInfo =  JSON.parse(JSON.stringify(user));
+        var isUpdated = false;
+        function setField(field,currentValue){
+            if(tempUserInfo[field] != currentValue){
+                tempUserInfo[field] = currentValue;
+                isUpdated = true;
+            }
+        };
+        setField("userName",UserName.value);
+        setField("userType",UserType.value);
+        setField("phone",UserPhone.value);
+        setField("email",UserEmail.value);
+
+        if(isUpdated && user != null){
+            tempUserInfo["operateUserID"] = user["userID"];
+            tempUserInfo["operateUserPassword"] = user["password"];
+
+            FSendPostRequest(false,"/Dispersed/updateUserInfo",JSON.stringify(tempUserInfo),function (resultData){
+                userSignIn(user["userID"],user["password"],function (resultData2){
+                    refreshUserInfoUI();
+                });
+            });
+        }
+    }
+
+    //修改用户密码
+    function updatePassword(){
+        if(newPassword.value!=="" && confirmPassword.value !=="" && newPassword.value === confirmPassword.value){
+            var user = FGetUser();
+            if(user != null){
+                var paramData = {
+                    userID:user["userID"],
+                    password:user["password"],
+                    newPassword:newPassword.value,
+                };
+
+                FSendPostRequest(false,"/Dispersed/updateUserPassword",JSON.stringify(paramData),function (resultData){
+                    userSignIn(user["userID"],newPassword.value,function (resultData2){});
+                    newPassword.value ="";
+                    confirmPassword.value ="";
+                });
+            }
+        }
+        else{
+            passwordTips.innerText ="密码不规范或两次密码不一致!";
+        }
+
+    }
+
 </script>
 </html>
 

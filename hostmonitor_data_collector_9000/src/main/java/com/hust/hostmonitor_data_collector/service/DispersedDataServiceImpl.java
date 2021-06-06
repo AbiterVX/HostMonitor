@@ -10,8 +10,10 @@ import com.hust.hostmonitor_data_collector.utils.DiskPredict.DiskPredict;
 import com.hust.hostmonitor_data_collector.utils.DispersedHostMonitor;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import javax.annotation.Resource;
 import java.io.*;
 import java.math.BigDecimal;
+import java.net.URLEncoder;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -323,5 +325,6 @@ public class DispersedDataServiceImpl implements DispersedDataService{
     public String getSpeedMeasurementInfoAll() {
         return null;
     }
+
 
 }

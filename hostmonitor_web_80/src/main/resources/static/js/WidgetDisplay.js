@@ -17,6 +17,41 @@ function FGetNavItems(){
     ];
 }
 
+var minRequireUserType = [
+    0,
+    0,
+    0,
+    0,
+    1,
+    2,
+    2,
+];
+
+var innerHTMLList = [
+    icon_home + '资源监控',
+    icon_bar + '主机详情',
+    icon_empty + icon_file + '故障分析',
+    icon_empty + icon_file + '故障查询',
+    icon_empty + icon_file + '模型重构',
+    icon_file + '系统设置',
+    icon_file + '用户管理',
+];
+
+var signInSrc = "/Signin";
+var parentPath = "html/";
+var srcHtml = [
+    "DashBoard.html",
+    "HostDetail.html",
+    "DFPAnalysis.html",
+    "DiskFailurePrediction.html",
+    "DFPModelTraining.html",
+    "Settings.html",
+    "UserManagement.html",
+];
+
+
+
+
 function FInitNav(){
     //标题
     document.getElementById("PageTitle").innerText = "数据中心资源监控";
@@ -27,36 +62,47 @@ function FInitNav(){
 
     //登录按钮
     var UserBtn = document.getElementById("UserBtn");
-
-    var userID = window.sessionStorage.getItem("UserID");
-    if(userID != null){
-        UserBtn.innerText = userID;
+    var SignInBtn = document.getElementById("SignInBtn");
+    var user = FGetUser();
+    if(user != null){
+        UserBtn.innerText = user["userName"];
         UserBtn.href = "/UserSpace";
+
+        SignInBtn.innerText = "| 登录";
+        SignInBtn.href = signInSrc;
     }
     else{
-        UserBtn.href = "/Signin";
-        UserBtn.innerText = "管理员登录";
+        UserBtn.href =  signInSrc;
+        UserBtn.innerText = "登录";
     }
 
     //导航项
     var NavItems = FGetNavItems();
-    var innerHTMLList = [
-        icon_home + '资源监控',
-        icon_bar + '主机详情',
-        icon_empty + icon_file + '故障分析',
-        icon_empty + icon_file + '故障查询',
-        icon_empty + icon_file + '模型重构',
-        icon_file + '系统设置',
-        icon_file + '用户管理',
-    ];
 
     for(var i=0;i<NavItems.length;i++){
         NavItems[i].innerHTML = innerHTMLList[i];
         const index = i;
         NavItems[i].onclick = function (){
-            FSetCurrentNavItem(index);
+            if(index === 4 || index === 5 || index === 6){
+                var user = FGetUser();
+                if(user == null){
+                    window.location.href = signInSrc;
+                }
+                else{
+                    if(minRequireUserType[index] <= user["userType"]){
+                        FSetCurrentNavItem(index);
+                    }
+                    else{
+                        $('#UserTypeWarningModal').modal('show');
+                    }
+                }
+            }
+            else{
+                FSetCurrentNavItem(index);
+            }
         }
     }
+
 }
 
 //[左侧导航栏]设置当前选中的导航项
@@ -74,21 +120,8 @@ function FSetCurrentNavItem(leftNavItemIndex){
                 NavItems[i].style.fontWeight = '';
             }
         }
-
-
         //MainPart
         var MainPart = document.getElementById("MainPart");
-        var parentPath = "html/";  //""; //
-        var srcHtml = [
-            "DashBoard.html",
-            "HostDetail.html",
-            "DFPAnalysis.html",
-            "DiskFailurePrediction.html",
-            "DFPModelTraining.html",
-            "Settings.html",
-            "UserManagement.html",
-        ];
-
         MainPart.src = parentPath + srcHtml[leftNavItemIndex];
     }
 

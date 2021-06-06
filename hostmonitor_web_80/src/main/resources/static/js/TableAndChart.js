@@ -57,8 +57,8 @@ var customPartitionColor = ['#92cc76','#fac859','#ee6767'];
 
 var dfpModelNames = ["随机森林"];
 var diskType = ["HDD","SSD"];
-
-
+var userType = ["普通用户","管理员","超级管理员"];
+var userValid = ["禁用","启用"];
 
 
 
@@ -525,33 +525,42 @@ const tableColumns = {
     //用户管理
     userManagement: [
         {
-            field: 'Id',
+            field: 'ID',
             title: '序号',
-            sortable: true,
             width: 100,
+            formatter : function (value, row, index) {
+                return index+1;
+            }
         },
         {
-            field: 'UserName',
+            field: 'userName',
             title: '用户名',
             width: 100,
         },
         {
-            field: 'UserID',
+            field: 'userID',
             title: '用户ID',
             width: 100,
         },
         {
-            field: 'UserType',
+            field: 'userType',
             title: '用户类型',
             width: 100,
+            formatter : function (value, row, index) {
+                return userType[value];
+            }
         },
         {
-            field: 'UserState',
+            field: 'validState',
             title: '状态',
             width: 100,
+            formatter : function (value, row, index) {
+                return userValid[value?1:0];
+            }
+
         },
         {
-            field: 'LastEditTime',
+            field: 'lastEditTime',
             title: '最后编辑时间',
             width: 100,
             formatter : function (value, row, index) {
@@ -566,11 +575,11 @@ const tableColumns = {
             clickToSelect: false,
             events: {
                 'click .display': function (e, value, row, index) {
-                    $('#UserInfoModal').modal('show')
+                    displayUserInfo(row,index);
                 },
 
                 'click .delete': function (e, value, row, index) {
-                    alert('3');
+                    deleteUser(row,index)
                 },
             },
             formatter: function operateFormatter(value, row, index) {

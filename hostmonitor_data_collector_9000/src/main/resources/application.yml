@@ -10,12 +10,27 @@ spring:
         server-addr: localhost:8848 #配置Nacos地址
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://39.105.123.116:3306/StorageDeviceMonitor?useSSL=false&useUnicode=true&characterEncoding=utf-8&useJDBCCompliantTimezoneShift=true&serverTimezone=UTC
+    url: jdbc:mysql://39.105.123.116:3306/StorageDeviceMonitor?useSSL=false&useUnicode=true&characterEncoding=utf-8&allowMultiQueries=true&useJDBCCompliantTimezoneShift=true&serverTimezone=UTC
     username: root
     password: b511
+  mail:
+    host: smtp.163.com
+    username: abitervx@163.com
+    password: MSCLUHETDWPAYAFQ
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+
 management:
   endpoints:
     web:
       exposure:
         include: '*'
-
+sms_config:
+  sms-url: http://v.juhe.cn/sms/send?mobile=%s&tpl_id=%s&tpl_value=%s&key=%s
+  tpl-id-1: 234103
+  key: a1a2f8b334adea73c4de5c848848959b

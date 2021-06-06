@@ -359,10 +359,8 @@ function FSendPostRequest(async,url,parameterData,callbackFunc){
         },
         error: function (err) {}
     });
-
-
-
 }
+
 
 
 
@@ -594,3 +592,44 @@ function FRefreshDataSpeedMeasurementInfoAll(uiRefreshCallbackFunc){
     }
 }
 
+
+
+
+//-----用户
+
+function FSetUser(resultData){
+    window.sessionStorage.setItem("User",resultData);
+}
+
+function FGetUser(){
+    var user = window.sessionStorage.getItem("User");
+    if(user == null){
+        return null;
+    }
+    else{
+        return JSON.parse(user);
+    }
+}
+
+function FGetUserList(uiRefreshCallbackFunc){
+    FSendGetRequest(false,"/Dispersed/getUsers",function (resultData){
+        uiRefreshCallbackFunc(resultData);
+    });
+}
+
+//用户登录
+function userSignIn(userIDValue,passwordValue,callbackFunc){
+    var parameterData = {
+        userID: userIDValue,
+        password: passwordValue,
+    };
+    FSendPostRequest(false,"/Dispersed/SignIn",JSON.stringify(parameterData),function (resultData){
+        if(resultData == null || resultData === ""){
+            //wrong!
+        }
+        else{
+            FSetUser(resultData);
+        }
+        callbackFunc(resultData);
+    });
+}
