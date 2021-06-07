@@ -18,6 +18,8 @@ import com.alibaba.fastjson.*;
 
 
 public class JavaExePython {
+    //进度前缀
+    private static final String progressPrefix = "Progress:";
 
     public static void execPython(String filePath, JSONObject param, DiskPredictProgress progress){
         // filePath :待执行的python文件
@@ -59,12 +61,19 @@ public class JavaExePython {
                     while ((line = buffRead.readLine()) != null || (errline = buffErr.readLine()) != null){
                         if (line != null){
                             // 写回网页
-                            System.out.println("[out---> ] " + line);
+                            System.out.println("[Python]:" + line);
+
+                            //进度条
+                            if(progress!=null && line.startsWith(progressPrefix)){
+                                String progressNum = line.substring(progressPrefix.length());
+                                String[] progressData = progressNum.split("/");
+                                progress.setCurrentProgress(Integer.parseInt(progressData[0]),Integer.parseInt(progressData[1]));
+                            }
                         }
 
                         if (errline != null){
                             // 写回网页
-                            System.out.println("[err---> ] " + errline);
+                            System.out.println("[Python]:" + errline);
                         }
                         line = errline = null;
                     }

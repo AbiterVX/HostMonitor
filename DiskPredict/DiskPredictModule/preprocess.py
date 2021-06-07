@@ -28,13 +28,22 @@ class preProcess:
         save_root = os.path.join(root_path, 'processed_data', self.data_path_)
         if os.path.exists(save_root) and not self.replace_:
             # 路径存在则说明数据已经预处理过
-            print('[Warning ] Original datas in "%s" have already been preprocessed, sure to preprocess again?' % self.data_path_)
+            print('[Preprocessed] Original datas in "%s" has been preprocessed\r' % self.data_path_)
             return
+
+        sumFileCount = 0
+        for sub_dirs in sorted(list(os.listdir(data_path))):
+            sub_path = os.path.join(data_path, sub_dirs)
+            sumFileCount += len(os.listdir(sub_path))
+        count = 1;
+
         for sub_dirs in sorted(list(os.listdir(data_path))):
             sub_path = os.path.join(data_path, sub_dirs)
             for file in sorted(list(os.listdir(sub_path))):
                 file_path = os.path.join(sub_path, file)
-                print('\r Preprocessing:', file_path, end='')
+                print('Preprocessing:', file_path, end='\r')
+
+
                 df = pd.read_csv(file_path)
                 df_by_model = df.groupby(by=[str_model])
                 
@@ -45,6 +54,10 @@ class preProcess:
                         
                     group.dropna(axis=1, how='all', inplace=True)
                     group.to_csv(os.path.join(save_path, file), header=True, index=False)
+
+                #进度
+                print('Progress:'+str(count)+"/"+str(sumFileCount), end='\r')
+                count+=1
 
     
 if __name__ == '__main__':

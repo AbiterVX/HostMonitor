@@ -1,17 +1,27 @@
 package com.hust.hostmonitor_data_collector.utils.DiskPredict;
 
+
+
 public class DiskPredictProgress {
     int completedTaskCount;
     int totalTaskCount;
     public DiskPredictProgress(){
-        completedTaskCount = 0;
-        totalTaskCount = 0;
     }
-    public DiskPredictProgress(int _totalTaskCount){
-        completedTaskCount = 0;
+    public void setCurrentProgress(int _completedTaskCount,int _totalTaskCount){
+        completedTaskCount = _completedTaskCount;
         totalTaskCount = _totalTaskCount;
     }
     public float getProgressPercentage(){
-        return (float)completedTaskCount/(float)totalTaskCount;
+        if(totalTaskCount==0){
+            return 0;
+        }
+        else if(completedTaskCount == totalTaskCount){
+            return 100;
+        }
+        else{
+            float result = (float)completedTaskCount/(float)totalTaskCount*100;
+            result = (float)(Math.round(result*100))/100;
+            return result;
+        }
     }
 }

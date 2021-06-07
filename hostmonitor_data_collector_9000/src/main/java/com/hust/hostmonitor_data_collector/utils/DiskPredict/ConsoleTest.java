@@ -8,6 +8,7 @@
  */
 package com.hust.hostmonitor_data_collector.utils.DiskPredict;
 import java.io.File;
+import java.util.List;
 import java.util.Scanner;
 
 import com.alibaba.fastjson.JSONObject;
@@ -45,6 +46,53 @@ public class ConsoleTest {
                 case 4:
                     DiskPredict.Predict("\""+ System.getProperty("user.dir") + "/DiskPredict/predict_data/2021/5" +"\"",null);
                     break;
+                case 5:
+
+                    //DiskPredictProgress progress = DiskPredict.preprocess("2016", 0);
+                    DiskPredictProgress progress = DiskPredict.getTrainData("2016", 1.0f/3, 0.1f);
+                    Thread thread = new Thread(() -> {
+                        try {
+                            float progressPercentage = 0;
+                            while(progressPercentage!=100){
+                                progressPercentage = progress.getProgressPercentage();
+                                System.out.println("[进度]："+progressPercentage+"%");
+                                Thread.sleep(2000);
+                            }
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    });
+                    thread.start();
+
+                    //模型参数
+                    /*JSONObject trainParams = new JSONObject();
+                    trainParams.put("max_depth", new int[]{10, 20, 30});
+                    trainParams.put("max_features", new int[]{4, 7, 10});
+                    trainParams.put("n_estimators", new int[]{10, 20, 30, 40});
+
+
+                    List<DiskPredictProgress> progressList = DiskPredict.train("2016", trainParams);
+
+
+                    Thread thread = new Thread(() -> {
+                        try {
+                            int sumProgressCount = progressList.size();
+                            int currentIndex = 0;
+                            while(currentIndex!=sumProgressCount){
+                                float currentPercentage = progressList.get(currentIndex).getProgressPercentage();
+                                System.out.println("[进度]："+"["+(currentIndex+1)+"/"+sumProgressCount +"] "+currentPercentage+"%");
+                                if(currentPercentage == 100){
+                                    currentIndex+=1;
+                                }
+                                Thread.sleep(2000);
+                            }
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    });
+                    thread.start();*/
+
+                    //DiskPredictProgress progress = DiskPredict.predict(System.getProperty("user.dir") + "/DiskPredict/predict_data/2021/5");
                 default:
                     System.out.println("没有该函数！");
                     break;

@@ -10,6 +10,7 @@ package com.hust.hostmonitor_data_collector.utils.DiskPredict;
  */
 import com.alibaba.fastjson.JSONObject;
 import com.csvreader.CsvReader;
+import javafx.concurrent.Task;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -29,39 +30,56 @@ public class DiskPredict {
     private static final String trainDataPath = userDirPath + "/DiskPredict/train_data/";
     private static final SimpleDateFormat sdf=new SimpleDateFormat("yyyy/MM/dd HH:mm");
     //-----对外接口
-    //模型训练
-    public static List<DiskPredictProgress> ModelTraining(String filePath, ModelTrainingParam param, DiskPredictProgress diskPredictProgress){
+
+    public static DiskPredictProgress preprocess(String filePath, int replace){
+        DiskPredictProgress progress = new DiskPredictProgress();
+        Thread thread = new Thread(() -> {
+            DataPreProcess("\""+filePath+"\"",replace,progress);
+        });
+        thread.start();
+        return progress;
+    }
+
+    public static DiskPredictProgress getTrainData(String filePath, float scale, float verifySize){
+        DiskPredictProgress progress = new DiskPredictProgress();
+        Thread thread = new Thread(() -> {
+            GetTrainData("\""+filePath+"\"",scale,verifySize,progress);
+        });
+        thread.start();
+        return progress;
+    }
+
+    public static List<DiskPredictProgress> train(String filePath,JSONObject params){
         List<DiskPredictProgress> progressList = new ArrayList<>();
-        DiskPredictProgress dataPreProcessProgress = new DiskPredictProgress();
-        DiskPredictProgress getTrainDataProgress = new DiskPredictProgress();
-        progressList.add(dataPreProcessProgress);
-        progressList.add(getTrainDataProgress);
-
-        DataPreProcess(filePath,param.replace,dataPreProcessProgress);
-        GetTrainData(filePath,param.scale, param.verifySize,getTrainDataProgress);
-
         List<String> modelNameList = new ArrayList<>();
-        File file = new File(trainDataPath+filePath);
+        File file = new File(trainDataPath+"/"+filePath);
         for (File currentFile: Objects.requireNonNull(file.listFiles())){
             if(currentFile.isDirectory()){
                 modelNameList.add(currentFile.getName());
+                progressList.add(new DiskPredictProgress());
             }
         }
-        for(String modelName: modelNameList){
-            DiskPredictProgress newTrainProgress = new DiskPredictProgress();
-            Train(filePath,modelName,param.trainParams,newTrainProgress);
-            progressList.add(newTrainProgress);
-        }
-
+        Thread thread = new Thread(() -> {
+            for(int i=0;i<modelNameList.size();i++){
+                Train("\""+filePath+"\"","\""+modelNameList.get(i)+"\"",params,progressList.get(i));
+            }
+        });
+        thread.start();
         return progressList;
     }
 
-    //故障预测
-    public static DiskPredictProgress diskPredict(String filePath){
-        DiskPredictProgress progress = new DiskPredictProgress();
-        Predict(filePath,progress);
-        return progress;
+    public static DiskPredictProgress predict(String filePath){
+        Thread thread = new Thread(() -> {
+            Predict("\""+filePath+"\"",null);
+        });
+        thread.start();
+        return null;
     }
+
+
+
+
+
 
 
     //数据预处理

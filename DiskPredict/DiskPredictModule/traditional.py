@@ -51,15 +51,33 @@ class Traditional_Train:
         self.feature_ = []
 
     def run(self):
-        self.get_data()
-        self.get_scale()
-        self.get_feature()
-        # self.feature_ = [3, 6, 7, 9, 14, 19, 20, 23, 30, 32, 33, 36, 37, 41, 42, 44, 47]
-        self.grid_search()
-        self.model_score()
-        self.model_verify()
-        self.save_model()
-    
+        count = 1
+        sum_progress = 7
+        funcList = [
+            self.get_data,
+            self.get_scale,
+            self.get_feature,
+            self.grid_search,
+            self.model_score,
+            self.model_verify,
+            self.save_model,
+        ]
+        for func in funcList:
+            func()
+            #进度
+            print('Progress:' + str(count) + "/" + str(sum_progress), end='\r')
+            count += 1
+
+
+        # self.get_data()
+        # self.get_scale()
+        # self.get_feature()
+        # # self.feature_ = [3, 6, 7, 9, 14, 19, 20, 23, 30, 32, 33, 36, 37, 41, 42, 44, 47]
+        # self.grid_search()
+        # self.model_score()
+        # self.model_verify()
+        # self.save_model()
+
     def update_param(self, param):
         self.param_ = param
 

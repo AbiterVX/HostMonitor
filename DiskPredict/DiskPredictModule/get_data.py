@@ -32,11 +32,18 @@ class getData:
         data_path = os.path.join(root_path, 'processed_data', self.data_path_)
         save_root = os.path.join(root_path, 'train_data', self.data_path_)
 
+        sumFileCount = 0
+        for sub_dirs in sorted(list(os.listdir(data_path))):
+            sub_path = os.path.join(data_path, sub_dirs)
+            sumFileCount += len(os.listdir(sub_path))
+        count = 0;
+
+
         for sub_dirs in sorted(list(os.listdir(data_path))):
             train_data = pd.DataFrame()
             verify_data = pd.DataFrame()
             sub_path = os.path.join(data_path, sub_dirs)
-            print('\r Preprocessing:', sub_path, end='')
+            print('Preprocessing:', sub_path, end='\r')
             for file in sorted(list(os.listdir(sub_path))):
                 file_path = os.path.join(sub_path, file)
                 # 按比例提取训练集、验证集
@@ -50,7 +57,8 @@ class getData:
                     neg_num = neg_data.shape[0]
                 neg_data = neg_data.sample(n=neg_num, random_state=18).fillna(method='ffill', axis=1)
                 train_data = pd.concat([train_data, pos_data, neg_data])
-            print(train_data)
+
+            #print(train_data)
             if train_data.shape[0] >= min_data_num:
                 self.useful_model_.append(sub_dirs)
                 verify_num = int(train_data.shape[0] * (1 - self.verifySize_))
@@ -62,6 +70,10 @@ class getData:
                 print(save_path)
                 train_data.to_csv(os.path.join(save_path, 'train.csv'), index=False, header=True)
                 verify_data.to_csv(os.path.join(save_path, 'verify.csv'), index=False, header=True)
+
+            # 进度
+            count += len(os.listdir(sub_path))
+            print('Progress:' + str(count) + "/" + str(sumFileCount), end='\r')
 
         print('\n[info --> ] useful_mode-%d:%s' % (len(self.useful_model_), self.useful_model_))
 

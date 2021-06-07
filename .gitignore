@@ -43,9 +43,14 @@ build/
 /DiskPredict/DiskPredictModule/__pycache__/**
 ### 故障预测-数据
 /DiskPredict/original_data/**
+/DiskPredict/models/**
+
+/DiskPredict/original_data_test/**
+!/DiskPredict/original_data_test/2016.rar
+
 /DiskPredict/processed_data/**
 /DiskPredict/train_data/**
-/DiskPredict/models/**
+
 /DiskPredict/result/**
 /DiskPredict/predict_data/**
 /DiskPredict/client/sampleData/data.csv
