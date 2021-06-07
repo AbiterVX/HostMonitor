@@ -4,9 +4,13 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.hust.hostmonitor_data_collector.dao.DiskFailureMapper;
 import com.hust.hostmonitor_data_collector.dao.DispersedMapper;
+import com.hust.hostmonitor_data_collector.dao.UserDao;
 import com.hust.hostmonitor_data_collector.dao.entity.DFPRecord;
 import com.hust.hostmonitor_data_collector.dao.entity.DispersedRecord;
+import com.hust.hostmonitor_data_collector.dao.entity.SystemUser;
 import com.hust.hostmonitor_data_collector.utils.DiskPredict.DiskPredict;
+import com.hust.hostmonitor_data_collector.utils.DiskPredict.DiskPredictProgress;
+import com.hust.hostmonitor_data_collector.utils.DiskPredict.ModelTrainingParam;
 import com.hust.hostmonitor_data_collector.utils.DispersedHostMonitor;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -24,6 +28,9 @@ public class DispersedDataServiceImpl implements DispersedDataService{
     DispersedMapper dispersedMapper;
     @Autowired
     DiskFailureMapper diskFailureMapper;
+    @Autowired
+    UserDao userDao;
+
     private final long sampleInterval=10000;
     private DispersedHostMonitor dispersedHostMonitor;
     public final int sampleStoreDelayMS=500;
@@ -310,17 +317,26 @@ public class DispersedDataServiceImpl implements DispersedDataService{
         }
         return record;
     }
-    private void train(){
-        DiskPredict.DataPreProcess("\"2016\"",0,null);
-        DiskPredict.GetTrainData("\"2016\"", 1.0f/3, 0.1f,null);
-        JSONObject params = new JSONObject();
-        params.put("max_depth", new int[]{10, 20, 30});
-        params.put("max_features", new int[]{4, 7, 10});
-        params.put("n_estimators", new int[]{10, 20, 30, 40});
-        DiskPredict.Train("\"2016\"", "\"ST4000DM000\"", params,null);
+    private String train(String modelYear,SystemUser currentUser){
+        if(!userAuthoirtyCheck(currentUser.getUserID(),currentUser.getPassword(),2)){
+            return "Permission denied";
+        }
+        //ModelTrainingParam modelTrainingParam=new ModelTrainingParam(0,1.0f/3,0.1f,
+                //new int[]{10, 20, 30},new int[]{4, 7, 10},new int[]{10, 20, 30, 40});
+        //DiskPredictProgress diskPredictProgress=new DiskPredictProgress();
+        //DiskPredict.ModelTraining("\"2016\"",modelTrainingParam,diskPredictProgress);
         //TODO 模型输入数据库
+        return null;
     }
-
+    //2 admin,3 superAdmin
+    private boolean userAuthoirtyCheck(String user,String password,int checkLevel){
+        SystemUser systemUser=userDao.signIn(user,password);
+        if(checkLevel==2)
+            return systemUser.isAdmin();
+        else if(checkLevel==3)
+            return systemUser.isSuperAdmin();
+        return false;
+    }
     @Override
     public String getSpeedMeasurementInfoAll() {
         return null;
