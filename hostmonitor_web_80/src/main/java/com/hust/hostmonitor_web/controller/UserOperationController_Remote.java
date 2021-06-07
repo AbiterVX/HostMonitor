@@ -23,43 +23,43 @@ public class UserOperationController_Remote {
     @PostMapping(value = "/SignIn")
     @ResponseBody
     public String signIn(@RequestBody Map<String,String> params) {
-        return restTemplate.postForObject(dataCollectorUrl + "/Dispersed/SignIn", params,String.class);
+        return restTemplate.postForObject(dataCollectorUrl + "/SignIn", params,String.class);
     }
 
     @PostMapping(value = "/SignUp")
     @ResponseBody
     public String signUp(@RequestBody Map<String,String> params) {
-        return restTemplate.postForObject(dataCollectorUrl + "/Dispersed/SignUp", params,String.class);
+        return restTemplate.postForObject(dataCollectorUrl + "/SignUp", params,String.class);
     }
 
     @PostMapping(value = "/updateUserInfo")
     @ResponseBody
     public String updateUserInfo(@RequestBody Map<String,String> params) {
-        return restTemplate.postForObject(dataCollectorUrl + "/Dispersed/updateUserInfo", params,String.class);
+        return restTemplate.postForObject(dataCollectorUrl + "/updateUserInfo", params,String.class);
     }
 
     @PostMapping(value = "/updateUserPassword")
     @ResponseBody
     public String updateUserPassword(@RequestBody Map<String,String> params) {
-        return restTemplate.postForObject(dataCollectorUrl + "/Dispersed/updateUserPassword", params,String.class);
+        return restTemplate.postForObject(dataCollectorUrl + "/updateUserPassword", params,String.class);
     }
 
     @GetMapping(value = "/getUsers")
     @ResponseBody
     public String getUsers(){
-        return restTemplate.getForObject(dataCollectorUrl + "/Dispersed/getUsers",String.class);
+        return restTemplate.getForObject(dataCollectorUrl + "/getUsers",String.class);
     }
 
 
     @GetMapping(value = "/SystemSetting/Get")
     @ResponseBody
     public String getSystemSetting() {
-        return restTemplate.getForObject(dataCollectorUrl + "/Dispersed/SystemSetting/Get",String.class);
+        return restTemplate.getForObject(dataCollectorUrl + "/SystemSetting/Get",String.class);
     }
 
     @PostMapping(value = "/SystemSetting/Reset")
     @ResponseBody
     public String resetSystemSetting(@RequestBody Map<String,String> params) {
-        return restTemplate.postForObject(dataCollectorUrl + "/Dispersed/SystemSetting/Reset", params,String.class);
+        return restTemplate.postForObject(dataCollectorUrl + "/SystemSetting/Reset", params,String.class);
     }
 }

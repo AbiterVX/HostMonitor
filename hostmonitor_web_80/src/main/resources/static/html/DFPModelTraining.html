@@ -55,9 +55,9 @@
         <div class="col-sm-4">
             <div class="input-group mb-4">
                 <div class="input-group-prepend">
-                    <label class="input-group-text" for="inputGroupSelect01">模型</label>
+                    <label class="input-group-text">模型</label>
                 </div>
-                <select class="custom-select" id="inputGroupSelect01">
+                <select id="modelType" class="custom-select" >
                     <option value="1">随机森林</option>
                 </select>
             </div>
@@ -66,22 +66,22 @@
         <div class="col-sm-4">
             <div class="input-group mb-6" style="margin-bottom: 10px;">
                 <div class="input-group-prepend">
-                    <label class="input-group-text" for="inputGroupSelect01">正负样本比</label>
+                    <label class="input-group-text">正负样本比</label>
                 </div>
-                <input id="scale" type="text" class="form-control" value="1">
+                <input id="positiveDataProportion" type="text" class="form-control" value="1">
                 <div class="input-group-prepend">
                     <span class="input-group-text">/</span>
                 </div>
-                <input id="scale2" type="text" class="form-control" value="3">
+                <input id="negativeDataProportion" type="text" class="form-control" value="3">
             </div>
         </div>
 
         <div class="col-sm-4">
             <div class="input-group mb-6" style="margin-bottom: 10px;">
                 <div class="input-group-prepend">
-                    <label class="input-group-text" for="inputGroupSelect01">验证集占比</label>
+                    <label class="input-group-text">验证集占比</label>
                 </div>
-                <input id="verifySize" type="text" class="form-control" value="10">
+                <input id="verifyProportion" type="text" class="form-control" value="10">
                 <div class="input-group-append">
                     <span class="input-group-text">%</span>
                 </div>
@@ -96,7 +96,7 @@
         <div class="col-sm-4">
             <div class="input-group mb-6" style="margin-bottom: 10px;">
                 <div class="input-group-prepend">
-                    <label class="input-group-text" for="inputGroupSelect01">Max Depth</label>
+                    <label class="input-group-text">Max Depth</label>
                 </div>
                 <input id="maxDepth" type="text" class="form-control" value="10,20,30">
             </div>
@@ -104,7 +104,7 @@
         <div class="col-sm-4">
             <div class="input-group mb-6" style="margin-bottom: 10px;">
                 <div class="input-group-prepend">
-                    <label class="input-group-text" for="inputGroupSelect01">Max Features</label>
+                    <label class="input-group-text">Max Features</label>
                 </div>
                 <input id="maxFeatures" type="text" class="form-control" value="4,7,10">
             </div>
@@ -112,7 +112,7 @@
         <div class="col-sm-4">
             <div class="input-group mb-6" style="margin-bottom: 10px;">
                 <div class="input-group-prepend">
-                    <label class="input-group-text" for="inputGroupSelect01">N Estimators</label>
+                    <label class="input-group-text">N Estimators</label>
                 </div>
                 <input id="nEstimators" type="text" class="form-control" value="10,20,30,40">
             </div>

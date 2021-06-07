@@ -429,7 +429,7 @@ const tableColumns = {
         {
             field: 'predictProbability',
             title: '预测概率',
-            width: 50,
+            width: 80,
             sortable: true,
             formatter : function (value, row, index) {
                 if(value === -1){

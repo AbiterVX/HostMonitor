@@ -13,7 +13,6 @@ import java.util.List;
 import java.util.Map;
 
 @Controller
-@RequestMapping("/Dispersed")
 public class UserOperationController {
     @Resource
     UserService userService;
@@ -95,9 +94,6 @@ public class UserOperationController {
         userService.sendEmail(emailAddress);
         return "";
     }
-
-
-
 
 
     @GetMapping(value = "/SystemSetting/Get")

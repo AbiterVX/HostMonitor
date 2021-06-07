@@ -68,7 +68,7 @@ function FInitNav(){
         UserBtn.innerText = user["userName"];
         UserBtn.href = "/UserSpace";
 
-        SignInBtn.innerText = "| 登录";
+        SignInBtn.innerText = "| 退出";
         SignInBtn.href = signInSrc;
     }
     else{
@@ -93,6 +93,7 @@ function FInitNav(){
                         FSetCurrentNavItem(index);
                     }
                     else{
+
                         $('#UserTypeWarningModal').modal('show');
                     }
                 }
