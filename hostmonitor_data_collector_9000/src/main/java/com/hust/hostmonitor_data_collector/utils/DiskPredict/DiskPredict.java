@@ -35,6 +35,7 @@ public class DiskPredict {
         DiskPredictProgress progress = new DiskPredictProgress();
         Thread thread = new Thread(() -> {
             DataPreProcess("\""+filePath+"\"",replace,progress);
+            progress.setFinished();
         });
         thread.start();
         return progress;
@@ -44,6 +45,7 @@ public class DiskPredict {
         DiskPredictProgress progress = new DiskPredictProgress();
         Thread thread = new Thread(() -> {
             GetTrainData("\""+filePath+"\"",scale,verifySize,progress);
+            progress.setFinished();
         });
         thread.start();
         return progress;
@@ -62,6 +64,7 @@ public class DiskPredict {
         Thread thread = new Thread(() -> {
             for(int i=0;i<modelNameList.size();i++){
                 Train("\""+filePath+"\"","\""+modelNameList.get(i)+"\"",params,progressList.get(i));
+                progressList.get(i).setFinished();
             }
         });
         thread.start();

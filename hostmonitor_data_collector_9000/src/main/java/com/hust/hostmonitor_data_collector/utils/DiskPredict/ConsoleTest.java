@@ -47,15 +47,17 @@ public class ConsoleTest {
                     DiskPredict.Predict("\""+ System.getProperty("user.dir") + "/DiskPredict/predict_data/2021/5" +"\"",null);
                     break;
                 case 5:
-
-                    //DiskPredictProgress progress = DiskPredict.preprocess("2016", 0);
-                    DiskPredictProgress progress = DiskPredict.getTrainData("2016", 1.0f/3, 0.1f);
+                    DiskPredictProgress progress = DiskPredict.preprocess("2016", 0);
+                    //DiskPredictProgress progress = DiskPredict.getTrainData("2016", 1.0f/3, 0.1f);
                     Thread thread = new Thread(() -> {
                         try {
                             float progressPercentage = 0;
-                            while(progressPercentage!=100){
+                            while(true){
                                 progressPercentage = progress.getProgressPercentage();
-                                System.out.println("[进度]："+progressPercentage+"%");
+                                System.out.println("[进度]："+progressPercentage+"% , ");
+                                if(progress.isFinished()){
+                                    break;
+                                }
                                 Thread.sleep(2000);
                             }
                         } catch (InterruptedException e) {
@@ -81,10 +83,13 @@ public class ConsoleTest {
                             while(currentIndex!=sumProgressCount){
                                 float currentPercentage = progressList.get(currentIndex).getProgressPercentage();
                                 System.out.println("[进度]："+"["+(currentIndex+1)+"/"+sumProgressCount +"] "+currentPercentage+"%");
-                                if(currentPercentage == 100){
+                                if(!progressList.get(currentIndex).isFinished()){
                                     currentIndex+=1;
                                 }
-                                Thread.sleep(2000);
+                                else{
+                                    Thread.sleep(2000);
+                                }
+
                             }
                         } catch (InterruptedException e) {
                             e.printStackTrace();

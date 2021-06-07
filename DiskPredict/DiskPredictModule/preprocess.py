@@ -29,6 +29,8 @@ class preProcess:
         if os.path.exists(save_root) and not self.replace_:
             # 路径存在则说明数据已经预处理过
             print('[Preprocessed] Original datas in "%s" has been preprocessed\r' % self.data_path_)
+            # 进度
+            print('Progress:1/1', end='\r')
             return
 
         sumFileCount = 0

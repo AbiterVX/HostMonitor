@@ -5,7 +5,9 @@ package com.hust.hostmonitor_data_collector.utils.DiskPredict;
 public class DiskPredictProgress {
     int completedTaskCount;
     int totalTaskCount;
+    boolean finished;
     public DiskPredictProgress(){
+        finished = false;
     }
     public void setCurrentProgress(int _completedTaskCount,int _totalTaskCount){
         completedTaskCount = _completedTaskCount;
@@ -23,5 +25,13 @@ public class DiskPredictProgress {
             result = (float)(Math.round(result*100))/100;
             return result;
         }
+    }
+
+    public void setFinished(){
+        finished = true;
+    }
+
+    public boolean isFinished() {
+        return finished;
     }
 }
