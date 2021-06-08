@@ -29,7 +29,7 @@
 <body>
     <!--标题-->
     <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
-        <h2 class="h2">概要</h2>
+        <h2 class="h2">故障趋势</h2>
         <div class="btn-toolbar mb-2 mb-md-0" role="toolbar" style="margin-right: 5px;">
             <!-- HostName -DropDown-->
             <div style="margin-right: 15px;">
@@ -98,6 +98,8 @@
         var hostName = mainInfo["hostName"][currentHostIndex];
         var diskName = FGetHostInfo(hostName)["diskInfoList"][0]["diskName"];
         refreshDFPInfoTrend(hostName,diskName);
+
+
     }
 
     //[DropDown]选择-HostName

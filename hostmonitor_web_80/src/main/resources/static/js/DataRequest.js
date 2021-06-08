@@ -592,6 +592,19 @@ function FRefreshDataSpeedMeasurementInfoAll(uiRefreshCallbackFunc){
     }
 }
 
+//-----故障预测
+
+function FRefreshDataDFPSummaryInfo(uiRefreshCallbackFunc){
+    FSendGetRequest(false,"/Dispersed/getDFPSummaryInfo",function (resultData){
+        uiRefreshCallbackFunc(resultData);
+    });
+}
+
+function FRefreshData(){
+
+}
+
+
 
 
 

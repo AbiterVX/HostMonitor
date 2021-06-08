@@ -56,6 +56,33 @@ public class DispersedDataServiceImpl implements DispersedDataService{
             }
         }
     };
+
+
+    //-----模型训练进度条
+    private boolean isTraining = false;
+    private List<DiskPredictProgress> trainProgressList;
+
+    //-----系统设置
+    private boolean reportTiming = false;
+    private int reportTimingInterval = 0;
+    private boolean reportEmergency = false;
+    private float reportFailureRateThreshold = 0;
+    private boolean backupTiming = false;
+    private int backupTimingInterval = 0;
+    private boolean backupEmergency = false;
+    private float backupFailureRateThreshold = 0;
+
+
+
+
+
+
+
+
+
+
+
+
     private void storeSampleData(){
         System.out.println("[hostInfoMap size]"+dispersedHostMonitor.hostInfoMap.size());
         for(Map.Entry<String, JSONObject> entry: dispersedHostMonitor.hostInfoMap.entrySet()){

@@ -6,6 +6,7 @@ import com.alibaba.fastjson.JSONPObject;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -13,6 +14,9 @@ import java.util.List;
 public class DispersedConfig {
     //配置文件
     private final JSONObject configJson = JSONObject.parseObject(readFile("ConfigData/DispersedConfig.json"));
+    private final String systemSettingFilePath = "ConfigData/SystemSetting.json";
+    private JSONObject systemSetting = JSONObject.parseObject(readFile(systemSettingFilePath));
+
     //配置文件父路径-最终为打包jar的同级目录
     private final String path = System.getProperty("user.dir");
 
@@ -43,6 +47,19 @@ public class DispersedConfig {
         }
         return resultData;
     }
+    public void writeFile(String filePath,String contentData){
+        File file = new File(filePath);
+        try {
+            FileWriter fileWriter = new FileWriter(file,false);
+            fileWriter.write(contentData);
+            fileWriter.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+
     //获取配置文件JsonObject
     private JSONObject getConfigJsonObject(String key){
         return JSONObject.parseObject(configJson.getJSONObject(key).toJSONString());
@@ -101,9 +118,32 @@ public class DispersedConfig {
         return configJson.getInteger("ServerSampleListenPort");
     }
 
+
+    public JSONObject getSystemSetting() {
+        return JSONObject.parseObject(systemSetting.toJSONString());
+    }
+
+    public void updateSystemSetting(JSONObject _systemSetting){
+        systemSetting = JSONObject.parseObject(_systemSetting.toJSONString());
+        writeFile(systemSettingFilePath,systemSetting.toString());
+    }
+
     public static void main(String[] args) {
         DispersedConfig dispersedConfig = DispersedConfig.getInstance();
-        System.out.println(dispersedConfig.getServerIp());
+        JSONObject systemSetting = dispersedConfig.getSystemSetting();
+        systemSetting.put("reportTiming",true);
+        systemSetting.put("reportTimingInterval",10);
+        systemSetting.put("reportEmergency",true);
+        systemSetting.put("reportFailureRateThreshold",70);
+
+        systemSetting.put("backupTiming",true);
+        systemSetting.put("backupTimingInterval",20);
+        systemSetting.put("backupEmergency",true);
+        systemSetting.put("backupFailureRateThreshold",80);
+
+        System.out.println(dispersedConfig.getSystemSetting());
+        dispersedConfig.updateSystemSetting(systemSetting);
+        System.out.println(dispersedConfig.getSystemSetting());
     }
 
 
