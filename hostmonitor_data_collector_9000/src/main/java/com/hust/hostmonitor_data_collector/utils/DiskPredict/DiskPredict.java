@@ -12,9 +12,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.csvreader.CsvReader;
 import javafx.concurrent.Task;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
 import java.text.ParseException;
@@ -78,12 +76,9 @@ public class DiskPredict {
         thread.start();
         return null;
     }
-
-
-
-
-
-
+    public static void predictWithoutProgess(String filePath,String fileName){
+        Predict("\""+filePath+"\"","\""+fileName+"\"",null);
+    }
 
     //数据预处理
     public static void DataPreProcess(String filePath, int replace,DiskPredictProgress progress){
@@ -134,8 +129,8 @@ public class DiskPredict {
         JavaExePython.execPython(diskPredictModulePath + "/disk_predict.py", param, progress);
         System.out.println("[JAVA--> ] Complete.\n");
     }
-    public static List<JSONObject> getDiskPredictResult(String readFileName,String hostName){
-        JSONObject jsonObject=new JSONObject();
+    public static List<JSONObject> getDiskPredictResult(String readFileName){
+        JSONObject jsonObject;
         ArrayList<JSONObject> result=new ArrayList<>();
 
             String projectPath = System.getProperty("user.dir");
@@ -147,13 +142,15 @@ public class DiskPredict {
                     String[] currentRow = reader.getValues();
                     jsonObject.put("diskSerial",currentRow[1]);
                     jsonObject.put("modelName",currentRow[5]);
-                    jsonObject.put("hostName",hostName);
                     try {
+
                         jsonObject.put("timestamp",new Timestamp(sdf.parse(currentRow[0]).getTime()));
+
                     } catch (ParseException e) {
                         e.printStackTrace();
                         jsonObject.put("timestamp",new Timestamp(System.currentTimeMillis()));
                     }
+                    //jsonObject.put("timestamp",new Timestamp(System.currentTimeMillis()));
                     jsonObject.put("predictProbability",Float.parseFloat(currentRow[4]));
                     result.add(jsonObject);
                 }
@@ -165,8 +162,8 @@ public class DiskPredict {
             }
         return result;
     }
-    public static long getRecordTime(String readFileName,String hostName,String diskSerial){
 
+    public static long getRecordTime(String readFileName,String hostName,String diskSerial){
         String projectPath = System.getProperty("user.dir");
         try {
             CsvReader reader = new CsvReader(projectPath + readFileName, ',', StandardCharsets.UTF_8);
@@ -194,7 +191,6 @@ public class DiskPredict {
     }
 
     public static boolean checkLatestRecordExists(String readFileName,String hostName,String diskSerial) {
-
         String projectPath = System.getProperty("user.dir");
         try {
             CsvReader reader = new CsvReader(projectPath + readFileName, ',', StandardCharsets.UTF_8);
@@ -214,5 +210,30 @@ public class DiskPredict {
             e.printStackTrace();
         }
         return false;
+    }
+    public static void diskSampleDataIntegration(String integratedFileName,String newFile){
+        String projectPath = System.getProperty("user.dir");
+        try {
+            FileWriter writer;
+            writer = new FileWriter(integratedFileName,true);
+            FileReader reader;
+            reader = new FileReader(newFile);
+            BufferedReader br=new BufferedReader(reader);
+            boolean firstline=true;
+            String str;
+            while((str=br.readLine())!=null){
+                if(firstline){
+                    firstline=false;
+                    continue;
+                }
+                writer.write(str+"\n");
+            }
+            writer.flush();
+            writer.close();
+            br.close();
+            reader.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

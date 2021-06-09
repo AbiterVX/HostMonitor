@@ -6,13 +6,14 @@ import lombok.SneakyThrows;
 
 import java.io.*;
 import java.net.Socket;
+import java.util.Calendar;
 import java.util.Date;
 
 public class DiskPredictDataSampler extends Thread {
     private String sampleFilePath = "";
     private String dataFilePath="";
-   // private final long sampleInterval=24*3600*1000;
-    private final long sampleInterval=10*1000;
+    private final long sampleInterval=24*3600*1000;
+    //private final long sampleInterval=10*1000;
     private Socket fileSocket;
     private String collectorString="127.0.0.1";
     private String hostName;
@@ -24,7 +25,7 @@ public class DiskPredictDataSampler extends Thread {
         sampleFilePath = System.getProperty("user.dir") +"/DiskPredict/client/data_collector.py";
         dataFilePath=System.getProperty("user.dir") +"/DiskPredict/client/sampleData/data.csv";
     }
-
+    //修改成定时任务最好
     public void run(){
         while(true) {
             SU.setDaemon(true);
@@ -52,6 +53,8 @@ public class DiskPredictDataSampler extends Thread {
         DataOutputStream dos=new DataOutputStream(fileSocket.getOutputStream());
         dos.writeUTF(hostName);
         dos.flush();
+        //提示日期？
+
         dos.writeLong(file.length());
         dos.flush();
         byte[] bytes=new byte[1024];
@@ -86,6 +89,11 @@ public class DiskPredictDataSampler extends Thread {
 
         public void run(){
             while(keepLooping&&!flag) {
+                Calendar calendar=Calendar.getInstance();
+//                if(calendar.get(Calendar.HOUR_OF_DAY)>23){
+//                    System.out.println("Upload shoule be finished before 23:00,upload fails");
+//                    break;
+//                }
                 try {
                     fileSocket = new Socket(collectorString, 7001);
                     sendFile(dataFilePath);

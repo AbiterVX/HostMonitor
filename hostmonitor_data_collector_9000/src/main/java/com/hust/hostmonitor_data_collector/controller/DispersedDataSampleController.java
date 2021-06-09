@@ -3,6 +3,7 @@ package com.hust.hostmonitor_data_collector.controller;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.hust.hostmonitor_data_collector.service.DispersedDataService;
+import com.hust.hostmonitor_data_collector.service.DispersedDataServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -127,8 +128,7 @@ public class DispersedDataSampleController {
     @GetMapping(value="/getDFPInfo/List")
     @ResponseBody
     public String getDFPInfoList(){
-        String result= dispersedDataService.getDFPInfoAll(true);
-        result+=dispersedDataService.getDFPInfoAll(false);
+        String result= dispersedDataService.getDFPInfoAll();
         return result;
     }
 
@@ -164,6 +164,7 @@ public class DispersedDataSampleController {
     @GetMapping(value="/getDFPTrainRecord/List")
     @ResponseBody
     public String getDFPTrainRecordList(){
+        String string=dispersedDataService.getDFPTrainList(10,1);
         return null;
     }
 

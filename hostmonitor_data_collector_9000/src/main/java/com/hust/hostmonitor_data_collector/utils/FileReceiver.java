@@ -1,5 +1,7 @@
 package com.hust.hostmonitor_data_collector.utils;
 
+import com.hust.hostmonitor_data_collector.utils.DiskPredict.DiskPredict;
+
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -75,7 +77,7 @@ public class FileReceiver {
         public void run() {
             try {
                 hostName=inFromNode.readUTF();
-                long fileLength=inFromNode.readLong();
+                long filelength=inFromNode.readLong();
                 Calendar calendar= Calendar.getInstance();
                 String path=fileRepository+"original_data/"+calendar.get(Calendar.YEAR);
                 File file=new File(path);
@@ -87,8 +89,9 @@ public class FileReceiver {
                 if(!file.exists()){
                     file.mkdir();
                 }
-                path=path+"/"+hostName+"-"+sdf.format(calendar.getTime())+".csv";
-                file=new File(path);
+                path=path+"/";
+                file=new File(path+hostName+".csv");
+
                 FileOutputStream fos=new FileOutputStream(file);
                 byte[] bytes=new byte[1024];
                 int length=0;
@@ -100,21 +103,29 @@ public class FileReceiver {
                 inFromNode.close();
                 socket.close();
                 System.out.println("[File]Receive "+path);
-                File file2;
-                path=fileRepository+"predict_data";
-                file2=new File(path);
-                if(!file2.exists()){
-                    file2.mkdir();
+                File integratedFile=new File(path+sdf.format(calendar.getTime())+".csv");
+                if(integratedFile.exists()){
+                    DiskPredict.diskSampleDataIntegration(path+sdf.format(calendar.getTime())+".csv",path+hostName+".csv");
+                    System.out.println("[File]New file data has been added to integrated file.");
+                    System.out.println("[File]Temp file delete status:"+file.delete());
+                }else {
+                    System.out.println("[File]New file rename status:"+file.renameTo(integratedFile));
                 }
-                path=path+"/"+hostName;
-                file2=new File(path);
-                if(!file2.exists()){
-                    file2.mkdir();
-                }
-                path=path+"/"+hostName+".csv";
-                file2=new File(path);
-                Files.copy(file.toPath(),file2.toPath(), StandardCopyOption.REPLACE_EXISTING);
-                System.out.println("[File]And a copy has been put into: "+path);
+//                File file2;
+//                path=fileRepository+"predict_data";
+//                file2=new File(path);
+//                if(!file2.exists()){
+//                    file2.mkdir();
+//                }
+//                path=path+"/"+hostName;
+//                file2=new File(path);
+//                if(!file2.exists()){
+//                    file2.mkdir();
+//                }
+//                path=path+"/"+hostName+".csv";
+//                file2=new File(path);
+//                Files.copy(file.toPath(),file2.toPath(), StandardCopyOption.REPLACE_EXISTING);
+//                System.out.println("[File]And a copy has been put into: "+path);
                 synchronized (parent.hostInfoMap) {
                     parent.setAllDiskDFPState(hostName, false);
                 }

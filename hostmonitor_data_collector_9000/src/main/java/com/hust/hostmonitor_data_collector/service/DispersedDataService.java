@@ -16,7 +16,10 @@ public interface DispersedDataService {
 
     String getDFPInfoTrend(String hostName,String diskName);
 
-    String getDFPInfoAll(boolean ifReturnCurrentRecords);
+    String getDFPInfoAll();
 
     String getSpeedMeasurementInfoAll();
+
+    String getDFPTrainList(int pageSize,int pageNo);
+
 }

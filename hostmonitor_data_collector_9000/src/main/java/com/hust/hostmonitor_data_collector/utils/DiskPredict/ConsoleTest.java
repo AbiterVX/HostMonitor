@@ -30,10 +30,10 @@ public class ConsoleTest {
             }
             switch (Integer.valueOf(cmd)){
                 case 1:
-                    DiskPredict.DataPreProcess("\"2016\"", 0,null);
+                    DiskPredict.DataPreProcess("\"2021\"", 0,null);
                     break;
                 case 2:
-                    DiskPredict.GetTrainData("\"2016\"", 1.0f/3, 0.1f,null);
+                    DiskPredict.GetTrainData("\"2021\"", 1.0f/3, 0.1f,null);
                     break;
                 case 3:
                     JSONObject params = new JSONObject();
@@ -41,7 +41,7 @@ public class ConsoleTest {
                     params.put("max_features", new int[]{4, 7, 10});
                     params.put("n_estimators", new int[]{10, 20, 30, 40});
                     
-                    DiskPredict.Train("\"2016\"", "\"ST4000DM000\"", params,null);
+                    DiskPredict.Train("\"2021\"", "\"ST4000DM000\"", params,null);
                     break;
                 case 4:
                     DiskPredict.Predict("\""+ System.getProperty("user.dir") + "/DiskPredict/original_data/2021/6" +"\"","\""+"PC202011261410-2021-06-07.csv"+"\"",null);
