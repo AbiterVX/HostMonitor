@@ -1,1 +1,1 @@
-{"reportTiming":true,"backupFailureRateThreshold":80,"reportFailureRateThreshold":70,"backupTiming":true,"reportEmergency":true,"reportTimingInterval":10,"backupEmergency":true,"backupTimingInterval":20}
+{"BackupTimingInterval":8,"ReportTimingInterval":6,"ReportEmergency":false,"BackupTiming":false,"ReportTiming":false,"BackupEmergency":false,"ReportFailureRateThreshold":7.0,"BackupFailureRateThreshold":9.0}

@@ -66,15 +66,7 @@ public class DispersedDataServiceImpl implements DispersedDataService{
     private boolean isTraining = false;
     private List<DiskPredictProgress> trainProgressList;
 
-    //-----系统设置
-    private boolean reportTiming = false;
-    private int reportTimingInterval = 0;
-    private boolean reportEmergency = false;
-    private float reportFailureRateThreshold = 0;
-    private boolean backupTiming = false;
-    private int backupTimingInterval = 0;
-    private boolean backupEmergency = false;
-    private float backupFailureRateThreshold = 0;
+
     public DispersedDataServiceImpl(){
         dataPath=System.getProperty("user.dir")+"/DiskPredict/";
         dispersedHostMonitor=DispersedHostMonitor.getInstance();
@@ -85,7 +77,7 @@ public class DispersedDataServiceImpl implements DispersedDataService{
         calendar.set(Calendar.SECOND,0);
         Date date=calendar.getTime();
         if(date.before(new Date())){
-            date=this.addDay(date,1);
+            date=addDay(date,1);
         }
         System.out.println(date);
         //mainTimer.schedule(diskPredictTask,date,predictInterval);
@@ -98,6 +90,19 @@ public class DispersedDataServiceImpl implements DispersedDataService{
         calendar.add(Calendar.DAY_OF_MONTH,num);
         return  calendar.getTime();
     }
+
+    //获取模型训练进度
+    @Override
+    public List<Float> getTrainProgress(){
+        List<Float> trainProgress = new ArrayList(Arrays.asList(-1,-1,-1));
+        if(isTraining){
+            for(int i=0;i<trainProgressList.size();i++){
+                trainProgress.set(i, trainProgressList.get(i).getProgressPercentage());
+            }
+        }
+        return trainProgress;
+    }
+
     private void storeSampleData(){
         System.out.println("[hostInfoMap size]"+dispersedHostMonitor.hostInfoMap.size());
         for(Map.Entry<String, JSONObject> entry: dispersedHostMonitor.hostInfoMap.entrySet()){
@@ -292,8 +297,8 @@ public class DispersedDataServiceImpl implements DispersedDataService{
         return result.toJSONString();
     }
     //有待实现对预测范围的选择
-    private void diskPredict(){
 
+    private void diskPredict(){
         Calendar calendar=Calendar.getInstance();
         calendar.add(Calendar.DAY_OF_MONTH,-1);
         String date=sdf.format(calendar.getTime());

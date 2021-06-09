@@ -121,6 +121,8 @@ const tableColumns = {
             title: 'CPU使用率',
             width: 100,
             formatter : function (value, row, index) {
+
+                loadPartition[""];
                 return FGetPercentageWithUnit(value);
             }
         },

@@ -8,6 +8,7 @@ import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.Resource;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -130,24 +131,10 @@ public class DispersedDataSampleController_Remote {
     }
 
 
-    /**
-     *
-     */
-    @PostMapping(value = "/doDFP")
+
+    @GetMapping(value="/getDFPTrainProgress")
     @ResponseBody
-    public String doDFP(@RequestParam Map<String,Object> params) {
-        return "doDFP";
+    public String getDFPTrainProgress(){
+        return getRequestData(dataCollectorUrl + "/Dispersed/getDFPTrainProgress", 1000);
     }
-
-
-    /**
-     *
-     */
-    @PostMapping(value = "/doSpeedMeasurement")
-    @ResponseBody
-    public String doSpeedMeasurement(@RequestParam Map<String,Object> params) {
-        return "doSpeedMeasurement";
-    }
-
-
 }

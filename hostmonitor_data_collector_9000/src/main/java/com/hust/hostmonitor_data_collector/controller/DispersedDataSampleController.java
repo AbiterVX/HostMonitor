@@ -9,6 +9,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import java.util.List;
 import java.util.Map;
 
 @Controller
@@ -158,7 +159,7 @@ public class DispersedDataSampleController {
     @GetMapping(value="/getDFPTrainProgress")
     @ResponseBody
     public String getDFPTrainProgress(){
-        return null;
+        return dispersedDataService.getTrainProgress().toString();
     }
 
     @GetMapping(value="/getDFPTrainRecord/List")

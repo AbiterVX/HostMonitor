@@ -600,8 +600,22 @@ function FRefreshDataDFPSummaryInfo(uiRefreshCallbackFunc){
     });
 }
 
-function FRefreshData(){
-
+function FRefreshDataDFPTrainProgress(uiRefreshCallbackFunc){
+    FSendGetRequest(false,"/Dispersed/getDFPTrainProgress",function (resultData){
+        var isTraining = true;
+        for(var i=0;i<resultData.length;i++){
+            if(resultData[i] === -1){
+                isTraining = false;
+                break;
+            }
+        }
+        if(isTraining){
+            uiRefreshCallbackFunc(resultData);
+        }
+        else{
+            uiRefreshCallbackFunc(null);
+        }
+    });
 }
 
 

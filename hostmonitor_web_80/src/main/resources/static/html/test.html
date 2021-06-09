@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <!-- JQuery -->
+    <script type="text/javascript" src="../JQuery/jquery-3.3.1.min.js"></script>
+    <!-- popper 用于下拉框 -->
+    <script type="text/javascript" src="../popper/popper.min.js"></script>
+    <!-- BootStrap -->
+    <link rel="stylesheet" href= "../bootstrap-4.3.1-dist/css/bootstrap.min.css" >
+    <script type="text/javascript" src="../bootstrap-4.3.1-dist/js/bootstrap.js"></script>
+
+    <!-- ECharts -->
+    <script type="text/javascript" src="../echarts/echarts.min.js"></script>
+    <!-- functionLibrary -->
+    <script type="text/javascript" src="../js/DataRequest.js"></script>
+    <script type="text/javascript" src="../js/WidgetDisplay.js"></script>
+    <script type="text/javascript" src="../js/TableAndChart.js"></script>
+
+    <!-- Bootstrap-table -->
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="../bootstrap-table/bootstrap-table.min.css">
+
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="../bootstrap-table/bootstrap-table.min.js"></script>
+    <!-- Latest compiled and minified Locales -->
+    <script src="../bootstrap-table/bootstrap-table-zh-CN.min.js"></script>
+
+</head>
+<style>
+    .DiskCheckBox{
+
+        width: 20px;
+        height: 20px;
+    }
+    .DiskCheckNavItem{
+        margin-left: 30px;
+    }
+</style>
+<body>
+    <div class="row">
+        <div class="col-sm-6 " >
+            <div class="card overflow-auto" style="height: 1000px;">
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <label id="NavCollapse1" href="#homeSubmenu" data-toggle="collapse" class=" dropdown-toggle h5">0.0.0.0</label>
+                        <ul id="homeSubmenu" class="collapse list-unstyled">
+                            <li class="nav-item DiskCheckNavItem">
+                                <div class="form-check form-check-inline">
+                                    <input id="1" class="form-check-input DiskCheckBox" type="checkbox">
+                                    <label for="1" class="form-check-label h5">fgh</label>
+                                </div>
+                            </li>
+                            <li class="nav-item DiskCheckNavItem">
+                                <div class="form-check form-check-inline">
+                                    <input id="2" class="form-check-input DiskCheckBox" type="checkbox">
+                                    <label for="2" class="form-check-label h5">fgh</label>
+                                </div>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="col-sm-6">
+            <div class="card">
+
+            </div>
+        </div>
+    </div>
+
+
+
+
+</body>
+</html>
