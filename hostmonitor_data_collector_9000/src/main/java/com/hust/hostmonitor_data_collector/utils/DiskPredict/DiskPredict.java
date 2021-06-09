@@ -71,9 +71,9 @@ public class DiskPredict {
         return progressList;
     }
 
-    public static DiskPredictProgress predict(String filePath){
+    public static DiskPredictProgress predict(String filePath,String fileName){
         Thread thread = new Thread(() -> {
-            Predict("\""+filePath+"\"",null);
+            Predict("\""+filePath+"\"","\""+fileName+"\"",null);
         });
         thread.start();
         return null;
@@ -124,12 +124,13 @@ public class DiskPredict {
     }
 
     //故障预测
-    public static void Predict(String filePath,DiskPredictProgress progress){
+    public static void Predict(String filePath,String fileName,DiskPredictProgress progress){
         // 需要检查参数正确性
         System.out.println("[JAVA--> ] Predict:");
         JSONObject param = new JSONObject();
         param.put("\"file_path\"", filePath);
         param.put("\"root_path\"", root_path);
+        param.put("\"file_name\"", fileName);
         JavaExePython.execPython(diskPredictModulePath + "/disk_predict.py", param, progress);
         System.out.println("[JAVA--> ] Complete.\n");
     }

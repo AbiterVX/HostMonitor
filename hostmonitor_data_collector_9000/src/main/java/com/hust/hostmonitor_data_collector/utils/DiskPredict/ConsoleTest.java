@@ -44,7 +44,7 @@ public class ConsoleTest {
                     DiskPredict.Train("\"2016\"", "\"ST4000DM000\"", params,null);
                     break;
                 case 4:
-                    DiskPredict.Predict("\""+ System.getProperty("user.dir") + "/DiskPredict/original_data/2021/6" +"\"",null);
+                    DiskPredict.Predict("\""+ System.getProperty("user.dir") + "/DiskPredict/original_data/2021/6" +"\"","\""+"PC202011261410-2021-06-07.csv"+"\"",null);
                     break;
                 case 5:
                     DiskPredictProgress progress = DiskPredict.preprocess("2016", 0);

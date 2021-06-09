@@ -28,14 +28,16 @@ from pandas.core.series import Series
 
 chunk_size = 10000
 root_path = ''
+
 str_model = 'model'  # 描述硬盘的系列
 index_dict = {
     'data':5,
     'date':0
 }
 class predict:
-    def __init__(self, data_path) -> None:
+    def __init__(self, data_path, file_name) -> None:
         self.data_path_ = data_path
+        self.file_name_ = file_name
         self.model_dict_ = {}
         
     def run(self):
@@ -131,36 +133,39 @@ class predict:
         model_dict = {}
         try:
             save_path = os.path.join(root_path, 'result', time.strftime("%Y-%m-%d"))
-            for data_file in sorted(os.listdir(self.data_path_)):
-                print('\r processing:', data_file, end='')
-                
-                if os.path.exists(os.path.join(save_path, data_file)):
-                    os.remove(os.path.join(save_path, data_file))
-            
-                df = pd.read_csv(os.path.join(self.data_path_, data_file), chunksize=chunk_size)
-                for chunk in df:
-                    group_chunk = chunk.groupby(by=[str_model])
-                    for key, group in group_chunk:
-                        group.dropna(how='all', axis=1, inplace=True)
-                        group = group.fillna(method='ffill', axis=1)
-                        model_name = self.get_model_name(key, list(group.columns)[index_dict['data']:])
-                        if model_name not in model_dict.keys():
-                            model_dict[model_name] = self.load_model(model_name=model_name)
-                        best_model = model_dict[model_name]
-                        
-                        data = predict.get_ordered_data(features_name=best_model['feature_name'], data=group)
-                        data = data.iloc[:, index_dict['data']:]
-                        data = pd.DataFrame(best_model['scale'].transform(data))
-                        data = data.iloc[:, best_model['feature_index']]
-                        result = best_model['model'].predict_proba(data)
-                        group['result'] = result[:,1]
 
-                        group['model_name'] = model_name
-                        #print(group)
+            data_file = self.file_name_
+            print('\r processing:', data_file, end='')
 
-                        #,'model_name'
-                        #print(best_model)
-                        self.write_back(save_path=save_path, result=group[['date', 'serial_number', 'model', 'is_ssd', 'result','model_name']], file_name=data_file)
+            if os.path.exists(os.path.join(save_path, data_file)):
+                os.remove(os.path.join(save_path, data_file))
+
+            df = pd.read_csv(os.path.join(self.data_path_, data_file), chunksize=chunk_size)
+            for chunk in df:
+                group_chunk = chunk.groupby(by=[str_model])
+                for key, group in group_chunk:
+                    group.dropna(how='all', axis=1, inplace=True)
+                    group = group.fillna(method='ffill', axis=1)
+                    model_name = self.get_model_name(key, list(group.columns)[index_dict['data']:])
+                    if model_name not in model_dict.keys():
+                        model_dict[model_name] = self.load_model(model_name=model_name)
+                    best_model = model_dict[model_name]
+
+                    data = predict.get_ordered_data(features_name=best_model['feature_name'], data=group)
+                    data = data.iloc[:, index_dict['data']:]
+                    data = pd.DataFrame(best_model['scale'].transform(data))
+                    data = data.iloc[:, best_model['feature_index']]
+                    result = best_model['model'].predict_proba(data)
+                    group['result'] = result[:, 1]
+
+                    group['model_name'] = model_name
+                    # print(group)
+
+                    # ,'model_name'
+                    # print(best_model)
+                    self.write_back(save_path=save_path,
+                                    result=group[['date', 'serial_number', 'model', 'is_ssd', 'result', 'model_name']],
+                                    file_name=data_file)
 
         except FileNotFoundError:
             print(self.data_path_, ': data not found.')
@@ -176,6 +181,7 @@ if __name__ == '__main__':
         param = json.loads(sys.argv[1])
         data_path = str(param['file_path'])
         root_path = str(param['root_path'])
+        file_name = str(param['file_name'])
     except JSONDecodeError:
         print('The parameter-format is wrong, it must be "json-format", take care of \' " \':', sys.argv[1])
         sys.exit(0)
@@ -188,6 +194,7 @@ if __name__ == '__main__':
         sys.exit(0)
 
     obj = predict(
-        data_path=data_path
+        data_path=data_path,
+        file_name=file_name
     )
     obj.run()
