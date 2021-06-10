@@ -98,7 +98,6 @@ public interface DiskFailureMapper {
     @Select("select * from trainInfo order by timestamp limit 0,#{number}")
     List<TrainInfo> selectTrainModel(@Param("number") int number );
 
-    @Select("select * from trainInfo where id>#{id} limit #{pageSize}")
-    List<TrainInfo> selectTrainInfoInPage(@Param("id") int idLowbound,
-                                          @Param("pageSize")int pageSize);
+    @Select("select * from trainInfo")
+    List<TrainInfo> selectTrainInfoInPage();
 }

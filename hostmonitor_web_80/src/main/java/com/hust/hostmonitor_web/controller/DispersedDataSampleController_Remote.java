@@ -137,4 +137,12 @@ public class DispersedDataSampleController_Remote {
     public String getDFPTrainProgress(){
         return getRequestData(dataCollectorUrl + "/Dispersed/getDFPTrainProgress", 1000);
     }
+
+
+    @GetMapping(value="/getDFPTrainRecord/List")
+    @ResponseBody
+    public String getDFPTrainRecordList(){
+        return getRequestData(dataCollectorUrl + "/Dispersed/getDFPTrainRecord/List", 1000);
+    }
+
 }

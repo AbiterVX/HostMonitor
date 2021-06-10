@@ -429,23 +429,24 @@ public class DispersedDataServiceImpl implements DispersedDataService{
     }
 
     @Override
-    public String getDFPTrainList(int pageSize,int pageNo){
-        List<TrainInfo> queryResult=diskFailureMapper.selectTrainInfoInPage((pageNo-1)*pageSize,pageSize);
+    public String getDFPTrainList(){
+        List<TrainInfo> queryResult=diskFailureMapper.selectTrainInfoInPage();
         JSONArray resultArray=new JSONArray();
         for(TrainInfo trainInfo:queryResult){
             JSONObject tempObject=new JSONObject();
-            tempObject.put("timestamp",trainInfo.timestamp);
-            tempObject.put("predictModel",trainInfo.predictModel);
-            tempObject.put("diskModel",trainInfo.diskModel);
+            tempObject.put("buildTime",trainInfo.timestamp);
+            tempObject.put("model",trainInfo.PredictModel);
+            tempObject.put("diskModel",trainInfo.DiskModel);
             tempObject.put("FDR",trainInfo.FDR);
             tempObject.put("FAR",trainInfo.FAR);
             tempObject.put("AUC",trainInfo.AUC);
             tempObject.put("FNR",trainInfo.FNR);
             tempObject.put("Accuracy",trainInfo.Accuracy);
-            tempObject.put("Precision",trainInfo.Precesion);
+            tempObject.put("Precision",trainInfo.Precision);
             tempObject.put("Specificity",trainInfo.Specificity);
             tempObject.put("ErrorRate",trainInfo.ErrorRate);
-            tempObject.put("parameters", JSON.parse(trainInfo.Parameters));
+            tempObject.put("params", trainInfo.Parameters); // JSON.parse(trainInfo.Parameters)
+            tempObject.put("OperatorID", trainInfo.OperatorID);
             resultArray.add(tempObject);
         }
         return resultArray.toJSONString();

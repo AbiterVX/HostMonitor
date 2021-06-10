@@ -180,8 +180,7 @@ public class DispersedDataSampleController {
     @GetMapping(value="/getDFPTrainRecord/List")
     @ResponseBody
     public String getDFPTrainRecordList(){
-        String string=dispersedDataService.getDFPTrainList(10,1);
-        return string;
+        return dispersedDataService.getDFPTrainList();
     }
 
 

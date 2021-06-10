@@ -144,8 +144,6 @@
     <div style="height: 100px;width: 100%"></div>
 </body>
 <script>
-    var testData = [];
-
     //进度条
     var progressBarList = [$('#progressBar1'),$('#progressBar2'),$('#progressBar3')];
     var progressPercentageList = [document.getElementById("progressPercentage1"),
@@ -170,16 +168,21 @@
 
     //加载后执行
     window.onload=function (){
-        $('#buildRecords').bootstrapTable({
-            columns: tableColumns["buildRecords"],
-            data: testData,
-            onClickRow: function(row, element){
-                $(element[0]).find('.detail-icon').triggerHandler("click")
-            },
-            detailFormatter:"buildRecordsDetailFormatter",
-            detailViewIcon:false,
-            detailViewByClick:true,
+        FSendGetRequest(false,"/Dispersed/getDFPTrainRecord/List",function (resultData){
+            $('#buildRecords').bootstrapTable({
+                columns: tableColumns["buildRecords"],
+                data: resultData,
+                onClickRow: function(row, element){
+                    $(element[0]).find('.detail-icon').triggerHandler("click")
+                },
+                detailFormatter:"buildRecordsDetailFormatter",
+                detailViewIcon:false,
+                detailViewByClick:true,
+            });
         });
+
+
+
     }
 
 

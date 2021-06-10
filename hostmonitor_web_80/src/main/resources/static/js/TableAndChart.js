@@ -613,7 +613,7 @@ const tableColumns = {
             field: 'buildTime',
             title: '构建时间',
             sortable: true,
-            width:80,
+            width:100,
             formatter : function (value, row, index) {
                 return FGetDateTime(value);
             }
@@ -624,12 +624,18 @@ const tableColumns = {
             sortable: true,
             width:80,
             formatter : function (value, row, index) {
-                return dfpModelNames[value];
+                return dfpModelNames[value-1];
             }
         },
         {
             field: 'diskModel',
             title: '硬盘Model',
+            sortable: true,
+            width:80,
+        },
+        {
+            field: 'OperatorID',
+            title: '操作用户',
             sortable: true,
             width:80,
         },
