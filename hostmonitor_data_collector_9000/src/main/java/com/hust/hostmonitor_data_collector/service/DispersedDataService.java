@@ -3,6 +3,7 @@ package com.hust.hostmonitor_data_collector.service;
 import com.alibaba.fastjson.JSONObject;
 import com.hust.hostmonitor_data_collector.utils.DiskPredict.DiskPredictProgress;
 
+
 import java.util.List;
 
 public interface DispersedDataService {
@@ -32,5 +33,8 @@ public interface DispersedDataService {
     String getSpeedMeasurementInfoAll();
 
     String getDFPTrainList(int pageSize,int pageNo);
+
+    //获取模型训练进度
+    List<Float> getTrainProgress();
 
 }

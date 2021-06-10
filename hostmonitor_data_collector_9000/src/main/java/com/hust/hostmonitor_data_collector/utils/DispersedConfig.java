@@ -9,6 +9,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class DispersedConfig {
@@ -123,9 +124,10 @@ public class DispersedConfig {
         return JSONObject.parseObject(systemSetting.toJSONString());
     }
 
-    public void updateSystemSetting(JSONObject _systemSetting){
+    public JSONObject updateSystemSetting(JSONObject _systemSetting){
         systemSetting = JSONObject.parseObject(_systemSetting.toJSONString());
         writeFile(systemSettingFilePath,systemSetting.toString());
+        return systemSetting;
     }
 
     public static void main(String[] args) {

@@ -167,7 +167,7 @@ public class DispersedDataSampleController {
     @GetMapping(value="/getDFPTrainProgress")
     @ResponseBody
     public String getDFPTrainProgress(){
-        return null;
+        return dispersedDataService.getTrainProgress().toString();
     }
 
     @GetMapping(value="/getDFPTrainRecord/List")

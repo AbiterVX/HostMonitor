@@ -3,6 +3,7 @@ package com.hust.hostmonitor_data_collector.controller;
 import com.alibaba.fastjson.JSONObject;
 import com.hust.hostmonitor_data_collector.dao.entity.SystemUser;
 import com.hust.hostmonitor_data_collector.service.UserService;
+import com.hust.hostmonitor_data_collector.utils.DispersedConfig;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -99,35 +100,49 @@ public class UserOperationController {
     @GetMapping(value = "/SystemSetting/Get")
     @ResponseBody
     public String getSystemSetting() {
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("ReportTiming",false);
-        jsonObject.put("ReportTimingInterval",0);
-        jsonObject.put("ReportEmergency",true);
-        jsonObject.put("ReportFailureRateThreshold",70);
-
-        jsonObject.put("BackupTiming",false);
-        jsonObject.put("BackupTimingInterval",10);
-        jsonObject.put("BackupEmergency",true);
-        jsonObject.put("BackupFailureRateThreshold",90);
-
-        return jsonObject.toJSONString();
+        System.out.println(userService.getSystemSetting());
+        return userService.getSystemSetting();
     }
 
     @PostMapping(value = "/SystemSetting/Reset")
     @ResponseBody
     public String resetSystemSetting(@RequestBody Map<String,String> params) {
+        //获取
         boolean ReportTiming = Boolean.parseBoolean(params.get("ReportTiming"));
         int ReportTimingInterval = Integer.parseInt(params.get("ReportTimingInterval"));
         boolean ReportEmergency =  Boolean.parseBoolean(params.get("ReportEmergency"));
-        int ReportFailureRateThreshold = Integer.parseInt(params.get("ReportFailureRateThreshold"));
-
+        float ReportFailureRateThreshold = Float.parseFloat((params.get("ReportFailureRateThreshold")));
         boolean BackupTiming =  Boolean.parseBoolean(params.get("BackupTiming"));
         int BackupTimingInterval = Integer.parseInt(params.get("BackupTimingInterval"));
         boolean BackupEmergency =  Boolean.parseBoolean(params.get("BackupEmergency"));
-        int BackupFailureRateThreshold = Integer.parseInt(params.get("BackupFailureRateThreshold"));
+        float BackupFailureRateThreshold = Float.parseFloat(params.get("BackupFailureRateThreshold"));
 
-        System.out.println("[SystemSetting] "+params);
+        //检验
+        boolean couldUpdate = false;
+        if(ReportTimingInterval>=0 && BackupTimingInterval>=0 &&
+                ReportFailureRateThreshold>=0 && ReportFailureRateThreshold<=100 &&
+                BackupFailureRateThreshold>=0 && BackupFailureRateThreshold<=100 ){
+            couldUpdate = true;
+        }
+
+        //更新
+        if(couldUpdate){
+            JSONObject newSystemSetting = new JSONObject();
+            newSystemSetting.put("ReportTiming",ReportTiming);
+            newSystemSetting.put("ReportTimingInterval",ReportTimingInterval);
+            newSystemSetting.put("ReportEmergency",ReportEmergency);
+            newSystemSetting.put("ReportFailureRateThreshold",ReportFailureRateThreshold);
+            newSystemSetting.put("BackupTiming",BackupTiming);
+            newSystemSetting.put("BackupTimingInterval",BackupTimingInterval);
+            newSystemSetting.put("BackupEmergency",BackupEmergency);
+            newSystemSetting.put("BackupFailureRateThreshold",BackupFailureRateThreshold);
+            userService.setSystemSetting(newSystemSetting);
+        }
+
         return "Complete";
     }
+
+
+
 
 }
