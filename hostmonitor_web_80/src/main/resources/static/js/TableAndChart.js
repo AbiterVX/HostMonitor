@@ -383,7 +383,7 @@ const tableColumns = {
             sortable: true,
         },
         {
-            field: 'diskName',
+            field: 'diskSerial',
             title: '硬盘名称',
             width: 100,
             sortable: true,
@@ -430,7 +430,7 @@ const tableColumns = {
         },
         {
             field: 'predictProbability',
-            title: '预测概率',
+            title: '可信度',
             width: 80,
             sortable: true,
             formatter : function (value, row, index) {
@@ -959,7 +959,7 @@ var loadPartition ={
 };
 
 var dfpPartition = [30,60,100];
-var dfpPartitionColor = ['#92cc76','#fac859','#ee6767'];
+var dfpPartitionColor = ['#ee6767','#fac859','#92cc76'];
 //数据间隔时间
 var DateInterval = [24,1];
 var DateIntervalText = ["最近1天","最近1小时"];
@@ -1315,7 +1315,7 @@ function FGetDFPSummaryChartOption(){
 function FGetDFPTrendChartOption(){
     var DFPTrendChartOption = {
         title: {
-            text: "磁盘故障趋势",
+            text: "磁盘可信度趋势",
             left: '48%',
         },
         grid: {
@@ -1366,7 +1366,7 @@ function FGetDFPTrendChartOption(){
             max:100,
         },
         series: {
-            name: "故障概率",
+            name: "可信度",
             smooth:true,
             type: 'line',
             showSymbol: false,

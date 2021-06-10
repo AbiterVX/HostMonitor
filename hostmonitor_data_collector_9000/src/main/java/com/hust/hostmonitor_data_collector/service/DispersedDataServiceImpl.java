@@ -66,9 +66,7 @@ public class DispersedDataServiceImpl implements DispersedDataService{
     };
 
 
-    //-----模型训练进度条
-    private boolean isTraining = false;
-    private List<DiskPredictProgress> trainProgressList;
+
 
 
     public DispersedDataServiceImpl(){
@@ -89,11 +87,11 @@ public class DispersedDataServiceImpl implements DispersedDataService{
         mainTimer.schedule(diskPredictTask,0,predictInterval);
         //启动阶段以以默认参数自动训练一次
 
-        JSONObject extraParams=new JSONObject();
+        /*JSONObject extraParams=new JSONObject();
         extraParams.put("max_depth",new int[]{10, 20, 30});
         extraParams.put("max_features",new int[]{4, 7, 10});
         extraParams.put("n_estimators",new int[]{10, 20, 30, 40});
-        train(1,1.0f,3.0f,0.1f,extraParams,"hust");
+        train(1,1.0f,3.0f,0.1f,extraParams,"hust");*/
     }
     private Date addDay(Date date,int num){
         Calendar calendar=Calendar.getInstance();
@@ -102,16 +100,18 @@ public class DispersedDataServiceImpl implements DispersedDataService{
         return  calendar.getTime();
     }
 
+    //-----模型训练进度条
+    private boolean isTraining = false;
+    private int currentTrainState = 0;
+    private DiskPredictProgress preprocessProgress;
+    private DiskPredictProgress getTrainDataProgress;
+    private List<DiskPredictProgress> trainProgress;
+    List<Float> progressPercentage = new ArrayList(Arrays.asList(-1,-1,-1));
+
     //获取模型训练进度
     @Override
     public List<Float> getTrainProgress(){
-        List<Float> trainProgress = new ArrayList(Arrays.asList(-1,-1,-1));
-        if(isTraining){
-            for(int i=0;i<trainProgressList.size();i++){
-                trainProgress.set(i, trainProgressList.get(i).getProgressPercentage());
-            }
-        }
-        return trainProgress;
+        return progressPercentage;
     }
 
     private void storeSampleData(){
@@ -171,7 +171,6 @@ public class DispersedDataServiceImpl implements DispersedDataService{
         return dispersedHostMonitor.summaryInfo.toJSONString();
     }
 
-    //1
     /**
      * 获取信息-Dashboard-HostInfo-全部Host
      * 格式：{"hostName1":{"hostInfo":{},"cpuInfoList":[],"gpuInfoList":{},"processInfoList":{}}, }
@@ -185,13 +184,11 @@ public class DispersedDataServiceImpl implements DispersedDataService{
         return resultObject.toJSONString();
     }
 
-
     /**
      * 获取信息-HostDetail-HostInfo-某个Host
      * 参数：hostName
      * 格式：{"hostInfo":{},"cpuInfoList":[],"gpuInfoList":{},"processInfoList":{}}
      */
-    //2
     @Override
     public String getHostInfoDetail(String hostName) {
         String result=dispersedHostMonitor.hostInfoMap.get(hostName).toJSONString();
@@ -217,8 +214,6 @@ public class DispersedDataServiceImpl implements DispersedDataService{
         BigDecimal b=new BigDecimal(original);
         return b.setScale(2,BigDecimal.ROUND_HALF_UP).doubleValue();
     }
-
-
 
     /**
      * 获取信息-Dashboard-DiskInfo-全部Host
@@ -284,6 +279,7 @@ public class DispersedDataServiceImpl implements DispersedDataService{
         }
         return result.toJSONString();
     }
+
     /**
      * 获取信息-DFP-All
      * 格式：[{},{} ]
@@ -323,36 +319,109 @@ public class DispersedDataServiceImpl implements DispersedDataService{
             diskFailureMapper.insertDiskDFPInfo(jsonObject.getString("diskSerial"), jsonObject.getTimestamp("timestamp"), doubleTo2bits_double(jsonObject.getDoubleValue("predictProbability")*100), jsonObject.getString("modelName"));
         }
     }
+
     @Override
     public void train(int modelType, float positiveDataProportion, float negativeDataProportion, float verifyProportion, JSONObject extraParams,String operatorID){
-        Timestamp timestamp=new Timestamp(System.currentTimeMillis());
-        int modelYear=Calendar.getInstance().get(Calendar.YEAR);
-        DiskPredict.preprocess(""+modelYear,0);
-        float scale=positiveDataProportion/negativeDataProportion;
-        DiskPredict.getTrainData(""+modelYear,scale,verifyProportion);
-        List<DiskPredictProgress> progressList;
-        ArrayList<String> diskModels=new ArrayList<>();
-        if(modelType==1)
-            progressList=DiskPredict.train(""+modelYear,diskModels,extraParams);
-        else
-            progressList=DiskPredict.train(""+modelYear,diskModels,null);
-        for(String string:diskModels) {
-            diskFailureMapper.insertTrainInfo(timestamp, PredictModel.CNmodelNames[modelType - 1],
-                    string, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1, extraParams.toJSONString(),operatorID);
+        if(!isTraining){
+            isTraining = true;
+            progressPercentage = new ArrayList(Arrays.asList(0,0,0));
+            //模型训练
+            currentTrainState = 0;
+            preprocessProgress = null;
+            getTrainDataProgress = null;
+            trainProgress = null;
 
+            Thread progressThread = new Thread(() -> {
+                try {
+                    int modelYear= 2016; //Calendar.getInstance().get(Calendar.YEAR);
+
+                    while (isTraining){
+                        if(currentTrainState==0){
+                            if(preprocessProgress== null){
+                                preprocessProgress = DiskPredict.preprocess(""+modelYear,0);
+                            }
+                            else{
+                                progressPercentage.set(0,preprocessProgress.getProgressPercentage());
+                                if(preprocessProgress.isFinished()){
+                                    currentTrainState = 1;
+                                }
+                            }
+                        }
+                        else if(currentTrainState==1){
+                            if(getTrainDataProgress== null){
+                                getTrainDataProgress = DiskPredict.getTrainData(String.valueOf(modelYear),positiveDataProportion/negativeDataProportion,verifyProportion);
+                            }
+                            else{
+                                progressPercentage.set(1,getTrainDataProgress.getProgressPercentage());
+                                if(getTrainDataProgress.isFinished()){
+                                    currentTrainState = 2;
+                                }
+                            }
+                        }
+                        else if(currentTrainState==2){
+                            if(trainProgress== null){
+                                if(modelType==1){
+                                    trainProgress = DiskPredict.train(String.valueOf(modelYear),extraParams);
+                                }
+                                else{
+                                    break;
+                                }
+                            }
+                            else{
+                                DiskPredictProgress tempProgress = new DiskPredictProgress();
+                                int completedTaskCount = 0;
+                                boolean isAllFinished = true;
+                                for(int i=0;i<trainProgress.size();i++){
+                                    completedTaskCount+= trainProgress.get(i).getCompletedTaskCount();
+                                    if(!trainProgress.get(i).isFinished()){
+                                        isAllFinished = false;
+                                    }
+                                }
+                                tempProgress.setCurrentProgress(completedTaskCount,trainProgress.size()*DiskPredictProgress.trainTotalTaskCount);
+                                progressPercentage.set(2,tempProgress.getProgressPercentage());
+                                if(isAllFinished){
+                                    break;
+                                }
+                            }
+                        }
+                        Thread.sleep(500);
+                    }
+                    for(int i=0;i<trainProgress.size();i++){
+                        JSONObject trainResult = DiskPredictProgress.parsingTrainResultData(trainProgress.get(i).getResultData());
+                        diskFailureMapper.insertTrainInfo(
+                                modelType,
+                                trainResult.getString("modelName"),
+                                trainResult.getFloat("FDR"),
+                                trainResult.getFloat("FAR"),
+                                trainResult.getFloat("AUC"),
+                                trainResult.getFloat("FNR"),
+                                trainResult.getFloat("Accuracy"),
+                                trainResult.getFloat("Precision"),
+                                trainResult.getFloat("Specificity"),
+                                trainResult.getFloat("ErrorRate"),
+                                extraParams.toJSONString(),
+                                operatorID);
+                    }
+                    progressPercentage = new ArrayList(Arrays.asList(-1,-1,-1));
+                    currentTrainState = 0;
+                    isTraining = false;
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    System.out.println("[模型训练]错误！无文件");
+                    progressPercentage = new ArrayList(Arrays.asList(-1,-1,-1));
+                    currentTrainState = 0;
+                    isTraining = false;
+                }
+            });
+            progressThread.start();
         }
-
     }
 
     //1 admin,2 superAdmin
     @Override
     public boolean userAuthoirtyCheck(String user,String password,int checkLevel){
         SystemUser systemUser=userDao.signIn(user,password);
-        if(checkLevel==1)
-            return systemUser.isAdmin();
-        else if(checkLevel==2)
-            return systemUser.isSuperAdmin();
-        return false;
+        return (checkLevel <= systemUser.getUserType());
     }
     @Override
     public String getSpeedMeasurementInfoAll() {

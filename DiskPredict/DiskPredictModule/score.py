@@ -84,7 +84,7 @@ class Score:
         return Score.calculate_matrix(confusion_matrix, y_true, y_score)[scoring]
 
     @staticmethod
-    def print_confusion_matrix(confusion_matrix, y_true, y_score):
+    def print_confusion_matrix(confusion_matrix, y_true, y_score,output_to_java, model_name):
         if not Score.check_matrix(confusion_matrix):
             return
         TP = confusion_matrix[1][1]
@@ -117,3 +117,16 @@ class Score:
         result.add_row(['Specificity', scores[Scoring.Specificity.value]])
         result.add_row(['Error Rate', scores[Scoring.Error_Rate.value]])
         print(result)
+
+        if output_to_java is not None and output_to_java == True:
+            print("PythonResultData:"+
+                  "modelName:"+model_name+","
+                  "FDR:"+str(scores[Scoring.Recall.value])+","
+                  "FAR:"+str(scores[Scoring.FAR.value])+","
+                  "AUC:"+str(scores[Scoring.AUC.value])+","
+                  "FNR:"+str(scores[Scoring.FNR.value])+","
+                  "Accuracy:"+str(scores[Scoring.Accuracy.value])+","
+                  "Precision:"+str(scores[Scoring.Precision.value])+","
+                  "Specificity:"+str(scores[Scoring.Specificity.value])+","
+                  "ErrorRate:"+str(scores[Scoring.Error_Rate.value])
+                )

@@ -29,7 +29,7 @@
 <body>
     <!--标题-->
     <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
-        <h2 class="h2">故障趋势</h2>
+        <h2 class="h2">可信度趋势</h2>
         <div class="btn-toolbar mb-2 mb-md-0" role="toolbar" style="margin-right: 5px;">
             <!-- HostName -DropDown-->
             <div style="margin-right: 15px;">
@@ -77,64 +77,77 @@
     var currentHostIndex = 0;
     //当前DiskIndex
     var currentDiskIndex = 0;
-    //MainInfo
-    var mainInfo = FGetMainInfo();
+    //hostDiskMap
+    var hostDiskMap = null;
+    var hostNameList = null;
+
 
     window.onload=function (){
-        //初始化-DropDown-HostName
-        FInitDropDown("HostNameDropDownMenu","HostNameDropDownBtn",mainInfo["hostName"],"dropDownSelectHostName",currentHostIndex);
-        //初始化-DropDown-HostName
-        FInitDropDown("DiskNameDropDownMenu","DiskNameDropDownBtn",FGetDiskNameList(mainInfo["hostName"][currentHostIndex]),"dropDownSelectDiskName",currentDiskIndex);
-
         //设置Chart
         DFPTrendChart.setOption(FGetDFPTrendChartOption());
         //-----更新DFPInfo数据
-        FRefreshDataDFPInfoAll(function (dfpInfoList,dfpSummaryChart){
+        FRefreshDataDFPInfoAll(function (dfpInfoList,resultHostDiskMap){
             //刷新Table
             refreshDFPInfoTable(true,dfpInfoList);
+            hostDiskMap = resultHostDiskMap;
+
+            //Chart
+            if(hostDiskMap != null){
+                hostNameList = [];
+                for (var tempHostName in hostDiskMap){
+                    hostNameList.push(tempHostName);
+                }
+
+                var hostName = hostNameList[currentHostIndex];
+                var diskName = hostDiskMap[hostName][currentDiskIndex];
+                //初始化-DropDown-HostName
+                FInitDropDown("HostNameDropDownMenu","HostNameDropDownBtn",hostNameList,"dropDownSelectHostName",currentHostIndex);
+                //初始化-DropDown-DiskName
+                FInitDropDown("DiskNameDropDownMenu","DiskNameDropDownBtn",hostDiskMap[hostName],"dropDownSelectDiskName",currentDiskIndex);
+
+                //刷新Chart数据
+                refreshDFPInfoTrend(hostName,diskName);
+            }
+
         });
-
-        //刷新Chart数据
-        var hostName = mainInfo["hostName"][currentHostIndex];
-        var diskName = FGetHostInfo(hostName)["diskInfoList"][0]["diskName"];
-        refreshDFPInfoTrend(hostName,diskName);
-
-
     }
 
     //[DropDown]选择-HostName
     function dropDownSelectHostName(index){
         if(index !== currentHostIndex){
             //下拉按钮-设置当前显示Txt
-            var hostName =mainInfo["hostName"][index];
+            var hostName =hostNameList[index];
             document.getElementById("HostNameDropDownBtn").innerText = hostName;
             //设置
             currentHostIndex = index;
             //初始化-DropDown-HostName
             currentDiskIndex=0;
-            FInitDropDown("DiskNameDropDownMenu","DiskNameDropDownBtn",FGetDiskNameList(hostName),"dropDownSelectDiskName",currentDiskIndex);
+            FInitDropDown("DiskNameDropDownMenu","DiskNameDropDownBtn",hostDiskMap[hostName],"dropDownSelectDiskName",currentDiskIndex);
+
             //刷新Chart数据
-            var hostInfo = FGetHostInfo(hostName);
-            refreshDFPInfoTrend(hostName,hostInfo["diskInfoList"][0]["diskName"]);
+            refreshDFPInfoTrend(hostName,hostDiskMap[hostName][currentDiskIndex]);
         }
     }
     //[DropDown]选择-DiskName
     function dropDownSelectDiskName(index){
         if(index !== currentDiskIndex){
             //下拉按钮-设置当前显示Txt
-            var hostName =mainInfo["hostName"][currentHostIndex];
-            var hostInfo = FGetHostInfo(hostName);
-            document.getElementById("DiskNameDropDownBtn").innerText = hostInfo["diskInfoList"][index]["diskName"];
+            var hostName =hostNameList[currentHostIndex];
+            document.getElementById("DiskNameDropDownBtn").innerText = hostDiskMap[hostName][index];
             //设置
             currentDiskIndex = index;
             //刷新Chart数据
-            refreshDFPInfoTrend(hostName,hostInfo["diskInfoList"][index]["diskName"]);
+            refreshDFPInfoTrend(hostName,hostDiskMap[hostName][currentDiskIndex]);
         }
     }
 
     //刷新故障Trend
     function refreshDFPInfoTrend(hostName,diskName){
         FRefreshDataDFPInfoTrend(hostName,diskName,function (trendChartData){
+            for(var i=0;i<trendChartData.length;i++){
+                trendChartData[i][1] *= 100;
+            }
+
             refreshDFPTrendChartData(trendChartData);
         });
     }

@@ -32,7 +32,7 @@
     <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
         <h2 class="h2">模型训练</h2>
         <div class="btn-toolbar mb-2 mb-md-0" role="toolbar" style="margin-right: 5px;">
-            <button  id="modelTrainingBtn"  onclick="modelTrainingBtnOnClick()"  type="button" class="btn btn-secondary" style="width: 120px;height: 40px;font-size: 18px;" >开始训练</button>
+            <button id="modelTrainingBtn"  onclick="modelTrainingBtnOnClick()"  type="button" class="btn btn-secondary" style="width: 120px;height: 40px;font-size: 18px;" >开始训练</button>
             <button hidden id="processCollapseBtn" data-toggle="collapse"  data-target="#DFPCollapse"></button>
         </div>
     </div>
@@ -44,19 +44,19 @@
             </div>
             <div class="col-sm">
                 <div class="progress" style="width: 100%;height: 30px;" >
-                    <div id="progressBar1" style="width: 0%;" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"></div>
+                    <div id="progressBar1" style="width: 0%;" class="progress-bar progress-bar-striped" role="progressbar"></div>
                     <h4 id="progressPercentage1" class="justify-content-center d-flex position-absolute w-100">60%</h4>
                 </div>
             </div>
             <div class="col-sm">
                 <div class="progress" style="width: 100%;height: 30px;" >
-                    <div id="progressBar2" style="width: 0%;" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" ></div>
+                    <div id="progressBar2" style="width: 0%;" class="progress-bar progress-bar-striped" role="progressbar" ></div>
                     <h4 id="progressPercentage2" class="justify-content-center d-flex position-absolute w-100">60%</h4>
                 </div>
             </div>
             <div class="col-sm">
                 <div class="progress" style="width: 100%;height: 30px;" >
-                    <div id="progressBar3" style="width: 0%;" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" ></div>
+                    <div id="progressBar3" style="width: 0%;" class="progress-bar progress-bar-striped" role="progressbar" ></div>
                     <h4 id="progressPercentage3" class="justify-content-center d-flex position-absolute w-100">60%</h4>
                 </div>
             </div>
@@ -144,55 +144,10 @@
     <div style="height: 100px;width: 100%"></div>
 </body>
 <script>
-
-    var testData = [
-        {
-            buildTime:1621065263000,
-            model:0,
-            diskModel:"ST4",
-            FDR:0.63157,
-            FAR:0.0185185,
-            AUC:0.8065302,
-            FNR:0.3684210,
-            Accuracy:0.890410,
-            Precision:0.923076,
-            Specificity:0.981481,
-            ErrorRate: 0.109589,
-            params:"sdfsegfsgs,segsegs,segsegs",
-        },
-        {
-            buildTime:1629065263000,
-            model:0,
-            diskModel:"ST5",
-            FDR:0.7417,
-            FAR:0.783,
-            AUC:0.8282,
-            FNR:0.45378,
-            Accuracy:0.23752,
-            Precision:0.873275,
-            Specificity:0.87527,
-            ErrorRate: 0.89378,
-            params:"sdfsegfsgs,segsegs,segsegs",
-        },
-
-        {
-            buildTime:1629065263000,
-            model:0,
-            diskModel:"ST5",
-            FDR:0.7417,
-            FAR:0.783,
-            AUC:0.8282,
-            FNR:0.45378,
-            Accuracy:0.23752,
-            Precision:0.873275,
-            Specificity:0.87527,
-            ErrorRate: 0.89378,
-            params:"sdfsegfsgs,segsegs,segsegs",
-        },
-    ];
+    var testData = [];
 
     //进度条
-    var progressBarList = [$('#progressBar1'),$('#progressBar2'),$('#progressBar2')];
+    var progressBarList = [$('#progressBar1'),$('#progressBar2'),$('#progressBar3')];
     var progressPercentageList = [document.getElementById("progressPercentage1"),
                                   document.getElementById("progressPercentage2"),
                                   document.getElementById("progressPercentage3")];
@@ -201,6 +156,17 @@
 
     var modelTrainingBtn = $('#modelTrainingBtn');
     var processCollapseBtn = $('#processCollapseBtn');
+
+    //模型训练参数
+    var modelType = document.getElementById("modelType");
+    var positiveDataProportion = document.getElementById("positiveDataProportion");
+    var negativeDataProportion = document.getElementById("negativeDataProportion");
+    var verifyProportion = document.getElementById("verifyProportion");
+    var maxDepth = document.getElementById("maxDepth");
+    var maxFeatures = document.getElementById("maxFeatures");
+    var nEstimators = document.getElementById("nEstimators");
+
+
 
     //加载后执行
     window.onload=function (){
@@ -216,15 +182,45 @@
         });
     }
 
-    //按钮-OnClick事件-开始预测
+
+
+
+    //按钮-OnClick事件-开始训练
     function modelTrainingBtnOnClick(){
         modelTrainingBtn.prop('disabled', true);
-        for(var i=0;i<progressBarList.length;i++){
-            progressBarList[i].css("width","0%");
-            progressPercentageList[i].innerText = "--";
+        //开始训练
+        var toFloatArray = function (currentArray){
+            var tempResult = [];
+            for(var i=0;i<currentArray.length;i++){
+                tempResult.push(parseFloat(currentArray[i]));
+            }
+            return tempResult;
         }
-        processCollapseBtn.click();
-        setProgressUpdate();
+        var maxDepthArray = toFloatArray(maxDepth.value.split(","));
+        var maxFeaturesArray = toFloatArray(maxFeatures.value.split(","));
+        var nEstimatorsArray = toFloatArray(nEstimators.value.split(","));
+
+        var user = FGetUser();
+        var paramData = {
+            modelType: parseInt(modelType.value),
+            positiveDataProportion: parseInt(positiveDataProportion.value),
+            negativeDataProportion: parseInt(negativeDataProportion.value),
+            verifyProportion: parseFloat(verifyProportion.value)/100.0,
+            maxDepth: maxDepthArray,
+            maxFeatures: maxFeaturesArray,
+            nEstimators: nEstimatorsArray,
+            userID: user["userID"],
+            password:user["password"],
+        };
+        FDFPTrain(paramData,function (resultData){
+            //进度条显示
+            for(var i=0;i<progressBarList.length;i++){
+                progressBarList[i].css("width","0%");
+                progressPercentageList[i].innerText = "--";
+            }
+            processCollapseBtn.click();
+            setProgressUpdate();
+        });
     }
 
     //开启进度条更新-Test
@@ -255,7 +251,7 @@
                     clearInterval(progressUpdate);
                 }
             });
-        },2000);
+        },500);
     }
 
     //预测完成

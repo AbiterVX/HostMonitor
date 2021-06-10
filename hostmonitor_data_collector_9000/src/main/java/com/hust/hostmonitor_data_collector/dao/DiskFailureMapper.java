@@ -38,13 +38,14 @@ public interface DiskFailureMapper {
                            @Param("predictProbability") double predictProbability,
                            @Param("modelName")String modelName);
 
-    @Insert("insert into trainInfo(timestamp,predictModel,diskModel,FDR,FAR,AUC,FNR,Accuracy,precision,Specificity,ErrorRate,extraParams,operatorID) " +
-            "values (#{timestamp},#{predictModel},#{diskModel},#{FDR},#{FAR},#{AUC},#{FNR},#{Accuracy}," +
-            "#{Precision},#{Specificity},#{ErrorRate},#{Parameters},#{UserId})")
-    void insertTrainInfo(@Param("timestamp")Timestamp timestamp, @Param("predictModel")String predictModel, @Param("diskModel")String diskModel,
-                         @Param("FDR")double FDR, @Param("FAR")double FAR, @Param("AUC")double AUC, @Param("FNR")double FNR,
-                         @Param("Accuracy")double Accuracy,@Param("Precision")double precision,@Param("Specificity")double Specificity,
-                         @Param("ErrorRate")double ErrorRate,@Param("Parameters")String Parameters,@Param("UserId")String UserId);
+    @Insert("set @date=now();\n" +
+            "insert into trainInfo values (@date,#{PredictModel},#{DiskModel}, " +
+            "#{FDR}, #{FAR}, #{AUC}, #{FNR}, #{Accuracy}, #{Precision},  #{Specificity}, #{ErrorRate}," +
+            " #{Parameters},#{OperatorID});")
+    void insertTrainInfo(@Param("PredictModel")int PredictModel, @Param("DiskModel")String DiskModel,
+                         @Param("FDR")float FDR, @Param("FAR")float FAR, @Param("AUC")float AUC, @Param("FNR")float FNR,
+                         @Param("Accuracy")float Accuracy,@Param("Precision")float Precision,@Param("Specificity")float Specificity,
+                         @Param("ErrorRate")float ErrorRate,@Param("Parameters")String Parameters,@Param("OperatorID")String OperatorID);
 
     @Update("update trainInfo set FDR=#{FDR},FAR=#{FAR},AUC=#{AUC},FNR=#{FNR},Accuracy=#{Accuracy},Precision=#{Precision}," +
             "Specificity=#{Specificity},ErrorRate=#{ErrorRate} where timestamp=#{timestamp},predictModel=#{predictModel},diskModel=#{diskModel}")

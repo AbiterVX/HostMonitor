@@ -20,6 +20,9 @@ import com.alibaba.fastjson.*;
 public class JavaExePython {
     //进度前缀
     private static final String progressPrefix = "Progress:";
+    //结果前缀
+    private static final String resultDataPrefix = "PythonResultData:";
+
 
     public static void execPython(String filePath, JSONObject param, DiskPredictProgress progress){
         // filePath :待执行的python文件
@@ -64,10 +67,17 @@ public class JavaExePython {
                             System.out.println("[Python]:" + line);
 
                             //进度条
-                            if(progress!=null && line.startsWith(progressPrefix)){
-                                String progressNum = line.substring(progressPrefix.length());
-                                String[] progressData = progressNum.split("/");
-                                progress.setCurrentProgress(Integer.parseInt(progressData[0]),Integer.parseInt(progressData[1]));
+                            if(progress!=null){
+                                if(line.startsWith(progressPrefix)){
+                                    String progressNum = line.substring(progressPrefix.length());
+                                    String[] progressData = progressNum.split("/");
+                                    progress.setCurrentProgress(Integer.parseInt(progressData[0]),Integer.parseInt(progressData[1]));
+                                }
+                                else if(line.startsWith(resultDataPrefix)){
+                                    String resultDataRaw = line.substring(resultDataPrefix.length());
+                                    progress.setResultData(resultDataRaw);
+                                    System.out.println(progress.getResultData());
+                                }
                             }
                         }
 

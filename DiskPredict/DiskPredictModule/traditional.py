@@ -153,7 +153,7 @@ class Traditional_Train:
         matrix_ = confusion_matrix(y_pred=predict_y, y_true=self.test_data_[y_])
         print("混淆矩阵：\n", matrix_)
         print("模型评估：\n", classification_report(y_true=self.test_data_[y_], y_pred=predict_y))
-        Score.print_confusion_matrix(confusion_matrix=matrix_, y_true=self.test_data_[y_], y_score=predict_y)
+        Score.print_confusion_matrix(confusion_matrix=matrix_, y_true=self.test_data_[y_], y_score=predict_y, output_to_java=True,model_name=self.model)
 
     @staticmethod
     def add_one_mounth(date_form, old_date_str) -> str:
@@ -185,7 +185,7 @@ class Traditional_Train:
             matrix = confusion_matrix(cur_data_y, predict_y)
 
             print("\n--- 当前测试结果[%s, %s)：" % (begin_date, cur_date))
-            Score.print_confusion_matrix(confusion_matrix=matrix, y_true=cur_data_y, y_score=predict_y)
+            Score.print_confusion_matrix(confusion_matrix=matrix, y_true=cur_data_y, y_score=predict_y, output_to_java=False,model_name=self.model)
             begin_date = cur_date
 
     def save_model(self):
