@@ -4,11 +4,13 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.hust.hostmonitor_data_collector.service.DispersedDataService;
 import com.hust.hostmonitor_data_collector.service.DispersedDataServiceImpl;
+import com.hust.hostmonitor_data_collector.utils.DiskPredict.DiskPredictProgress;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import java.util.List;
 import java.util.Map;
 
 @Controller
@@ -139,19 +141,26 @@ public class DispersedDataSampleController {
         //服务端身份验证-管理员
         String userID = jsonParam.getString("userID");
         String password = jsonParam.getString("password");
-
+        if(!dispersedDataService.userAuthoirtyCheck(userID,password,1)){
+            return "Permission Denied";
+        }
         //数据预处理
+        //TODO 对传回的数据进行检验
         float positiveDataProportion = jsonParam.getFloat("positiveDataProportion");
         float negativeDataProportion = jsonParam.getFloat("negativeDataProportion");
         float verifyProportion = jsonParam.getFloat("verifyProportion");
         //模型具体参数
         int modelType = jsonParam.getInteger("modelType");
+        JSONObject extraParams=null;
         if(modelType == 1){
             JSONArray maxDepth = jsonParam.getJSONArray("maxDepth");
             JSONArray maxFeatures = jsonParam.getJSONArray("maxFeatures");
             JSONArray nEstimators = jsonParam.getJSONArray("nEstimators");
+            extraParams.put("max_depth",maxDepth);
+            extraParams.put("max_features",maxFeatures);
+            extraParams.put("n_estimators",nEstimators);
         }
-
+        dispersedDataService.train(modelType,positiveDataProportion,negativeDataProportion,verifyProportion,extraParams,userID);
         return null;
     }
 
@@ -165,7 +174,9 @@ public class DispersedDataSampleController {
     @ResponseBody
     public String getDFPTrainRecordList(){
         String string=dispersedDataService.getDFPTrainList(10,1);
-        return null;
+        return string;
     }
+
+
 
 }

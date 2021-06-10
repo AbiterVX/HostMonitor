@@ -15,6 +15,7 @@ package com.hust.hostmonitor_client.utils;
 //import java.util.List;
 //
 
+import com.alibaba.fastjson.JSONObject;
 import com.vnetpublishing.java.suapp.SU;
 import com.vnetpublishing.java.suapp.SuperUserApplication;
 import oshi.SystemInfo;
@@ -45,9 +46,9 @@ public class Test  {
     }
 
     public static void main(String[] args) {
-
-        Calendar calendar=Calendar.getInstance();
-        calendar.add(Calendar.DAY_OF_YEAR,30);
-        System.out.println(calendar.getTime());
+        JSONObject tempObject=new JSONObject();
+        tempObject.put("hhh",new int[]{1,2,3});
+        System.out.println(tempObject);
+        System.out.println(tempObject.getJSONArray("hhh"));
     }
 }

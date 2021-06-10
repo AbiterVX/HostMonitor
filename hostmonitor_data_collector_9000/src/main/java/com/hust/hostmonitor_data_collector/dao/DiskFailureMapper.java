@@ -1,10 +1,7 @@
 package com.hust.hostmonitor_data_collector.dao;
 
 import com.hust.hostmonitor_data_collector.dao.entity.*;
-import org.apache.ibatis.annotations.Insert;
-import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Param;
-import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.*;
 
 import java.sql.Timestamp;
 import java.util.List;
@@ -41,12 +38,20 @@ public interface DiskFailureMapper {
                            @Param("predictProbability") double predictProbability,
                            @Param("modelName")String modelName);
 
-    @Insert("insert into trainInfo values (" +
-            "#{timestamp},#{predictModel},#{diskModel},#{FDR},#{FAR},#{AUC},#{FNR},#{Accuracy},#{Precesion},#{Specificity},#{ErrorRate},#{Parameters})")
+    @Insert("insert into trainInfo(timestamp,predictModel,diskModel,FDR,FAR,AUC,FNR,Accuracy,precision,Specificity,ErrorRate,extraParams,operatorID) " +
+            "values (#{timestamp},#{predictModel},#{diskModel},#{FDR},#{FAR},#{AUC},#{FNR},#{Accuracy}," +
+            "#{Precision},#{Specificity},#{ErrorRate},#{Parameters},#{UserId})")
     void insertTrainInfo(@Param("timestamp")Timestamp timestamp, @Param("predictModel")String predictModel, @Param("diskModel")String diskModel,
                          @Param("FDR")double FDR, @Param("FAR")double FAR, @Param("AUC")double AUC, @Param("FNR")double FNR,
                          @Param("Accuracy")double Accuracy,@Param("Precision")double precision,@Param("Specificity")double Specificity,
-                         @Param("ErrorRate")double ErrorRate,@Param("Parameters")String Parameters);
+                         @Param("ErrorRate")double ErrorRate,@Param("Parameters")String Parameters,@Param("UserId")String UserId);
+
+    @Update("update trainInfo set FDR=#{FDR},FAR=#{FAR},AUC=#{AUC},FNR=#{FNR},Accuracy=#{Accuracy},Precision=#{Precision}," +
+            "Specificity=#{Specificity},ErrorRate=#{ErrorRate} where timestamp=#{timestamp},predictModel=#{predictModel},diskModel=#{diskModel}")
+    void updateTrainInfo(@Param("timestamp")Timestamp timestamp, @Param("predictModel")String predictModel, @Param("diskModel")String diskModel,
+                         @Param("FDR")double FDR, @Param("FAR")double FAR, @Param("AUC")double AUC, @Param("FNR")double FNR,
+                         @Param("Accuracy")double Accuracy,@Param("Precision")double precision,@Param("Specificity")double Specificity,
+                         @Param("ErrorRate")double ErrorRate);
 
     @Select("select * from diskHardwareInfo where diskSerial=#{diskSerial}")
     List<DiskHardWareInfo> queryDiskHardwareInfo(@Param("diskSerial") String diskSerial);

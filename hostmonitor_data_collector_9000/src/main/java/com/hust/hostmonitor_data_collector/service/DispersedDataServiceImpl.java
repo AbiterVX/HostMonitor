@@ -9,11 +9,15 @@ import com.hust.hostmonitor_data_collector.dao.UserDao;
 import com.hust.hostmonitor_data_collector.dao.entity.*;
 import com.hust.hostmonitor_data_collector.utils.DiskPredict.DiskPredict;
 import com.hust.hostmonitor_data_collector.utils.DiskPredict.DiskPredictProgress;
+import com.hust.hostmonitor_data_collector.utils.DiskPredict.PredictModel;
 import com.hust.hostmonitor_data_collector.utils.DispersedHostMonitor;
+import org.apache.poi.ss.formula.functions.T;
+import org.checkerframework.checker.units.qual.A;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.text.Format;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -91,6 +95,13 @@ public class DispersedDataServiceImpl implements DispersedDataService{
         //mainTimer.schedule(diskPredictTask,date,predictInterval);
         //FIXME
         mainTimer.schedule(diskPredictTask,0,predictInterval);
+        //启动阶段以以默认参数自动训练一次
+
+        JSONObject extraParams=new JSONObject();
+        extraParams.put("max_depth",new int[]{10, 20, 30});
+        extraParams.put("max_features",new int[]{4, 7, 10});
+        extraParams.put("n_estimators",new int[]{10, 20, 30, 40});
+        train(1,1.0f,3.0f,0.1f,extraParams,"hust");
     }
     private Date addDay(Date date,int num){
         Calendar calendar=Calendar.getInstance();
@@ -262,10 +273,9 @@ public class DispersedDataServiceImpl implements DispersedDataService{
     @Override
     public String getDFPInfoTrend(String hostName, String diskSerial) {
         JSONArray result=new JSONArray();
-        result.add(new JSONArray());
         List<DFPRecord> dfpRecordList=diskFailureMapper.selectDFPRecords(diskSerial);
         for(DFPRecord dfpRecord:dfpRecordList){
-               result.getJSONArray(0).add(createNewValue(dfpRecord.timestamp,dfpRecord.predictProbability));
+               result.add(createNewValue(dfpRecord.timestamp,dfpRecord.predictProbability));
         }
         return result.toJSONString();
     }
@@ -282,18 +292,19 @@ public class DispersedDataServiceImpl implements DispersedDataService{
             JSONObject tempObject=new JSONObject();
             tempObject.put("hostName",dfpRecord.hostName);
             tempObject.put("diskSerial",dfpRecord.diskSerial);
-            tempObject.put("diskType",dfpRecord.isSSd?"SSD":"HDD");
+            tempObject.put("diskType",dfpRecord.isSSd?1:0);
             tempObject.put("manufacturer",dfpRecord.model);
             tempObject.put("diskCapacity",dfpRecord.size);
             tempObject.put("model",dfpRecord.modelName);
+            tempObject.put("timestamp",dfpRecord.timestamp);
             tempObject.put("predictProbability",dfpRecord.predictProbability);
             result.add(tempObject);
         }
         return result.toJSONString();
     }
+
     //有待实现对预测范围的选择
     private void diskPredict(){
-
         Calendar calendar=Calendar.getInstance();
         calendar.add(Calendar.DAY_OF_MONTH,-1);
         String date=sdf.format(calendar.getTime());
@@ -304,32 +315,33 @@ public class DispersedDataServiceImpl implements DispersedDataService{
         // 插入数据库，注意修改接受文件时同时修改下列状态
         for(JSONObject jsonObject:result) {
             System.out.println(jsonObject);
-            diskFailureMapper.insertDiskDFPInfo(jsonObject.getString("diskSerial"), jsonObject.getTimestamp("timestamp"), jsonObject.getDoubleValue("predictProbability"), jsonObject.getString("modelName"));
+            diskFailureMapper.insertDiskDFPInfo(jsonObject.getString("diskSerial"), jsonObject.getTimestamp("timestamp"), doubleTo2bits_double(jsonObject.getDoubleValue("predictProbability")*100), jsonObject.getString("modelName"));
         }
     }
-    //返回值int，不写进度条
-    private String train(String modelYear,SystemUser currentUser){
-        if(!userAuthoirtyCheck(currentUser.getUserID(),currentUser.getPassword(),2)){
-            return "Permission denied";
-        }
-        modelYear="2021";
-        //ModelTrainingParam modelTrainingParam=new ModelTrainingParam(0,1.0f/3,0.1f,
-          //      new int[]{10, 20, 30},new int[]{4, 7, 10},new int[]{10, 20, 30, 40});
-        DiskPredict.preprocess("modelYear",0);
-        DiskPredict.getTrainData("modelYear",1.0f/3,0.1f);
-        JSONObject params = new JSONObject();
-        params.put("max_depth", new int[]{10, 20, 30});
-        params.put("max_features", new int[]{4, 7, 10});
-        params.put("n_estimators", new int[]{10, 20, 30, 40});
-        DiskPredict.train("modelYear",params);
+    @Override
+    public void train(int modelType, float positiveDataProportion, float negativeDataProportion, float verifyProportion, JSONObject extraParams,String operatorID){
+        Timestamp timestamp=new Timestamp(System.currentTimeMillis());
+        int modelYear=Calendar.getInstance().get(Calendar.YEAR);
+        DiskPredict.preprocess(""+modelYear,0);
+        float scale=positiveDataProportion/negativeDataProportion;
+        DiskPredict.getTrainData(""+modelYear,scale,verifyProportion);
+        List<DiskPredictProgress> progressList;
+        ArrayList<String> diskModels=new ArrayList<>();
+        if(modelType==1)
+            progressList=DiskPredict.train(""+modelYear,diskModels,extraParams);
+        else
+            progressList=DiskPredict.train(""+modelYear,diskModels,null);
+        for(String string:diskModels) {
+            diskFailureMapper.insertTrainInfo(timestamp, PredictModel.CNmodelNames[modelType - 1],
+                    string, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1, extraParams.toJSONString(),operatorID);
 
-        //训练信息输插入数据库
-        //diskFailureMapper.insertTrainInfo();
-        return null;
+        }
+
     }
 
     //1 admin,2 superAdmin
-    private boolean userAuthoirtyCheck(String user,String password,int checkLevel){
+    @Override
+    public boolean userAuthoirtyCheck(String user,String password,int checkLevel){
         SystemUser systemUser=userDao.signIn(user,password);
         if(checkLevel==1)
             return systemUser.isAdmin();
@@ -368,4 +380,5 @@ public class DispersedDataServiceImpl implements DispersedDataService{
         int count=diskFailureMapper.queryTrainListCount();
         return (count+pageSize-1)/pageSize;
     }
+
 }
