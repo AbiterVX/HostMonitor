@@ -41,15 +41,15 @@ public class ConsoleTest {
                     params.put("max_features", new int[]{4, 7, 10});
                     params.put("n_estimators", new int[]{10, 20, 30, 40});
                     
-                    DiskPredict.Train("\"2021\"", "\"ST4000DM000\"", params,null);
+                    DiskPredict.Train("\"2016\"", "\"ST4000DM000\"", params,null);
                     break;
                 case 4:
                     DiskPredict.Predict("\""+ System.getProperty("user.dir") + "/DiskPredict/original_data/2021/6" +"\"","\""+"PC202011261410-2021-06-07.csv"+"\"",null);
                     break;
                 case 5:
-                    DiskPredictProgress progress = DiskPredict.preprocess("2016", 0);
+                    //DiskPredictProgress progress = DiskPredict.preprocess("2016", 0);
                     //DiskPredictProgress progress = DiskPredict.getTrainData("2016", 1.0f/3, 0.1f);
-                    Thread thread = new Thread(() -> {
+                    /*Thread thread = new Thread(() -> {
                         try {
                             float progressPercentage = 0;
                             while(true){
@@ -64,38 +64,43 @@ public class ConsoleTest {
                             e.printStackTrace();
                         }
                     });
-                    thread.start();
+                    thread.start();*/
 
                     //模型参数
-                    /*JSONObject trainParams = new JSONObject();
+                    JSONObject trainParams = new JSONObject();
                     trainParams.put("max_depth", new int[]{10, 20, 30});
                     trainParams.put("max_features", new int[]{4, 7, 10});
                     trainParams.put("n_estimators", new int[]{10, 20, 30, 40});
 
 
-                    List<DiskPredictProgress> progressList = DiskPredict.train("2016", trainParams);
+                    try {
+                        List<DiskPredictProgress> progressList = DiskPredict.train("2016", trainParams);
+                        Thread thread = new Thread(() -> {
+                            try {
+                                int sumProgressCount = progressList.size();
+                                int currentIndex = 0;
+                                while(currentIndex!=sumProgressCount){
+                                    float currentPercentage = progressList.get(currentIndex).getProgressPercentage();
+                                    System.out.println("[进度]："+"["+(currentIndex+1)+"/"+sumProgressCount +"] "+currentPercentage+"%");
+                                    if(progressList.get(currentIndex).isFinished()){
+                                        System.out.println("[结果]：" + progressList.get(currentIndex).getResultData());
+                                        currentIndex+=1;
+                                    }
+                                    else{
+                                        Thread.sleep(2000);
+                                    }
 
-
-                    Thread thread = new Thread(() -> {
-                        try {
-                            int sumProgressCount = progressList.size();
-                            int currentIndex = 0;
-                            while(currentIndex!=sumProgressCount){
-                                float currentPercentage = progressList.get(currentIndex).getProgressPercentage();
-                                System.out.println("[进度]："+"["+(currentIndex+1)+"/"+sumProgressCount +"] "+currentPercentage+"%");
-                                if(!progressList.get(currentIndex).isFinished()){
-                                    currentIndex+=1;
                                 }
-                                else{
-                                    Thread.sleep(2000);
-                                }
-
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
                             }
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                    });
-                    thread.start();*/
+                        });
+                        thread.start();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+
+
 
                     //DiskPredictProgress progress = DiskPredict.predict(System.getProperty("user.dir") + "/DiskPredict/predict_data/2021/5");
                 default:

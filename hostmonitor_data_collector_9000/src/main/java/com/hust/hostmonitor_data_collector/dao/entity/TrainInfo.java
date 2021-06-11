@@ -3,33 +3,53 @@ package com.hust.hostmonitor_data_collector.dao.entity;
 import java.sql.Timestamp;
 
 public class TrainInfo {
-    public int id;
     public Timestamp timestamp;
-    public String predictModel;
-    public String diskModel;
-    public double FDR;
-    public double FAR;
-    public double AUC;
-    public double FNR;
-    public double Accuracy;
-    public double Precesion;
-    public double Specificity;
-    public double ErrorRate;
+    public int PredictModel;
+    public String DiskModel;
+    public float FDR;
+    public float FAR;
+    public float AUC;
+    public float FNR;
+    public float Accuracy;
+    public float Precision;
+    public float Specificity;
+    public float ErrorRate;
     public String Parameters;
+    public String OperatorID;
 
-    public TrainInfo(int id, Timestamp timestamp, String predictModel, String diskModel, double FDR, double FAR, double AUC, double FNR, double accuracy, double precesion, double specificity, double errorRate, String parameters) {
-        this.id=id;
+    public TrainInfo(){}
+    public TrainInfo(Timestamp timestamp, int predictModel, String diskModel, float FDR, float FAR, float AUC, float FNR, float accuracy, float precision, float specificity, float errorRate, String parameters, String operatorID) {
         this.timestamp = timestamp;
-        this.predictModel = predictModel;
-        this.diskModel = diskModel;
+        PredictModel = predictModel;
+        DiskModel = diskModel;
         this.FDR = FDR;
         this.FAR = FAR;
         this.AUC = AUC;
         this.FNR = FNR;
         Accuracy = accuracy;
-        Precesion = precesion;
+        Precision = precision;
         Specificity = specificity;
         ErrorRate = errorRate;
         Parameters = parameters;
+        OperatorID = operatorID;
+    }
+
+    @Override
+    public String toString() {
+        return '{'+
+                "\"timestamp\":" + timestamp +
+                ",\"PredictModel\":" + PredictModel +
+                ",\"DiskModel\":\"" + DiskModel + '\"' +
+                ",\"FDR\":" + FDR +
+                ",\"FAR\":" + FAR +
+                ",\"AUC\":" + AUC +
+                ",\"FNR\":" + FNR +
+                ",\"Accuracy\":" + Accuracy +
+                ",\"Precision\":" + Precision +
+                ",\"Specificity\":" + Specificity +
+                ",\"ErrorRate\":" + ErrorRate +
+                ",\"Parameters\":\"" + Parameters + '\"' +
+                ",\"OperatorID\":\"" + OperatorID + '\"' +
+                '}';
     }
 }

@@ -1,8 +1,10 @@
 package com.hust.hostmonitor_web.controller;
 
 
+import com.alibaba.fastjson.JSONObject;
 import com.hust.hostmonitor_web.entity.RequestData;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
@@ -11,7 +13,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@RestController
+@Controller
 @RequestMapping("/Dispersed")
 public class DispersedDataSampleController_Remote {
 
@@ -99,6 +101,16 @@ public class DispersedDataSampleController_Remote {
         return getRequestData(dataCollectorUrl + "/Dispersed/getHostInfo/Trend/HostDetail/" + map.get("hostName"), 60000);
     }
 
+
+
+    @GetMapping(value="/getDFPSummaryInfo")
+    @ResponseBody
+    public String getDFPSummaryInfo(){
+        return getRequestData(dataCollectorUrl + "/Dispersed/getDFPSummaryInfo", 30000);
+    }
+
+
+
     /**
      * 获取信息-DFP-Trend-某个Host
      * 参数：hostName,diskName
@@ -114,22 +126,20 @@ public class DispersedDataSampleController_Remote {
      * 获取信息-DFP-All
      * 格式：[{},{} ]
      */
-    @GetMapping(value = "/getDFPInfo/All")
+    @GetMapping(value = "/getDFPInfo/List")
     @ResponseBody
     public String getDFPInfo_All() {
-        return getRequestData(dataCollectorUrl + "/Dispersed/getDFPInfo/All", 60000);
+        return getRequestData(dataCollectorUrl + "/Dispersed/getDFPInfo/List", 60000);
     }
 
-    /**
-     * 获取信息-SpeedMeasurement-All
-     * 格式：[{},{} ]
-     */
-    @GetMapping(value = "/getSpeedMeasurementInfo/All")
+
+
+    @PostMapping(value="/dfpTrain",produces = "application/json;charset=UTF-8")
     @ResponseBody
-    public String getSpeedMeasurementInfo_All() {
-        return getRequestData(dataCollectorUrl + "/Dispersed/getSpeedMeasurementInfo/All", 60000);
+    public String dfpTrain(@RequestBody JSONObject jsonParam){
+        System.out.println("[模型训练]");
+        return restTemplate.postForObject(dataCollectorUrl + "/Dispersed/dfpTrain", jsonParam,String.class);
     }
-
 
 
     @GetMapping(value="/getDFPTrainProgress")
@@ -137,4 +147,12 @@ public class DispersedDataSampleController_Remote {
     public String getDFPTrainProgress(){
         return getRequestData(dataCollectorUrl + "/Dispersed/getDFPTrainProgress", 1000);
     }
+
+
+    @GetMapping(value="/getDFPTrainRecord/List")
+    @ResponseBody
+    public String getDFPTrainRecordList(){
+        return getRequestData(dataCollectorUrl + "/Dispersed/getDFPTrainRecord/List", 1000);
+    }
+
 }

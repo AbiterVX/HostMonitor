@@ -383,7 +383,7 @@ const tableColumns = {
             sortable: true,
         },
         {
-            field: 'diskName',
+            field: 'diskSerial',
             title: '硬盘名称',
             width: 100,
             sortable: true,
@@ -420,7 +420,7 @@ const tableColumns = {
         },
 
         {
-            field: 'predictTime',
+            field: 'timestamp',
             title: '预测时间',
             width: 100,
             sortable: true,
@@ -430,7 +430,7 @@ const tableColumns = {
         },
         {
             field: 'predictProbability',
-            title: '预测概率',
+            title: '可信度',
             width: 80,
             sortable: true,
             formatter : function (value, row, index) {
@@ -613,7 +613,7 @@ const tableColumns = {
             field: 'buildTime',
             title: '构建时间',
             sortable: true,
-            width:80,
+            width:100,
             formatter : function (value, row, index) {
                 return FGetDateTime(value);
             }
@@ -624,12 +624,18 @@ const tableColumns = {
             sortable: true,
             width:80,
             formatter : function (value, row, index) {
-                return dfpModelNames[value];
+                return dfpModelNames[value-1];
             }
         },
         {
             field: 'diskModel',
             title: '硬盘Model',
+            sortable: true,
+            width:80,
+        },
+        {
+            field: 'OperatorID',
+            title: '操作用户',
             sortable: true,
             width:80,
         },
@@ -959,7 +965,7 @@ var loadPartition ={
 };
 
 var dfpPartition = [30,60,100];
-var dfpPartitionColor = ['#92cc76','#fac859','#ee6767'];
+var dfpPartitionColor = ['#ee6767','#fac859','#92cc76'];
 //数据间隔时间
 var DateInterval = [24,1];
 var DateIntervalText = ["最近1天","最近1小时"];
@@ -1315,7 +1321,7 @@ function FGetDFPSummaryChartOption(){
 function FGetDFPTrendChartOption(){
     var DFPTrendChartOption = {
         title: {
-            text: "磁盘故障趋势",
+            text: "磁盘可信度趋势",
             left: '48%',
         },
         grid: {
@@ -1366,7 +1372,7 @@ function FGetDFPTrendChartOption(){
             max:100,
         },
         series: {
-            name: "故障概率",
+            name: "可信度",
             smooth:true,
             type: 'line',
             showSymbol: false,
@@ -1378,10 +1384,8 @@ function FGetDFPTrendChartOption(){
 }
 
 //故障类型统计chart
-function FGetFailureTypeStatisticsChartOption(){
-    var diskType = ["类型1","类型2","类型3","类型4","类型5",];
-    var hddCount = [0,2,8,6,3];
-    var ssdCount = [6,2,8,3,7];
+function FGetFailureTypeStatisticsChartOption(diskType,hddCount,ssdCount){
+
 
     var emphasisStyle = {
         itemStyle: {
@@ -1448,19 +1452,13 @@ function FGetFailureTypeStatisticsChartOption(){
 }
 
 //
-function FGetFailureCountStatisticsChartOption(){
-    var dataLength = 100;
-    var timestamp=new Date().getTime();
-    var resultData = [];
-    for(var i=0;i<dataLength;i++){
-        var currentDate = timestamp - (dataLength-i)*120000;
-        resultData.push([currentDate,Math.ceil(Math.random()*10)]);
-    }
+function FGetFailureCountStatisticsChartOption(seriesData){
+
 
 
     var FailureCountStatisticsChartOption = {
         title: {
-            text: "故障盘数量统计",
+            text: "故障盘数量趋势",
             left: '48%',
         },
         grid: {
@@ -1514,7 +1512,7 @@ function FGetFailureCountStatisticsChartOption(){
             type: 'line',
             showSymbol: false,
             hoverAnimation: false,
-            data: resultData,
+            data: seriesData,
         },
     };
     return FailureCountStatisticsChartOption;

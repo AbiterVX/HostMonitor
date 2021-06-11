@@ -108,7 +108,9 @@ public class DispersedDataSampleController {
     @GetMapping(value="/getDFPSummaryInfo")
     @ResponseBody
     public String getDFPSummaryInfo(){
-        return null;
+        String result=dispersedDataService.getDFPSummary();
+        return result;
+
     }
 
     /**
@@ -138,6 +140,8 @@ public class DispersedDataSampleController {
     @PostMapping(value="/dfpTrain",produces = "application/json;charset=UTF-8")
     @ResponseBody
     public String dfpTrain(@RequestBody JSONObject jsonParam){
+        System.out.println(jsonParam);
+
         //服务端身份验证-管理员
         String userID = jsonParam.getString("userID");
         String password = jsonParam.getString("password");
@@ -151,7 +155,7 @@ public class DispersedDataSampleController {
         float verifyProportion = jsonParam.getFloat("verifyProportion");
         //模型具体参数
         int modelType = jsonParam.getInteger("modelType");
-        JSONObject extraParams=null;
+        JSONObject extraParams= new JSONObject();
         if(modelType == 1){
             JSONArray maxDepth = jsonParam.getJSONArray("maxDepth");
             JSONArray maxFeatures = jsonParam.getJSONArray("maxFeatures");
@@ -159,9 +163,14 @@ public class DispersedDataSampleController {
             extraParams.put("max_depth",maxDepth);
             extraParams.put("max_features",maxFeatures);
             extraParams.put("n_estimators",nEstimators);
+
+
+            System.out.println("[模型训练]开始训练");
+            dispersedDataService.train(modelType,positiveDataProportion,negativeDataProportion,verifyProportion,extraParams,userID);
+
+
         }
-        dispersedDataService.train(modelType,positiveDataProportion,negativeDataProportion,verifyProportion,extraParams,userID);
-        return null;
+        return "Train";
     }
 
     @GetMapping(value="/getDFPTrainProgress")
@@ -173,8 +182,10 @@ public class DispersedDataSampleController {
     @GetMapping(value="/getDFPTrainRecord/List")
     @ResponseBody
     public String getDFPTrainRecordList(){
-        String string=dispersedDataService.getDFPTrainList(10,1);
+        String string=dispersedDataService.getDFPTrainList();
+
         return string;
+
     }
 
 

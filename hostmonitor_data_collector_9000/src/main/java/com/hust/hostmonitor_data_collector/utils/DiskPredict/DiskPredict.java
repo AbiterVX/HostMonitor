@@ -49,11 +49,11 @@ public class DiskPredict {
         return progress;
     }
 
-    public static List<DiskPredictProgress> train(String filePath,ArrayList<String> modelNameList,JSONObject params){
+    public static List<DiskPredictProgress> train(String filePath,JSONObject params){
         List<DiskPredictProgress> progressList = new ArrayList<>();
-        //List<String> modelNameList = new ArrayList<>();
+        List<String> modelNameList = new ArrayList<>();
         File file = new File(trainDataPath+"/"+filePath);
-        for (File currentFile: Objects.requireNonNull(file.listFiles())){
+        for (File currentFile: file.listFiles()){
             if(currentFile.isDirectory()){
                 modelNameList.add(currentFile.getName());
                 progressList.add(new DiskPredictProgress());

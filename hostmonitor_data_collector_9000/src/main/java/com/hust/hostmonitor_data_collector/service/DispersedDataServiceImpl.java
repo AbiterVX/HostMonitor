@@ -9,15 +9,14 @@ import com.hust.hostmonitor_data_collector.dao.UserDao;
 import com.hust.hostmonitor_data_collector.dao.entity.*;
 import com.hust.hostmonitor_data_collector.utils.DiskPredict.DiskPredict;
 import com.hust.hostmonitor_data_collector.utils.DiskPredict.DiskPredictProgress;
-import com.hust.hostmonitor_data_collector.utils.DiskPredict.PredictModel;
+import com.hust.hostmonitor_data_collector.utils.DiskPredict.QueryResources;
 import com.hust.hostmonitor_data_collector.utils.DispersedHostMonitor;
 import org.apache.poi.ss.formula.functions.T;
-import org.checkerframework.checker.units.qual.A;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import javax.annotation.PostConstruct;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.text.Format;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -66,10 +65,17 @@ public class DispersedDataServiceImpl implements DispersedDataService{
     };
 
 
+
     //-----模型训练进度条
     private boolean isTraining = false;
     private List<DiskPredictProgress> trainProgressList;
+    //磁盘故障预测统计页面阈值参数
+    private final double mediumLow=0.20f;
+    private final double mediumHigh=0.70f;
+=======
 
+
+>>>>>>> d44d1f25ad012f6e9b9154532605f92d5b3e9675
 
     public DispersedDataServiceImpl(){
         dataPath=System.getProperty("user.dir")+"/DiskPredict/";
@@ -84,16 +90,28 @@ public class DispersedDataServiceImpl implements DispersedDataService{
             date=addDay(date,1);
         }
         System.out.println(date);
-        //mainTimer.schedule(diskPredictTask,date,predictInterval);
+        mainTimer.schedule(diskPredictTask,date,predictInterval);
         //FIXME
-        mainTimer.schedule(diskPredictTask,0,predictInterval);
+        //mainTimer.schedule(diskPredictTask,0,predictInterval);
         //启动阶段以以默认参数自动训练一次
-
+<<<<<<< HEAD
+    }
+    @PostConstruct
+    private void initTrain(){
         JSONObject extraParams=new JSONObject();
         extraParams.put("max_depth",new int[]{10, 20, 30});
         extraParams.put("max_features",new int[]{4, 7, 10});
         extraParams.put("n_estimators",new int[]{10, 20, 30, 40});
+        //
         train(1,1.0f,3.0f,0.1f,extraParams,"hust");
+=======
+
+        /*JSONObject extraParams=new JSONObject();
+        extraParams.put("max_depth",new int[]{10, 20, 30});
+        extraParams.put("max_features",new int[]{4, 7, 10});
+        extraParams.put("n_estimators",new int[]{10, 20, 30, 40});
+        train(1,1.0f,3.0f,0.1f,extraParams,"hust");*/
+>>>>>>> d44d1f25ad012f6e9b9154532605f92d5b3e9675
     }
     private Date addDay(Date date,int num){
         Calendar calendar=Calendar.getInstance();
@@ -102,16 +120,18 @@ public class DispersedDataServiceImpl implements DispersedDataService{
         return  calendar.getTime();
     }
 
+    //-----模型训练进度条
+    private boolean isTraining = false;
+    private int currentTrainState = 0;
+    private DiskPredictProgress preprocessProgress;
+    private DiskPredictProgress getTrainDataProgress;
+    private List<DiskPredictProgress> trainProgress;
+    List<Float> progressPercentage = new ArrayList(Arrays.asList(-1,-1,-1));
+
     //获取模型训练进度
     @Override
     public List<Float> getTrainProgress(){
-        List<Float> trainProgress = new ArrayList(Arrays.asList(-1,-1,-1));
-        if(isTraining){
-            for(int i=0;i<trainProgressList.size();i++){
-                trainProgress.set(i, trainProgressList.get(i).getProgressPercentage());
-            }
-        }
-        return trainProgress;
+        return progressPercentage;
     }
 
     private void storeSampleData(){
@@ -171,7 +191,6 @@ public class DispersedDataServiceImpl implements DispersedDataService{
         return dispersedHostMonitor.summaryInfo.toJSONString();
     }
 
-    //1
     /**
      * 获取信息-Dashboard-HostInfo-全部Host
      * 格式：{"hostName1":{"hostInfo":{},"cpuInfoList":[],"gpuInfoList":{},"processInfoList":{}}, }
@@ -185,13 +204,11 @@ public class DispersedDataServiceImpl implements DispersedDataService{
         return resultObject.toJSONString();
     }
 
-
     /**
      * 获取信息-HostDetail-HostInfo-某个Host
      * 参数：hostName
      * 格式：{"hostInfo":{},"cpuInfoList":[],"gpuInfoList":{},"processInfoList":{}}
      */
-    //2
     @Override
     public String getHostInfoDetail(String hostName) {
         String result=dispersedHostMonitor.hostInfoMap.get(hostName).toJSONString();
@@ -217,8 +234,6 @@ public class DispersedDataServiceImpl implements DispersedDataService{
         BigDecimal b=new BigDecimal(original);
         return b.setScale(2,BigDecimal.ROUND_HALF_UP).doubleValue();
     }
-
-
 
     /**
      * 获取信息-Dashboard-DiskInfo-全部Host
@@ -284,6 +299,7 @@ public class DispersedDataServiceImpl implements DispersedDataService{
         }
         return result.toJSONString();
     }
+
     /**
      * 获取信息-DFP-All
      * 格式：[{},{} ]
@@ -323,8 +339,10 @@ public class DispersedDataServiceImpl implements DispersedDataService{
             diskFailureMapper.insertDiskDFPInfo(jsonObject.getString("diskSerial"), jsonObject.getTimestamp("timestamp"), doubleTo2bits_double(jsonObject.getDoubleValue("predictProbability")*100), jsonObject.getString("modelName"));
         }
     }
+
     @Override
     public void train(int modelType, float positiveDataProportion, float negativeDataProportion, float verifyProportion, JSONObject extraParams,String operatorID){
+<<<<<<< HEAD
         Timestamp timestamp=new Timestamp(System.currentTimeMillis());
         int modelYear=Calendar.getInstance().get(Calendar.YEAR);
         DiskPredict.preprocess(""+modelYear,0);
@@ -337,22 +355,111 @@ public class DispersedDataServiceImpl implements DispersedDataService{
         else
             progressList=DiskPredict.train(""+modelYear,diskModels,null);
         for(String string:diskModels) {
-            diskFailureMapper.insertTrainInfo(timestamp, PredictModel.CNmodelNames[modelType - 1],
+            diskFailureMapper.insertTrainInfo(timestamp, QueryResources.CNmodelNames[modelType - 1],
                     string, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1, extraParams.toJSONString(),operatorID);
 
-        }
+=======
+        if(!isTraining){
+            isTraining = true;
+            progressPercentage = new ArrayList(Arrays.asList(0,0,0));
+            //模型训练
+            currentTrainState = 0;
+            preprocessProgress = null;
+            getTrainDataProgress = null;
+            trainProgress = null;
 
+            Thread progressThread = new Thread(() -> {
+                try {
+                    int modelYear= 2016; //Calendar.getInstance().get(Calendar.YEAR);
+
+                    while (isTraining){
+                        if(currentTrainState==0){
+                            if(preprocessProgress== null){
+                                preprocessProgress = DiskPredict.preprocess(""+modelYear,0);
+                            }
+                            else{
+                                progressPercentage.set(0,preprocessProgress.getProgressPercentage());
+                                if(preprocessProgress.isFinished()){
+                                    currentTrainState = 1;
+                                }
+                            }
+                        }
+                        else if(currentTrainState==1){
+                            if(getTrainDataProgress== null){
+                                getTrainDataProgress = DiskPredict.getTrainData(String.valueOf(modelYear),positiveDataProportion/negativeDataProportion,verifyProportion);
+                            }
+                            else{
+                                progressPercentage.set(1,getTrainDataProgress.getProgressPercentage());
+                                if(getTrainDataProgress.isFinished()){
+                                    currentTrainState = 2;
+                                }
+                            }
+                        }
+                        else if(currentTrainState==2){
+                            if(trainProgress== null){
+                                if(modelType==1){
+                                    trainProgress = DiskPredict.train(String.valueOf(modelYear),extraParams);
+                                }
+                                else{
+                                    break;
+                                }
+                            }
+                            else{
+                                DiskPredictProgress tempProgress = new DiskPredictProgress();
+                                int completedTaskCount = 0;
+                                boolean isAllFinished = true;
+                                for(int i=0;i<trainProgress.size();i++){
+                                    completedTaskCount+= trainProgress.get(i).getCompletedTaskCount();
+                                    if(!trainProgress.get(i).isFinished()){
+                                        isAllFinished = false;
+                                    }
+                                }
+                                tempProgress.setCurrentProgress(completedTaskCount,trainProgress.size()*DiskPredictProgress.trainTotalTaskCount);
+                                progressPercentage.set(2,tempProgress.getProgressPercentage());
+                                if(isAllFinished){
+                                    break;
+                                }
+                            }
+                        }
+                        Thread.sleep(500);
+                    }
+                    for(int i=0;i<trainProgress.size();i++){
+                        JSONObject trainResult = DiskPredictProgress.parsingTrainResultData(trainProgress.get(i).getResultData());
+                        diskFailureMapper.insertTrainInfo(
+                                modelType,
+                                trainResult.getString("modelName"),
+                                trainResult.getFloat("FDR"),
+                                trainResult.getFloat("FAR"),
+                                trainResult.getFloat("AUC"),
+                                trainResult.getFloat("FNR"),
+                                trainResult.getFloat("Accuracy"),
+                                trainResult.getFloat("Precision"),
+                                trainResult.getFloat("Specificity"),
+                                trainResult.getFloat("ErrorRate"),
+                                extraParams.toJSONString(),
+                                operatorID);
+                    }
+                    progressPercentage = new ArrayList(Arrays.asList(-1,-1,-1));
+                    currentTrainState = 0;
+                    isTraining = false;
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    System.out.println("[模型训练]错误！无文件");
+                    progressPercentage = new ArrayList(Arrays.asList(-1,-1,-1));
+                    currentTrainState = 0;
+                    isTraining = false;
+                }
+            });
+            progressThread.start();
+>>>>>>> d44d1f25ad012f6e9b9154532605f92d5b3e9675
+        }
     }
 
     //1 admin,2 superAdmin
     @Override
     public boolean userAuthoirtyCheck(String user,String password,int checkLevel){
         SystemUser systemUser=userDao.signIn(user,password);
-        if(checkLevel==1)
-            return systemUser.isAdmin();
-        else if(checkLevel==2)
-            return systemUser.isSuperAdmin();
-        return false;
+        return (checkLevel <= systemUser.getUserType());
     }
     @Override
     public String getSpeedMeasurementInfoAll() {
@@ -360,23 +467,24 @@ public class DispersedDataServiceImpl implements DispersedDataService{
     }
 
     @Override
-    public String getDFPTrainList(int pageSize,int pageNo){
-        List<TrainInfo> queryResult=diskFailureMapper.selectTrainInfoInPage((pageNo-1)*pageSize,pageSize);
+    public String getDFPTrainList(){
+        List<TrainInfo> queryResult=diskFailureMapper.selectTrainInfoInPage();
         JSONArray resultArray=new JSONArray();
         for(TrainInfo trainInfo:queryResult){
             JSONObject tempObject=new JSONObject();
-            tempObject.put("timestamp",trainInfo.timestamp);
-            tempObject.put("predictModel",trainInfo.predictModel);
-            tempObject.put("diskModel",trainInfo.diskModel);
+            tempObject.put("buildTime",trainInfo.timestamp);
+            tempObject.put("model",trainInfo.PredictModel);
+            tempObject.put("diskModel",trainInfo.DiskModel);
             tempObject.put("FDR",trainInfo.FDR);
             tempObject.put("FAR",trainInfo.FAR);
             tempObject.put("AUC",trainInfo.AUC);
             tempObject.put("FNR",trainInfo.FNR);
             tempObject.put("Accuracy",trainInfo.Accuracy);
-            tempObject.put("Precision",trainInfo.Precesion);
+            tempObject.put("Precision",trainInfo.Precision);
             tempObject.put("Specificity",trainInfo.Specificity);
             tempObject.put("ErrorRate",trainInfo.ErrorRate);
-            tempObject.put("parameters", JSON.parse(trainInfo.Parameters));
+            tempObject.put("params", trainInfo.Parameters); // JSON.parse(trainInfo.Parameters)
+            tempObject.put("OperatorID", trainInfo.OperatorID);
             resultArray.add(tempObject);
         }
         return resultArray.toJSONString();
@@ -386,4 +494,172 @@ public class DispersedDataServiceImpl implements DispersedDataService{
         return (count+pageSize-1)/pageSize;
     }
 
+    @Override
+    public String getDFPTrainList() {
+        List<TrainInfo> trainInfoList=diskFailureMapper.selectAllTrainInfo();
+        JSONArray jsonArray=new JSONArray();
+        for(TrainInfo trainInfo:trainInfoList){
+                JSONObject jsonObject=new JSONObject();
+                jsonObject.put("diskModel",trainInfo.diskModel);
+                jsonObject.put("predictModel",trainInfo.predictModel);
+                jsonObject.put("timestamp",trainInfo.timestamp);
+                jsonObject.put("parameters",trainInfo.Parameters);
+                jsonObject.put("FDR",trainInfo.FDR);
+                jsonObject.put("FNR",trainInfo.FNR);
+                jsonObject.put("FAR",trainInfo.FAR);
+                jsonObject.put("AUC",trainInfo.AUC);
+                jsonObject.put("Precision",trainInfo.Precesion);
+                jsonObject.put("ErrorRate",trainInfo.ErrorRate);
+                jsonObject.put("Accuracy",trainInfo.Accuracy);
+                jsonArray.add(jsonObject);
+        }
+        return jsonArray.toJSONString();
+    }
+
+    @Override
+    public String getDFPSummary() {
+        JSONObject result=new JSONObject();
+
+        //左侧表格,取出最新的模型的性能数据
+        JSONObject leftChart=new JSONObject();
+        StatisRecord statisRecord=diskFailureMapper.selectLatestTrainingSummary();
+        leftChart.put("FDR",new JSONArray());
+        leftChart.getJSONArray("FDR").add(statisRecord.FDR);
+        leftChart.getJSONArray("FDR").add(0.6);
+        leftChart.put("FAR",new JSONArray());
+        leftChart.getJSONArray("FAR").add(statisRecord.FAR);
+        leftChart.getJSONArray("FAR").add(0.6);
+        leftChart.put("AUC",new JSONArray());
+        leftChart.getJSONArray("AUC").add(statisRecord.AUC);
+        leftChart.getJSONArray("AUC").add(0.6);
+        leftChart.put("FNR",new JSONArray());
+        leftChart.getJSONArray("FNR").add(statisRecord.FNR);
+        leftChart.getJSONArray("FNR").add(0.6);
+        leftChart.put("Accuracy",new JSONArray());
+        leftChart.getJSONArray("Accuracy").add(statisRecord.Accuracy);
+        leftChart.getJSONArray("Accuracy").add(0.6);
+        leftChart.put("Precision",new JSONArray());
+        leftChart.getJSONArray("Precision").add(statisRecord.Precision);
+        leftChart.getJSONArray("Precision").add(0.6);
+        leftChart.put("Specificity",new JSONArray());
+        leftChart.getJSONArray("Specificity").add(statisRecord.Specificity);
+        leftChart.getJSONArray("Specificity").add(0.6);
+        leftChart.put("ErrorRate",new JSONArray());
+        leftChart.getJSONArray("ErrorRate").add(statisRecord.ErrorRate);
+        leftChart.getJSONArray("ErrorRate").add(0.6);
+        result.put("leftChart",leftChart);
+        //仪表盘
+        Timestamp timestamp=diskFailureMapper.selectLatestRecordTime();
+        Calendar calendar=Calendar.getInstance();
+        calendar.setTimeInMillis(timestamp.getTime());
+        calendar.set(Calendar.MINUTE,0);
+        calendar.set(Calendar.SECOND,0);
+        calendar.set(Calendar.HOUR_OF_DAY,0);
+        Timestamp lowbound=new Timestamp(calendar.getTimeInMillis());
+
+        List<DFPRecord> queryList=diskFailureMapper.selectDFPRecords(lowbound);
+        int lowCount=0,mediumCount=0,highCount=0;
+        for(DFPRecord dfpRecord:queryList){
+            if(dfpRecord.predictProbability<=mediumLow){
+                highCount++;
+            }
+            else if(dfpRecord.predictProbability>mediumHigh){
+                lowCount++;
+            }
+            else {
+                mediumCount++;
+            }
+        }
+        double lowProportion,mediumProportion,highProportion;
+        int totalCount=lowCount+mediumCount+highCount;
+        lowProportion=doubleTo2bits_double(lowCount*1.0/totalCount);
+        mediumProportion=doubleTo2bits_double(mediumCount*1.0/totalCount);
+        highProportion=doubleTo2bits_double(1-lowProportion-mediumProportion);
+        JSONArray diskProbabilityStatistic=new JSONArray();
+        result.put("diskProbabilityStatistic",diskProbabilityStatistic);
+        result.getJSONArray("diskProbabilityStatistic").add(lowProportion);
+        result.getJSONArray("diskProbabilityStatistic").add(mediumProportion);
+        result.getJSONArray("diskProbabilityStatistic").add(highProportion);
+        //条状图，先用预测的结果替代
+//        timestamp=diskFailureMapper.selectLatestFailureTime();
+//        calendar.setTimeInMillis(timestamp.getTime());
+//        calendar.set(Calendar.MINUTE,0);
+//        calendar.set(Calendar.SECOND,0);
+//        calendar.set(Calendar.HOUR_OF_DAY,0);
+//        lowbound=new Timestamp(calendar.getTimeInMillis());
+//        List<RealDiskFailure> realDiskFailureList=diskFailureMapper.selectRecentRecords(lowbound);
+//        for(RealDiskFailure diskFailure:realDiskFailureList){
+//
+//
+//
+//        }
+        //TODO 临时版本 ,暂定四个厂商
+        List<HardWithDFPRecord> RecordList=diskFailureMapper.selectRecentDFPWithHardwareRecordList(lowbound);
+        JSONObject rightChart=new JSONObject();
+        rightChart.put("西部数据",new JSONArray());
+        rightChart.put("希捷",new JSONArray());
+        rightChart.put("东芝",new JSONArray());
+        rightChart.put("三星",new JSONArray());
+        rightChart.put("其他",new JSONArray());
+        int[] count=new int[10];
+        for(int i=0;i<10;i++){
+            count[i]=0;
+        }
+        for(HardWithDFPRecord hardWithDFPRecord:RecordList){
+            int index;
+            if(hardWithDFPRecord.predictProbability>=0.7f){
+                index=QueryResources.queryDiskIndex(hardWithDFPRecord.diskSerial);
+                index*=2;
+                if(!hardWithDFPRecord.isSSd){
+                    index+=1;
+                }
+                count[index]++;
+            }
+        }
+        rightChart.getJSONArray("西部数据").add(count[0]);
+        rightChart.getJSONArray("西部数据").add(count[1]);
+        rightChart.getJSONArray("希捷").add(count[2]);
+        rightChart.getJSONArray("希捷").add(count[3]);
+        rightChart.getJSONArray("东芝").add(count[4]);
+        rightChart.getJSONArray("东芝").add(count[5]);
+        rightChart.getJSONArray("三星").add(count[6]);
+        rightChart.getJSONArray("三星").add(count[7]);
+        rightChart.getJSONArray("其他").add(count[8]);
+        rightChart.getJSONArray("其他").add(count[9]);
+        result.put("rightChart",rightChart);
+        //错误盘数趋势图,统计的是两周的，每天的磁盘损坏数量
+        JSONArray lowTrend=new JSONArray();
+        calendar.add(Calendar.DAY_OF_MONTH,-13);
+
+        lowbound=new Timestamp(System.currentTimeMillis());
+        RecordList=diskFailureMapper.selectRecentDFPWithHardwareRecordList(lowbound);
+        int[] twoWeeks=new int[14];
+        for(int i=0;i<14;i++){
+            twoWeeks[i]=0;
+        }
+        int i=0;
+        calendar.add(Calendar.DAY_OF_MONTH,1);
+        long highbound=calendar.getTimeInMillis();
+        for(HardWithDFPRecord hardWithDFPRecord:RecordList){
+            if(hardWithDFPRecord.timestamp.getTime()>highbound){
+                i++;
+                calendar.add(Calendar.DAY_OF_MONTH,1);
+                highbound=calendar.getTimeInMillis();
+            }
+            if(hardWithDFPRecord.predictProbability>0.7f){
+                twoWeeks[i]++;
+            }
+
+        }
+        calendar.setTimeInMillis(lowbound.getTime());
+        for(int j=0;j<14;j++){
+            JSONArray tempJSONArray=new JSONArray();
+            tempJSONArray.add(new Timestamp(calendar.getTimeInMillis()));
+            tempJSONArray.add(twoWeeks[j]);
+            lowTrend.add(tempJSONArray);
+            calendar.add(Calendar.DAY_OF_MONTH,1);
+        }
+        result.put("lowTrend",lowTrend);
+        return result.toJSONString();
+    }
 }

@@ -540,41 +540,35 @@ function FRefreshDataDFPInfoTrend(hostName,diskName,uiRefreshCallbackFunc){
 }
 
 function FRefreshDataDFPInfoAll(uiRefreshCallbackFunc){
-    var dfpInfoList = FGetDFPInfoList();
-    var timestamp=new Date().getTime();
+    FSendGetRequest(false,"/Dispersed/getDFPInfo/List",function (resultData){
+        for(var i=0;i<resultData.length;i++){
+            resultData[i]["predictProbability"] *= 100;
+        }
 
-    if(timestamp-dfpInfoList["lastUpdateTime"] >= requestCoolDownTime["RefreshDataDFPInfoTrend"]){
-        FSendGetRequest(false,"/Dispersed/getDFPInfo/All",function (resultData){
-            var dfpSummaryChart = [0,0,0];
-            dfpInfoList["dfpInfo"] = resultData;
-            for(var i=0;i<dfpInfoList["dfpInfo"].length;i++){
-                //设置硬盘容量
-                var diskInfoList = FGetHostInfo(dfpInfoList["dfpInfo"][i]["hostName"])["diskInfoList"];
-                for(var j=0;j<diskInfoList.length;j++){
-                    if(diskInfoList[j]["diskName"] === dfpInfoList["dfpInfo"][i]["diskName"]){
-                        dfpInfoList["dfpInfo"][i]["diskCapacity"] = diskInfoList[j]["diskCapacitySize"][1];
-                        break;
-                    }
+        if(resultData != null){
+            var hostDiskMap = {};
+            for(var i=0;i<resultData.length;i++){
+                var currentHostName = resultData[i]["hostName"];
+                var currentDiskName = resultData[i]["diskSerial"];
+                if(hostDiskMap.hasOwnProperty(currentHostName)){
+                    hostDiskMap[currentHostName].push(currentDiskName);
                 }
-                //统计
-
-                for(var j=0;j<dfpPartition.length;j++){
-                    if(dfpInfoList["dfpInfo"][i]["predictProbability"]  < dfpPartition[j]){
-                        dfpSummaryChart[j] += 1;
-                        break;
-                    }
+                else{
+                    hostDiskMap[currentHostName] = [];
+                    hostDiskMap[currentHostName].push(currentDiskName);
                 }
             }
+            FSetData("dfpInfoList",resultData);
+            FSetData("hostDiskMap",hostDiskMap);
+        }
 
-            dfpInfoList["dfpSummaryChart"] = dfpSummaryChart;
-            FSetData("dfpInfoList",dfpInfoList);
-            uiRefreshCallbackFunc(dfpInfoList["dfpInfo"],dfpInfoList["dfpSummaryChart"]);
-        });
-    }
-    else{
-        uiRefreshCallbackFunc(dfpInfoList["dfpInfo"],dfpInfoList["dfpSummaryChart"]);
-    }
 
+
+        uiRefreshCallbackFunc(resultData,hostDiskMap);
+
+
+
+    });
 }
 
 function FRefreshDataSpeedMeasurementInfoAll(uiRefreshCallbackFunc){
@@ -593,6 +587,12 @@ function FRefreshDataSpeedMeasurementInfoAll(uiRefreshCallbackFunc){
 }
 
 //-----故障预测
+
+function FDFPTrain(paramData,uiRefreshCallbackFunc){
+    FSendPostRequest(false,"/Dispersed/dfpTrain",JSON.stringify(paramData),function (resultData){
+        uiRefreshCallbackFunc(resultData);
+    });
+}
 
 function FRefreshDataDFPSummaryInfo(uiRefreshCallbackFunc){
     FSendGetRequest(false,"/Dispersed/getDFPSummaryInfo",function (resultData){
