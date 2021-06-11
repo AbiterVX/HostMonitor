@@ -65,17 +65,30 @@ public class DispersedDataServiceImpl implements DispersedDataService{
     };
 
 
+    @PostConstruct
+    private void initTrain(){
+        JSONObject extraParams=new JSONObject();
+        extraParams.put("max_depth",new int[]{10, 20, 30});
+        extraParams.put("max_features",new int[]{4, 7, 10});
+        extraParams.put("n_estimators",new int[]{10, 20, 30, 40});
+        //
+        train(1,1.0f,3.0f,0.1f,extraParams,"hust");
 
-    //-----模型训练进度条
-    private boolean isTraining = false;
-    private List<DiskPredictProgress> trainProgressList;
+
+
+        /*JSONObject extraParams=new JSONObject();
+        extraParams.put("max_depth",new int[]{10, 20, 30});
+        extraParams.put("max_features",new int[]{4, 7, 10});
+        extraParams.put("n_estimators",new int[]{10, 20, 30, 40});
+        train(1,1.0f,3.0f,0.1f,extraParams,"hust");*/
+
+    }
     //磁盘故障预测统计页面阈值参数
     private final double mediumLow=0.20f;
     private final double mediumHigh=0.70f;
-=======
 
 
->>>>>>> d44d1f25ad012f6e9b9154532605f92d5b3e9675
+
 
     public DispersedDataServiceImpl(){
         dataPath=System.getProperty("user.dir")+"/DiskPredict/";
@@ -94,25 +107,26 @@ public class DispersedDataServiceImpl implements DispersedDataService{
         //FIXME
         //mainTimer.schedule(diskPredictTask,0,predictInterval);
         //启动阶段以以默认参数自动训练一次
-<<<<<<< HEAD
-    }
-    @PostConstruct
-    private void initTrain(){
-        JSONObject extraParams=new JSONObject();
-        extraParams.put("max_depth",new int[]{10, 20, 30});
-        extraParams.put("max_features",new int[]{4, 7, 10});
-        extraParams.put("n_estimators",new int[]{10, 20, 30, 40});
-        //
-        train(1,1.0f,3.0f,0.1f,extraParams,"hust");
-=======
 
-        /*JSONObject extraParams=new JSONObject();
-        extraParams.put("max_depth",new int[]{10, 20, 30});
-        extraParams.put("max_features",new int[]{4, 7, 10});
-        extraParams.put("n_estimators",new int[]{10, 20, 30, 40});
-        train(1,1.0f,3.0f,0.1f,extraParams,"hust");*/
->>>>>>> d44d1f25ad012f6e9b9154532605f92d5b3e9675
     }
+//    @PostConstruct
+//    private void initTrain(){
+//        JSONObject extraParams=new JSONObject();
+//        extraParams.put("max_depth",new int[]{10, 20, 30});
+//        extraParams.put("max_features",new int[]{4, 7, 10});
+//        extraParams.put("n_estimators",new int[]{10, 20, 30, 40});
+//        //
+//        train(1,1.0f,3.0f,0.1f,extraParams,"hust");
+//
+//
+//
+//        /*JSONObject extraParams=new JSONObject();
+//        extraParams.put("max_depth",new int[]{10, 20, 30});
+//        extraParams.put("max_features",new int[]{4, 7, 10});
+//        extraParams.put("n_estimators",new int[]{10, 20, 30, 40});
+//        train(1,1.0f,3.0f,0.1f,extraParams,"hust");*/
+//
+//    }
     private Date addDay(Date date,int num){
         Calendar calendar=Calendar.getInstance();
         calendar.setTime(date);
@@ -342,23 +356,6 @@ public class DispersedDataServiceImpl implements DispersedDataService{
 
     @Override
     public void train(int modelType, float positiveDataProportion, float negativeDataProportion, float verifyProportion, JSONObject extraParams,String operatorID){
-<<<<<<< HEAD
-        Timestamp timestamp=new Timestamp(System.currentTimeMillis());
-        int modelYear=Calendar.getInstance().get(Calendar.YEAR);
-        DiskPredict.preprocess(""+modelYear,0);
-        float scale=positiveDataProportion/negativeDataProportion;
-        DiskPredict.getTrainData(""+modelYear,scale,verifyProportion);
-        List<DiskPredictProgress> progressList;
-        ArrayList<String> diskModels=new ArrayList<>();
-        if(modelType==1)
-            progressList=DiskPredict.train(""+modelYear,diskModels,extraParams);
-        else
-            progressList=DiskPredict.train(""+modelYear,diskModels,null);
-        for(String string:diskModels) {
-            diskFailureMapper.insertTrainInfo(timestamp, QueryResources.CNmodelNames[modelType - 1],
-                    string, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1, extraParams.toJSONString(),operatorID);
-
-=======
         if(!isTraining){
             isTraining = true;
             progressPercentage = new ArrayList(Arrays.asList(0,0,0));
@@ -451,7 +448,6 @@ public class DispersedDataServiceImpl implements DispersedDataService{
                 }
             });
             progressThread.start();
->>>>>>> d44d1f25ad012f6e9b9154532605f92d5b3e9675
         }
     }
 
@@ -468,7 +464,7 @@ public class DispersedDataServiceImpl implements DispersedDataService{
 
     @Override
     public String getDFPTrainList(){
-        List<TrainInfo> queryResult=diskFailureMapper.selectTrainInfoInPage();
+        List<TrainInfo> queryResult=diskFailureMapper.selectAllTrainInfo();
         JSONArray resultArray=new JSONArray();
         for(TrainInfo trainInfo:queryResult){
             JSONObject tempObject=new JSONObject();
@@ -494,27 +490,6 @@ public class DispersedDataServiceImpl implements DispersedDataService{
         return (count+pageSize-1)/pageSize;
     }
 
-    @Override
-    public String getDFPTrainList() {
-        List<TrainInfo> trainInfoList=diskFailureMapper.selectAllTrainInfo();
-        JSONArray jsonArray=new JSONArray();
-        for(TrainInfo trainInfo:trainInfoList){
-                JSONObject jsonObject=new JSONObject();
-                jsonObject.put("diskModel",trainInfo.diskModel);
-                jsonObject.put("predictModel",trainInfo.predictModel);
-                jsonObject.put("timestamp",trainInfo.timestamp);
-                jsonObject.put("parameters",trainInfo.Parameters);
-                jsonObject.put("FDR",trainInfo.FDR);
-                jsonObject.put("FNR",trainInfo.FNR);
-                jsonObject.put("FAR",trainInfo.FAR);
-                jsonObject.put("AUC",trainInfo.AUC);
-                jsonObject.put("Precision",trainInfo.Precesion);
-                jsonObject.put("ErrorRate",trainInfo.ErrorRate);
-                jsonObject.put("Accuracy",trainInfo.Accuracy);
-                jsonArray.add(jsonObject);
-        }
-        return jsonArray.toJSONString();
-    }
 
     @Override
     public String getDFPSummary() {

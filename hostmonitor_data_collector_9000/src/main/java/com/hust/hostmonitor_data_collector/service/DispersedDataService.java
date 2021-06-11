@@ -33,8 +33,6 @@ public interface DispersedDataService {
     String getSpeedMeasurementInfoAll();
 
 
-    String getDFPTrainList(int pageSize,int pageNo);
-
     String getDFPTrainList();
 
     //获取模型训练进度

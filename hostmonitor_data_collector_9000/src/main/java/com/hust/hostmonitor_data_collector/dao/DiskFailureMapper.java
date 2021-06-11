@@ -39,6 +39,7 @@ public interface DiskFailureMapper {
                            @Param("modelName")String modelName);
 
 
+
     @Insert("insert into trainInfo(timestamp,predictModel,diskModel,FDR,FAR,AUC,FNR,Accuracy,pre,Specificity,ErrorRate,extraParams,operatorID) " +
             "values (#{timestamp},#{predictModel},#{diskModel},#{FDR},#{FAR},#{AUC},#{FNR},#{Accuracy}," +
             "#{Precision},#{Specificity},#{ErrorRate},#{Parameters},#{UserId})")
@@ -55,6 +56,7 @@ public interface DiskFailureMapper {
                          @Param("FDR")float FDR, @Param("FAR")float FAR, @Param("AUC")float AUC, @Param("FNR")float FNR,
                          @Param("Accuracy")float Accuracy,@Param("Precision")float Precision,@Param("Specificity")float Specificity,
                          @Param("ErrorRate")float ErrorRate,@Param("Parameters")String Parameters,@Param("OperatorID")String OperatorID);
+
 
 
     @Update("update trainInfo set FDR=#{FDR},FAR=#{FAR},AUC=#{AUC},FNR=#{FNR},Accuracy=#{Accuracy},pre=#{Precision}," +
@@ -114,12 +116,11 @@ public interface DiskFailureMapper {
     List<TrainInfo> selectTrainModel(@Param("number") int number );
 
 
+
     @Select("select * from trainInfo where id>#{id} limit #{pageSize}")
     List<TrainInfo> selectTrainInfoInPage(@Param("id") int idLowbound,
                                           @Param("pageSize")int pageSize);
 
-    @Select("select * from trainInfo")
-    List<TrainInfo> selectAllTrainInfo();
 
     @Select("select avg(FDR),avg(FAR),avg(AUC),avg(DNR),avg(Accuracy),avg(pre),avg(Specificity),avg(ErrorRate) from trainInfo" +
             "where timestamp in (select max(timestamp) from trainInfo)")
@@ -138,6 +139,7 @@ public interface DiskFailureMapper {
 
 
     @Select("select * from trainInfo")
-    List<TrainInfo> selectTrainInfoInPage();
+    List<TrainInfo> selectAllTrainInfo();
+
 
 }
