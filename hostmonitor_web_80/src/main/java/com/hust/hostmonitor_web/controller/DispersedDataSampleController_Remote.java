@@ -101,6 +101,16 @@ public class DispersedDataSampleController_Remote {
         return getRequestData(dataCollectorUrl + "/Dispersed/getHostInfo/Trend/HostDetail/" + map.get("hostName"), 60000);
     }
 
+
+
+    @GetMapping(value="/getDFPSummaryInfo")
+    @ResponseBody
+    public String getDFPSummaryInfo(){
+        return getRequestData(dataCollectorUrl + "/Dispersed/getDFPSummaryInfo", 30000);
+    }
+
+
+
     /**
      * 获取信息-DFP-Trend-某个Host
      * 参数：hostName,diskName

@@ -420,7 +420,7 @@ const tableColumns = {
         },
 
         {
-            field: 'predictTime',
+            field: 'timestamp',
             title: '预测时间',
             width: 100,
             sortable: true,
@@ -1384,10 +1384,8 @@ function FGetDFPTrendChartOption(){
 }
 
 //故障类型统计chart
-function FGetFailureTypeStatisticsChartOption(){
-    var diskType = ["类型1","类型2","类型3","类型4","类型5",];
-    var hddCount = [0,2,8,6,3];
-    var ssdCount = [6,2,8,3,7];
+function FGetFailureTypeStatisticsChartOption(diskType,hddCount,ssdCount){
+
 
     var emphasisStyle = {
         itemStyle: {
@@ -1454,19 +1452,13 @@ function FGetFailureTypeStatisticsChartOption(){
 }
 
 //
-function FGetFailureCountStatisticsChartOption(){
-    var dataLength = 100;
-    var timestamp=new Date().getTime();
-    var resultData = [];
-    for(var i=0;i<dataLength;i++){
-        var currentDate = timestamp - (dataLength-i)*120000;
-        resultData.push([currentDate,Math.ceil(Math.random()*10)]);
-    }
+function FGetFailureCountStatisticsChartOption(seriesData){
+
 
 
     var FailureCountStatisticsChartOption = {
         title: {
-            text: "故障盘数量统计",
+            text: "故障盘数量趋势",
             left: '48%',
         },
         grid: {
@@ -1520,7 +1512,7 @@ function FGetFailureCountStatisticsChartOption(){
             type: 'line',
             showSymbol: false,
             hoverAnimation: false,
-            data: resultData,
+            data: seriesData,
         },
     };
     return FailureCountStatisticsChartOption;
