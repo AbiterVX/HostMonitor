@@ -40,13 +40,13 @@ public interface DiskFailureMapper {
 
 
 
-    @Insert("insert into trainInfo(timestamp,predictModel,diskModel,FDR,FAR,AUC,FNR,Accuracy,pre,Specificity,ErrorRate,extraParams,operatorID) " +
-            "values (#{timestamp},#{predictModel},#{diskModel},#{FDR},#{FAR},#{AUC},#{FNR},#{Accuracy}," +
-            "#{Precision},#{Specificity},#{ErrorRate},#{Parameters},#{UserId})")
-    void insertTrainInfo(@Param("timestamp")Timestamp timestamp, @Param("predictModel")String predictModel, @Param("diskModel")String diskModel,
-                         @Param("FDR")double FDR, @Param("FAR")double FAR, @Param("AUC")double AUC, @Param("FNR")double FNR,
-                         @Param("Accuracy")double Accuracy,@Param("Precision")double precision,@Param("Specificity")double Specificity,
-                         @Param("ErrorRate")double ErrorRate,@Param("Parameters")String Parameters,@Param("UserId")String UserId);
+//    @Insert("insert into trainInfo(timestamp,predictModel,diskModel,FDR,FAR,AUC,FNR,Accuracy,pre,Specificity,ErrorRate,extraParams,operatorID) " +
+//            "values (#{timestamp},#{predictModel},#{diskModel},#{FDR},#{FAR},#{AUC},#{FNR},#{Accuracy}," +
+//            "#{Precision},#{Specificity},#{ErrorRate},#{Parameters},#{UserId})")
+//    void insertTrainInfo(@Param("timestamp")Timestamp timestamp, @Param("predictModel")String predictModel, @Param("diskModel")String diskModel,
+//                         @Param("FDR")double FDR, @Param("FAR")double FAR, @Param("AUC")double AUC, @Param("FNR")double FNR,
+//                         @Param("Accuracy")double Accuracy,@Param("Precision")double precision,@Param("Specificity")double Specificity,
+//                         @Param("ErrorRate")double ErrorRate,@Param("Parameters")String Parameters,@Param("UserId")String UserId);
 
     @Insert("set @date=now();\n" +
             "insert into trainInfo values (@date,#{PredictModel},#{DiskModel}, " +
@@ -59,7 +59,7 @@ public interface DiskFailureMapper {
 
 
 
-    @Update("update trainInfo set FDR=#{FDR},FAR=#{FAR},AUC=#{AUC},FNR=#{FNR},Accuracy=#{Accuracy},pre=#{Precision}," +
+    @Update("update trainInfo set FDR=#{FDR},FAR=#{FAR},AUC=#{AUC},FNR=#{FNR},Accuracy=#{Accuracy},Pre=#{Precision}," +
             "Specificity=#{Specificity},ErrorRate=#{ErrorRate} where timestamp=#{timestamp},predictModel=#{predictModel},diskModel=#{diskModel}")
     void updateTrainInfo(@Param("timestamp")Timestamp timestamp, @Param("predictModel")String predictModel, @Param("diskModel")String diskModel,
                          @Param("FDR")double FDR, @Param("FAR")double FAR, @Param("AUC")double AUC, @Param("FNR")double FNR,
@@ -91,7 +91,7 @@ public interface DiskFailureMapper {
     List<HardWithDFPRecord> selectLatestDFPWithHardwareRecordList();
 
     @Select("select a.diskSerial,a.timestamp,a.predictProbability,a.modelName,b.hostName,b.size,b.isSSd,b.model from " +
-            "diskDFPInfo a join diskHardwareInfo b on a.diskSerial=b.diskSerial where timestamp>=#{timestamp} order by timestamp")
+            "diskDFPInfo a join diskHardwareInfo b on a.diskSerial=b.diskSerial where timestamp>=#{lowbound} order by timestamp")
     List<HardWithDFPRecord> selectRecentDFPWithHardwareRecordList(@Param("lowbound")Timestamp timestamp);
 
     @Select("select a.diskSerial,b.hostName,b.isSSd,a.timestamp,a.predictProbability,a.modelName from " +
@@ -101,8 +101,9 @@ public interface DiskFailureMapper {
     @Select("select max(timestamp) from diskDFPInfo")
     Timestamp selectLatestRecordTime();
 
-    @Select("select * from diskDFPInfo where timestamp>=#{lowbound}")
-    List<DFPRecord> selectDFPRecords(@Param("lowbound")Timestamp lowbound);
+    @Select("select a.diskSerial,b.hostName,b.isSSd,a.timestamp,a.predictProbability,a.modelName" +
+            " from diskDFPInfo a join diskHardwareInfo b on a.diskSerial=b.diskSerial where timestamp>=#{lowbound}")
+    List<DFPRecord> selectDFPRecordsByLowbound(@Param("lowbound")Timestamp lowbound);
 
     @Select("select diskSerial from diskHardwareInfo where diskSerial=#{diskSerial}")
     String queryDiskHardwareExists(@Param("diskSerial") String diskName);
@@ -122,7 +123,7 @@ public interface DiskFailureMapper {
                                           @Param("pageSize")int pageSize);
 
 
-    @Select("select avg(FDR),avg(FAR),avg(AUC),avg(DNR),avg(Accuracy),avg(pre),avg(Specificity),avg(ErrorRate) from trainInfo" +
+    @Select("select avg(FDR) FDR,avg(FAR) FAR,avg(AUC) AUC,avg(FNR) FNR,avg(Accuracy) Accuracy,avg(Pre) Pre,avg(Specificity) Specificity,avg(ErrorRate) ErrorRate from trainInfo " +
             "where timestamp in (select max(timestamp) from trainInfo)")
     StatisRecord selectLatestTrainingSummary();
 

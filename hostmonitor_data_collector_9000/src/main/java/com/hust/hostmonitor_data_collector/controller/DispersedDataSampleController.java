@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.hust.hostmonitor_data_collector.service.DispersedDataService;
 import com.hust.hostmonitor_data_collector.service.DispersedDataServiceImpl;
+import com.hust.hostmonitor_data_collector.service.testService;
 import com.hust.hostmonitor_data_collector.utils.DiskPredict.DiskPredictProgress;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -18,7 +19,8 @@ import java.util.Map;
 public class DispersedDataSampleController {
     @Resource
     DispersedDataService dispersedDataService;
-
+    @Autowired
+    testService testService1;
     /**
      * 获取信息-Dashboard-Summary统计
      * 格式：{"summary":}
@@ -189,7 +191,13 @@ public class DispersedDataSampleController {
 
 
     }
-
+//    @GetMapping(value = "/insertTestData")
+//    @ResponseBody
+//    public String signUp() {
+//        testService1.insertTestData();
+//        return "hhhh";
+//
+//    }
 
 
 }

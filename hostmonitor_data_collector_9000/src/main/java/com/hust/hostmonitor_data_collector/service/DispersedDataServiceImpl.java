@@ -64,25 +64,6 @@ public class DispersedDataServiceImpl implements DispersedDataService{
         }
     };
 
-
-    @PostConstruct
-    private void initTrain(){
-        JSONObject extraParams=new JSONObject();
-        extraParams.put("max_depth",new int[]{10, 20, 30});
-        extraParams.put("max_features",new int[]{4, 7, 10});
-        extraParams.put("n_estimators",new int[]{10, 20, 30, 40});
-        //
-        train(1,1.0f,3.0f,0.1f,extraParams,"hust");
-
-
-
-        /*JSONObject extraParams=new JSONObject();
-        extraParams.put("max_depth",new int[]{10, 20, 30});
-        extraParams.put("max_features",new int[]{4, 7, 10});
-        extraParams.put("n_estimators",new int[]{10, 20, 30, 40});
-        train(1,1.0f,3.0f,0.1f,extraParams,"hust");*/
-
-    }
     //磁盘故障预测统计页面阈值参数
     private final double mediumLow=0.20f;
     private final double mediumHigh=0.70f;
@@ -496,33 +477,50 @@ public class DispersedDataServiceImpl implements DispersedDataService{
         JSONObject result=new JSONObject();
 
         //左侧表格,取出最新的模型的性能数据
-        JSONObject leftChart=new JSONObject();
+        JSONArray comparison=new JSONArray();
         StatisRecord statisRecord=diskFailureMapper.selectLatestTrainingSummary();
-        leftChart.put("FDR",new JSONArray());
-        leftChart.getJSONArray("FDR").add(statisRecord.FDR);
-        leftChart.getJSONArray("FDR").add(0.6);
-        leftChart.put("FAR",new JSONArray());
-        leftChart.getJSONArray("FAR").add(statisRecord.FAR);
-        leftChart.getJSONArray("FAR").add(0.6);
-        leftChart.put("AUC",new JSONArray());
-        leftChart.getJSONArray("AUC").add(statisRecord.AUC);
-        leftChart.getJSONArray("AUC").add(0.6);
-        leftChart.put("FNR",new JSONArray());
-        leftChart.getJSONArray("FNR").add(statisRecord.FNR);
-        leftChart.getJSONArray("FNR").add(0.6);
-        leftChart.put("Accuracy",new JSONArray());
-        leftChart.getJSONArray("Accuracy").add(statisRecord.Accuracy);
-        leftChart.getJSONArray("Accuracy").add(0.6);
-        leftChart.put("Precision",new JSONArray());
-        leftChart.getJSONArray("Precision").add(statisRecord.Precision);
-        leftChart.getJSONArray("Precision").add(0.6);
-        leftChart.put("Specificity",new JSONArray());
-        leftChart.getJSONArray("Specificity").add(statisRecord.Specificity);
-        leftChart.getJSONArray("Specificity").add(0.6);
-        leftChart.put("ErrorRate",new JSONArray());
-        leftChart.getJSONArray("ErrorRate").add(statisRecord.ErrorRate);
-        leftChart.getJSONArray("ErrorRate").add(0.6);
-        result.put("leftChart",leftChart);
+        JSONObject tempObject;
+        tempObject=new JSONObject();
+        tempObject.put("field","FDR");
+        tempObject.put("predict",statisRecord.FDR);
+        tempObject.put("reality",0.6);
+        comparison.add(tempObject);
+        tempObject=new JSONObject();
+        tempObject.put("field","FAR");
+        tempObject.put("predict",statisRecord.FAR);
+        tempObject.put("reality",0.6);
+        comparison.add(tempObject);
+        tempObject=new JSONObject();
+        tempObject.put("field","AUC");
+        tempObject.put("predict",statisRecord.AUC);
+        tempObject.put("reality",0.6);
+        comparison.add(tempObject);
+        tempObject=new JSONObject();
+        tempObject.put("field","FNR");
+        tempObject.put("predict",statisRecord.FNR);
+        tempObject.put("reality",0.6);
+        comparison.add(tempObject);
+        tempObject=new JSONObject();
+        tempObject.put("field","Accuracy");
+        tempObject.put("predict",statisRecord.Accuracy);
+        tempObject.put("reality",0.6);
+        comparison.add(tempObject);
+        tempObject=new JSONObject();
+        tempObject.put("field","Precision");
+        tempObject.put("predict",statisRecord.Precision);
+        tempObject.put("reality",0.6);
+        comparison.add(tempObject);
+        tempObject=new JSONObject();
+        tempObject.put("field","Specificity");
+        tempObject.put("predict",statisRecord.Specificity);
+        tempObject.put("reality",0.6);
+        comparison.add(tempObject);
+        tempObject=new JSONObject();
+        tempObject.put("field","ErrorRate");
+        tempObject.put("predict",statisRecord.ErrorRate);
+        tempObject.put("reality",0.6);
+        comparison.add(tempObject);
+        result.put("dfpComparison",comparison);
         //仪表盘
         Timestamp timestamp=diskFailureMapper.selectLatestRecordTime();
         Calendar calendar=Calendar.getInstance();
@@ -532,7 +530,7 @@ public class DispersedDataServiceImpl implements DispersedDataService{
         calendar.set(Calendar.HOUR_OF_DAY,0);
         Timestamp lowbound=new Timestamp(calendar.getTimeInMillis());
 
-        List<DFPRecord> queryList=diskFailureMapper.selectDFPRecords(lowbound);
+        List<DFPRecord> queryList=diskFailureMapper.selectDFPRecordsByLowbound(lowbound);
         int lowCount=0,mediumCount=0,highCount=0;
         for(DFPRecord dfpRecord:queryList){
             if(dfpRecord.predictProbability<=mediumLow){
@@ -545,16 +543,21 @@ public class DispersedDataServiceImpl implements DispersedDataService{
                 mediumCount++;
             }
         }
-        double lowProportion,mediumProportion,highProportion;
-        int totalCount=lowCount+mediumCount+highCount;
-        lowProportion=doubleTo2bits_double(lowCount*1.0/totalCount);
-        mediumProportion=doubleTo2bits_double(mediumCount*1.0/totalCount);
-        highProportion=doubleTo2bits_double(1-lowProportion-mediumProportion);
-        JSONArray diskProbabilityStatistic=new JSONArray();
-        result.put("diskProbabilityStatistic",diskProbabilityStatistic);
-        result.getJSONArray("diskProbabilityStatistic").add(lowProportion);
-        result.getJSONArray("diskProbabilityStatistic").add(mediumProportion);
-        result.getJSONArray("diskProbabilityStatistic").add(highProportion);
+//        double lowProportion,mediumProportion,highProportion;
+//        int totalCount=lowCount+mediumCount+highCount;
+//        lowProportion=doubleTo2bits_double(lowCount*1.0/totalCount);
+//        mediumProportion=doubleTo2bits_double(mediumCount*1.0/totalCount);
+//        highProportion=doubleTo2bits_double(1-lowProportion-mediumProportion);
+//        JSONArray diskProbabilityStatistic=new JSONArray();
+        JSONArray SummaryChart=new JSONArray();
+        SummaryChart.add(lowCount);
+        SummaryChart.add(mediumCount);
+        SummaryChart.add(highCount);
+        result.put("SummaryChart",SummaryChart);
+//        result.put("diskProbabilityStatistic",diskProbabilityStatistic);
+//        result.getJSONArray("diskProbabilityStatistic").add(lowProportion);
+//        result.getJSONArray("diskProbabilityStatistic").add(mediumProportion);
+//        result.getJSONArray("diskProbabilityStatistic").add(highProportion);
         //条状图，先用预测的结果替代
 //        timestamp=diskFailureMapper.selectLatestFailureTime();
 //        calendar.setTimeInMillis(timestamp.getTime());
@@ -570,19 +573,25 @@ public class DispersedDataServiceImpl implements DispersedDataService{
 //        }
         //TODO 临时版本 ,暂定四个厂商
         List<HardWithDFPRecord> RecordList=diskFailureMapper.selectRecentDFPWithHardwareRecordList(lowbound);
-        JSONObject rightChart=new JSONObject();
-        rightChart.put("西部数据",new JSONArray());
-        rightChart.put("希捷",new JSONArray());
-        rightChart.put("东芝",new JSONArray());
-        rightChart.put("三星",new JSONArray());
-        rightChart.put("其他",new JSONArray());
+//        JSONObject rightChart=new JSONObject();
+//        rightChart.put("西部数据",new JSONArray());
+//        rightChart.put("希捷",new JSONArray());
+//        rightChart.put("东芝",new JSONArray());
+//        rightChart.put("三星",new JSONArray());
+//        rightChart.put("其他",new JSONArray());
+        JSONArray brands=new JSONArray();
+        brands.add("西部数据");
+        brands.add("希捷");
+        brands.add("东芝");
+        brands.add("三星");
+        brands.add("其他");
         int[] count=new int[10];
         for(int i=0;i<10;i++){
             count[i]=0;
         }
         for(HardWithDFPRecord hardWithDFPRecord:RecordList){
             int index;
-            if(hardWithDFPRecord.predictProbability>=0.7f){
+            if(hardWithDFPRecord.predictProbability<=mediumLow){
                 index=QueryResources.queryDiskIndex(hardWithDFPRecord.diskSerial);
                 index*=2;
                 if(!hardWithDFPRecord.isSSd){
@@ -591,22 +600,39 @@ public class DispersedDataServiceImpl implements DispersedDataService{
                 count[index]++;
             }
         }
-        rightChart.getJSONArray("西部数据").add(count[0]);
-        rightChart.getJSONArray("西部数据").add(count[1]);
-        rightChart.getJSONArray("希捷").add(count[2]);
-        rightChart.getJSONArray("希捷").add(count[3]);
-        rightChart.getJSONArray("东芝").add(count[4]);
-        rightChart.getJSONArray("东芝").add(count[5]);
-        rightChart.getJSONArray("三星").add(count[6]);
-        rightChart.getJSONArray("三星").add(count[7]);
-        rightChart.getJSONArray("其他").add(count[8]);
-        rightChart.getJSONArray("其他").add(count[9]);
-        result.put("rightChart",rightChart);
+//        rightChart.getJSONArray("西部数据").add(count[0]);
+//        rightChart.getJSONArray("西部数据").add(count[1]);
+//        rightChart.getJSONArray("希捷").add(count[2]);
+//        rightChart.getJSONArray("希捷").add(count[3]);
+//        rightChart.getJSONArray("东芝").add(count[4]);
+//        rightChart.getJSONArray("东芝").add(count[5]);
+//        rightChart.getJSONArray("三星").add(count[6]);
+//        rightChart.getJSONArray("三星").add(count[7]);
+//        rightChart.getJSONArray("其他").add(count[8]);
+//        rightChart.getJSONArray("其他").add(count[9]);
+//        result.put("rightChart",rightChart);
+        JSONArray hddCount=new JSONArray();
+        JSONArray ssdCount=new JSONArray();
+        ssdCount.add(count[0]);
+        ssdCount.add(count[2]);
+        ssdCount.add(count[4]);
+        ssdCount.add(count[6]);
+        ssdCount.add(count[8]);
+        hddCount.add(count[1]);
+        hddCount.add(count[3]);
+        hddCount.add(count[5]);
+        hddCount.add(count[7]);
+        hddCount.add(count[9]);
+        result.put("diskType",brands);
+        result.put("ssdCount",ssdCount);
+        result.put("hddCount",hddCount);
+
+
         //错误盘数趋势图,统计的是两周的，每天的磁盘损坏数量
-        JSONArray lowTrend=new JSONArray();
+        JSONArray Trend=new JSONArray();
         calendar.add(Calendar.DAY_OF_MONTH,-13);
 
-        lowbound=new Timestamp(System.currentTimeMillis());
+        lowbound=new Timestamp(calendar.getTimeInMillis());
         RecordList=diskFailureMapper.selectRecentDFPWithHardwareRecordList(lowbound);
         int[] twoWeeks=new int[14];
         for(int i=0;i<14;i++){
@@ -621,7 +647,7 @@ public class DispersedDataServiceImpl implements DispersedDataService{
                 calendar.add(Calendar.DAY_OF_MONTH,1);
                 highbound=calendar.getTimeInMillis();
             }
-            if(hardWithDFPRecord.predictProbability>0.7f){
+            if(hardWithDFPRecord.predictProbability<=mediumLow){
                 twoWeeks[i]++;
             }
 
@@ -631,10 +657,10 @@ public class DispersedDataServiceImpl implements DispersedDataService{
             JSONArray tempJSONArray=new JSONArray();
             tempJSONArray.add(new Timestamp(calendar.getTimeInMillis()));
             tempJSONArray.add(twoWeeks[j]);
-            lowTrend.add(tempJSONArray);
+            Trend.add(tempJSONArray);
             calendar.add(Calendar.DAY_OF_MONTH,1);
         }
-        result.put("lowTrend",lowTrend);
+        result.put("trend",Trend);
         return result.toJSONString();
     }
 }
