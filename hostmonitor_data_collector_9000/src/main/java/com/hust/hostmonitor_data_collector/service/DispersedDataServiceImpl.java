@@ -40,6 +40,7 @@ public class DispersedDataServiceImpl implements DispersedDataService{
     private long DiskPredictTime;
     private Timer mainTimer = new Timer();
     private final SimpleDateFormat sdf=new SimpleDateFormat("yyyy-MM-dd");
+
     //定时器任务
     private final TimerTask dataPersistanceTask = new TimerTask() {
         @Override
@@ -85,8 +86,6 @@ public class DispersedDataServiceImpl implements DispersedDataService{
             date=addDay(date,1);
         }
         System.out.println(date);
-        System.out.println("[TimerTask:Disk Predict]Init Disk Predict:"+new Date());
-        diskPredict();
         mainTimer.schedule(diskPredictTask,date,predictInterval);
 
     }
@@ -108,6 +107,18 @@ public class DispersedDataServiceImpl implements DispersedDataService{
 //        train(1,1.0f,3.0f,0.1f,extraParams,"hust");*/
 //
 //    }
+//    @PostConstruct
+//    private void initPredict(){
+//        //TODO check检查存在模型可用或是直接训练,
+//
+//        File modelConfig=new File(dataPath+"models/features.json");
+//        if(!modelConfig.exists()){
+//            System.out.println("No models exist");
+//            return;
+//        }
+//        System.out.println("[TimerTask:Disk Predict]Init Disk Predict:"+new Date());
+//        diskPredict();
+//    }
     private Date addDay(Date date,int num){
         Calendar calendar=Calendar.getInstance();
         calendar.setTime(date);
@@ -122,7 +133,7 @@ public class DispersedDataServiceImpl implements DispersedDataService{
     private DiskPredictProgress getTrainDataProgress;
     private List<DiskPredictProgress> trainProgress;
     List<Float> progressPercentage = new ArrayList(Arrays.asList(-1,-1,-1));
-
+    private boolean doSpecPredict=false;
     //获取模型训练进度
     @Override
     public List<Float> getTrainProgress(){
@@ -351,11 +362,12 @@ public class DispersedDataServiceImpl implements DispersedDataService{
         DiskPredict.predictWithoutProgess(System.getProperty("user.dir")+"/DiskPredict/original_data/"+calendar.get(Calendar.YEAR)+"/"+(calendar.get(Calendar.MONTH)+1),date+".csv");
         //+"/"+date+".csv"
         //在路径下读出所有的预测结果
-        List<JSONObject> result=DiskPredict.getDiskPredictResult("/DiskPredict/result/"+sdf.format(new Date())+"/"+sdf.format(new Date())+".csv");
+        List<JSONObject> result=DiskPredict.getDiskPredictResult("/DiskPredict/result/"+sdf.format(new Date())+"/"+date+".csv");
         // 插入数据库，注意修改接受文件时同时修改下列状态
         for(JSONObject jsonObject:result) {
             System.out.println(jsonObject);
-            diskFailureMapper.insertDiskDFPInfo(jsonObject.getString("diskSerial"), jsonObject.getTimestamp("timestamp"), doubleTo2bits_double(jsonObject.getDoubleValue("predictProbability")*100), jsonObject.getString("modelName"));
+            if(diskFailureMapper.checkRecordExists(jsonObject.getString("diskSerial"), jsonObject.getTimestamp("timestamp"))==0)
+                diskFailureMapper.insertDiskDFPInfo(jsonObject.getString("diskSerial"), jsonObject.getTimestamp("timestamp"), doubleTo2bits_double(jsonObject.getDoubleValue("predictProbability")*100), jsonObject.getString("modelName"));
         }
     }
     //TODO 用户名改IP？？
@@ -369,7 +381,6 @@ public class DispersedDataServiceImpl implements DispersedDataService{
             preprocessProgress = null;
             getTrainDataProgress = null;
             trainProgress = null;
-
             Thread progressThread = new Thread(() -> {
                 try {
                     int modelYear= 2016;
@@ -377,6 +388,7 @@ public class DispersedDataServiceImpl implements DispersedDataService{
                     File originalData=new File(dataPath+"original_data/"+latestYear);
                     if(originalData.exists()){
                         modelYear=latestYear;
+                        doSpecPredict=true;
                     }
                     //
                     while (isTraining){
@@ -459,6 +471,11 @@ public class DispersedDataServiceImpl implements DispersedDataService{
             });
             progressThread.start();
         }
+
+        if(doSpecPredict){
+            System.out.println("Special disk predict task");
+            diskPredict();
+        }
     }
 
     //1 admin,2 superAdmin
@@ -508,36 +525,57 @@ public class DispersedDataServiceImpl implements DispersedDataService{
         //左侧表格,取出最新的模型的性能数据
         JSONArray comparison=new JSONArray();
         StatisRecord statisRecord=diskFailureMapper.selectLatestTrainingSummary();
+
         JSONObject tempObject;
+        if(statisRecord==null){
+            comparison.add(new JSONObject());
+            comparison.add(new JSONObject());
+            result.put("comparison",comparison);
+        }
+        else {
+            tempObject = new JSONObject();
+            tempObject.put("field", "predict");
+            tempObject.put("FDR", statisRecord.FDR);
+            tempObject.put("FAR", statisRecord.FAR);
+            tempObject.put("AUC", statisRecord.AUC);
+            tempObject.put("FNR", statisRecord.FNR);
+            tempObject.put("Accuracy", statisRecord.Accuracy);
+            tempObject.put("Precision", statisRecord.Accuracy);
+            tempObject.put("Specificity", statisRecord.Accuracy);
+            tempObject.put("ErrorRate", statisRecord.Accuracy);
+            comparison.add(tempObject);
 
-        tempObject=new JSONObject();
-        tempObject.put("field","predict");
-        tempObject.put("FDR",statisRecord.FDR);
-        tempObject.put("FAR",statisRecord.FAR);
-        tempObject.put("AUC",statisRecord.AUC);
-        tempObject.put("FNR",statisRecord.FNR);
-        tempObject.put("Accuracy",statisRecord.Accuracy);
-        tempObject.put("Precision",statisRecord.Accuracy);
-        tempObject.put("Specificity",statisRecord.Accuracy);
-        tempObject.put("ErrorRate",statisRecord.Accuracy);
-        comparison.add(tempObject);
+            tempObject = new JSONObject();
+            tempObject.put("field", "reality");
+            tempObject.put("FDR", 0.6);
+            tempObject.put("FAR", 0.6);
+            tempObject.put("AUC", 0.6);
+            tempObject.put("FNR", 0.6);
+            tempObject.put("Accuracy", 0.6);
+            tempObject.put("Precision", 0.6);
+            tempObject.put("Specificity", 0.6);
+            tempObject.put("ErrorRate", 0.6);
+            comparison.add(tempObject);
 
-        tempObject=new JSONObject();
-        tempObject.put("field","reality");
-        tempObject.put("FDR",0.6);
-        tempObject.put("FAR",0.6);
-        tempObject.put("AUC",0.6);
-        tempObject.put("FNR",0.6);
-        tempObject.put("Accuracy",0.6);
-        tempObject.put("Precision",0.6);
-        tempObject.put("Specificity",0.6);
-        tempObject.put("ErrorRate",0.6);
-        comparison.add(tempObject);
-
-        result.put("dfpComparison",comparison);
+            result.put("dfpComparison", comparison);
+        }
         //仪表盘
         Timestamp timestamp=diskFailureMapper.selectLatestRecordTime();
+        if(timestamp==null){
+            System.out.println("There is no dfp records in mysql");
+            JSONArray SummaryChart=new JSONArray();
+            SummaryChart.add(0);
+            SummaryChart.add(0);
+            SummaryChart.add(0);
+            result.put("SummaryChart",SummaryChart);
+            result.put("diskType",new JSONArray());
+            result.put("ssdCount",new JSONArray());
+            result.put("hddCount",new JSONArray());
+            result.put("trend",new JSONArray());
+            return result.toJSONString();
+        }
         Calendar calendar=Calendar.getInstance();
+
         calendar.setTimeInMillis(timestamp.getTime());
         calendar.set(Calendar.MINUTE,0);
         calendar.set(Calendar.SECOND,0);

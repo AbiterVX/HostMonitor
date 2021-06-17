@@ -3,6 +3,7 @@ package com.hust.hostmonitor_data_collector.dao;
 import com.hust.hostmonitor_data_collector.dao.entity.*;
 import org.apache.ibatis.annotations.*;
 
+import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.List;
 
@@ -144,5 +145,7 @@ public interface DiskFailureMapper {
     @Select("select * from trainInfo")
     List<TrainInfo> selectAllTrainInfo();
 
-
+    @Select("select count(*) from diskDFPInfo where diskSerial=#{diskSerial} and timestamp#{timestamp}")
+    int checkRecordExists(@Param("diskSerial")String diskSerial,
+                          @Param("timestamp")Timestamp timestamp);
 }
