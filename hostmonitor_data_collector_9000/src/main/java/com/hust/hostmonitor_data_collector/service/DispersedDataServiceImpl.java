@@ -375,7 +375,7 @@ public class DispersedDataServiceImpl implements DispersedDataService{
                     int modelYear= 2016;
                     int latestYear=Calendar.getInstance().get(Calendar.YEAR);
                     File originalData=new File(dataPath+"original_data/"+latestYear);
-                    if(originalData.exists()&&false){
+                    if(originalData.exists()){
                         modelYear=latestYear;
                     }
                     //
