@@ -29,26 +29,28 @@
 <body>
     <!--标题-->
     <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
-        <h2 class="h2">当前故障统计</h2>
+        <h2 class="h2">系统概况</h2>
     </div>
 
+    <div style="margin-bottom: 30px;">
+        <table id="dfpComparison"></table>
+    </div>
+
+
     <div class="row"  style="margin-bottom: 10px;">
-        <!--Chart-->
-        <div class="col-sm-3">
-            <table id="dfpComparison"></table>
+        <div class="col-sm-9">
+            <div id="FailureTypeStatisticsChart" style="width: 100%;height: 300px;"></div>
         </div>
         <div class="col-sm-3">
             <div id="DFPSummaryChart" style="width: 300px;height: 300px;"></div>
         </div>
-        <div class="col-sm-6">
-            <div id="FailureTypeStatisticsChart" style="width: 100%;height: 300px;"></div>
-        </div>
+
     </div>
 
 
     <!--标题-->
     <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
-        <h2 class="h2">故障趋势</h2>
+        <h2 class="h2">故障盘数量趋势</h2>
     </div>
 
     <div class="row">
@@ -67,7 +69,7 @@
         //刷新SummaryChart
         FSendGetRequest(false,"/Dispersed/getDFPSummaryInfo",function (resultData){
             //-----测速数据
-            var resultData = {};
+            /*var resultData = {};
             resultData["dfpComparison"] = [
                 {
                     field:"FDR",
@@ -105,12 +107,12 @@
             for(var i=0;i<dataLength;i++){
                 var currentDate = timestamp - (dataLength-i)*120000;
                 resultData["trend"].push([currentDate,Math.ceil(Math.random()*10)]);
-            }
+            }*/
 
             //预期与实际对比
             $('#dfpComparison').bootstrapTable({
                 columns: tableColumns["dfpComparison"],
-                data: resultData["dfpComparison"],
+                data: resultData["dfpComparison"][i],
             });
             //故障类型统计
             FailureTypeStatisticsChart.setOption(FGetFailureTypeStatisticsChartOption(resultData["diskType"],resultData["hddCount"],resultData["ssdCount"]));

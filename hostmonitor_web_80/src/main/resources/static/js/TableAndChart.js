@@ -60,15 +60,87 @@ var diskType = ["HDD","SSD"];
 var userType = ["普通用户","管理员","超级管理员"];
 var userValid = ["禁用","启用"];
 
+function FTableColorFormatter(partitionList,colorList,value,displayValue){
+    var color = "";
+    for(var i=0;i<partitionList.length;i++){
+        if(value < partitionList[i]){
+            color = colorList[i];
+            break;
+        }
+    }
+    return '<span style="font-weight:bold;color:'+ color +'">'+displayValue+'</span>';
+}
 
+function FTableColorFormaterCustomColor(value){
+    return '<span style="font-weight:bold;color:#5571C6FF">'+value+'</span>';
+}
 
 //表格标题
 const tableColumns = {
+    summaryPart:[
+        {
+            field: 'hostCount',
+            title: '节点个数',
+            width: 100,
+            formatter : function (value, row, index) {
+                return '<span style="font-weight:bold;">节点个数: </span> ' + value;
+            }
+        },
+        {
+            field: 'connectedCount',
+            title: '已连接个数',
+            width: 100,
+            formatter : function (value, row, index) {
+                return '<span style="font-weight:bold;">已连接个数: </span> ' + value;
+            }
+        },
+        {
+            field: 'sumCapacity',
+            title: '总容量',
+            width: 100,
+            formatter : function (value, row, index) {
+                return '<span style="font-weight:bold;">总容量: </span> ' + FGetGBWithUnit(value);
+            }
+        },
+        {
+            field: 'windowsHostCount',
+            title: 'Windows',
+            width: 100,
+            formatter : function (value, row, index) {
+                return "<span style=\"font-weight:bold;\">Windows: </span> "+value;
+            }
+        },
+        {
+            field: 'linuxHostCount',
+            title: 'Linux',
+            width: 100,
+            formatter : function (value, row, index) {
+                return "<span style=\"font-weight:bold;\">Linux: </span> "+value;
+            }
+        },
+        {
+            field: 'hddCount',
+            title: 'HDD',
+            width: 100,
+            formatter : function (value, row, index) {
+                return "<span style=\"font-weight:bold;\">HDD: </span> "+value;
+            }
+        },
+        {
+            field: 'ssdCount',
+            title: 'SSD',
+            width: 100,
+            formatter : function (value, row, index) {
+                return "<span style=\"font-weight:bold;\">SSD: </span> "+value;
+            }
+        },
+    ],
+
     //概要-1
     summaryPart1: [
         {
             field: 'hostCount',
-            title: '主机个数',
+            title: '节点个数',
             width: 100,
             formatter : function (value, row, index) {
                 return value[0] + " / " + value[1];
@@ -89,11 +161,17 @@ const tableColumns = {
             field: 'windowsHostCount',
             title: 'Windows',
             width: 100,
+            formatter : function (value, row, index) {
+                return "Windows: "+value;
+            }
         },
         {
             field: 'linuxHostCount',
             title: 'Linux',
             width: 100,
+            formatter : function (value, row, index) {
+                return "Linux: "+value;
+            }
         },
     ],
     //概要-3
@@ -102,15 +180,26 @@ const tableColumns = {
             field: 'hddCount',
             title: 'HDD',
             width: 100,
+            formatter : function (value, row, index) {
+                return "HDD: "+value;
+            }
         },
         {
             field: 'ssdCount',
             title: 'SSD',
             width: 100,
+            formatter : function (value, row, index) {
+                return "SSD: "+value;
+            }
         },
     ],
     //主机状态-1
     hostInfo1: [
+        {
+            field: 'ip',
+            title: 'IP',
+            width: 100,
+        },
         {
             field: 'osName',
             title: '操作系统',
@@ -119,11 +208,9 @@ const tableColumns = {
         {
             field: 'cpuUsage',
             title: 'CPU使用率',
-            width: 100,
+            width: 70,
             formatter : function (value, row, index) {
-
-                loadPartition[""];
-                return FGetPercentageWithUnit(value);
+                return FTableColorFormatter(loadPartition["cpu"],customPartitionColor,value,FGetPercentageWithUnit(value));
             }
         },
         {
@@ -131,7 +218,7 @@ const tableColumns = {
             title: '内存使用率',
             width: 100,
             formatter : function (value, row, index) {
-                return FGetMBWithUnit(value[0]) + " / " +FGetMBWithUnit(value[1]);
+                return FTableColorFormatter(loadPartition["memory"],customPartitionColor,value[0]/value[1]*100,FGetMBWithUnit(value[0]) + " / " +FGetMBWithUnit(value[1]));
             }
         },
         {
@@ -139,24 +226,42 @@ const tableColumns = {
             title: '硬盘容量',
             width: 100,
             formatter : function (value, row, index) {
-                return FGetGBWithUnit(value[0]) + " / " +FGetGBWithUnit(value[1]);
+                return FTableColorFormatter(loadPartition["disk"],customPartitionColor,value[0]/value[1]*100,FGetGBWithUnit(value[0]) + " / " +FGetGBWithUnit(value[1]));
             }
         },
         {
             field: 'netReceiveSpeed',
             title: '网络接受',
-            width: 100,
+            width: 70,
             formatter : function (value, row, index) {
-                return FGetKbWithUnit(value) +"/s";
+                return FTableColorFormaterCustomColor(FGetKbWithUnit(value) +"/s");
             }
         },
         {
             field: 'netSendSpeed',
             title: '网络发送',
-            width: 100,
+            width: 70,
             formatter : function (value, row, index) {
-                return FGetKbWithUnit(value)+"/s";
+                return FTableColorFormaterCustomColor(FGetKbWithUnit(value)+"/s");
             }
+        },
+        {
+            field: 'diskIOPS',
+            title: 'iops',
+            width: 50,
+            sortable: true,
+        },
+        {
+            field: 'diskReadSpeed',
+            title: '硬盘读取',
+            width: 70,
+            sortable: true,
+        },
+        {
+            field: 'diskWriteSpeed',
+            title: '硬盘写入',
+            width: 70,
+            sortable: true,
         },
     ],
     //磁盘状态
@@ -176,7 +281,7 @@ const tableColumns = {
                 return (a[0]/a[1]) - (b[0]/b[1]);
             },
             formatter : function (value, row, index) {
-                return FGetGBWithUnit(value[0]) + " / " +FGetGBWithUnit(value[1]);
+                return FTableColorFormatter(loadPartition["disk"],customPartitionColor,value[0]/value[1]*100,FGetGBWithUnit(value[0]) + " / " +FGetGBWithUnit(value[1]));
             }
         },
         {
@@ -185,7 +290,7 @@ const tableColumns = {
             width: 100,
             sortable: true,
             formatter : function (value, row, index) {
-                return FGetPercentageWithUnit(value);
+                return FTableColorFormatter(loadPartition["disk"],customPartitionColor,value,FGetPercentageWithUnit(value));
             }
         },
         {
@@ -193,6 +298,9 @@ const tableColumns = {
             title: 'iops',
             width: 100,
             sortable: true,
+            formatter : function (value, row, index) {
+                return FTableColorFormaterCustomColor(value);
+            }
         },
         {
             field: 'diskReadSpeed',
@@ -200,7 +308,7 @@ const tableColumns = {
             width: 100,
             sortable: true,
             formatter : function (value, row, index) {
-                return FGetKbWithUnit(value)+"/s";
+                return FTableColorFormaterCustomColor(FGetKbWithUnit(value)+"/s");
             }
         },
         {
@@ -209,20 +317,20 @@ const tableColumns = {
             width: 100,
             sortable: true,
             formatter : function (value, row, index) {
-                return FGetKbWithUnit(value)+"/s";
+                return FTableColorFormaterCustomColor(FGetKbWithUnit(value)+"/s");
             }
         },
     ],
     //主机状态-2
     hostInfo2: [
         {
-            field: 'osName',
-            title: 'OS',
+            field: 'ip',
+            title: 'IP',
             width: 100,
         },
         {
-            field: 'ip',
-            title: 'IP',
+            field: 'osName',
+            title: 'OS',
             width: 100,
         },
         {
@@ -230,7 +338,7 @@ const tableColumns = {
             title: '内存使用率',
             width: 100,
             formatter : function (value, row, index) {
-                return FGetMBWithUnit(value[0]) + " / " +FGetMBWithUnit(value[1]);
+                return FTableColorFormatter(loadPartition["memory"],customPartitionColor,value[0]/value[1]*100,FGetMBWithUnit(value[0]) + " / " +FGetMBWithUnit(value[1]));
             }
         },
         {
@@ -238,7 +346,7 @@ const tableColumns = {
             title: '硬盘容量',
             width: 100,
             formatter : function (value, row, index) {
-                return FGetGBWithUnit(value[0]) + " / " +FGetGBWithUnit(value[1]);
+                return FTableColorFormatter(loadPartition["disk"],customPartitionColor,value[0]/value[1]*100,FGetGBWithUnit(value[0]) + " / " +FGetGBWithUnit(value[1]));
             }
         },
         {
@@ -246,7 +354,7 @@ const tableColumns = {
             title: '网络接受',
             width: 100,
             formatter : function (value, row, index) {
-                return FGetKbWithUnit(value)+"/s";
+                return FTableColorFormaterCustomColor(FGetKbWithUnit(value)+"/s");
             }
         },
         {
@@ -254,7 +362,7 @@ const tableColumns = {
             title: '网络发送',
             width: 100,
             formatter : function (value, row, index) {
-                return FGetKbWithUnit(value)+"/s";
+                return FTableColorFormaterCustomColor(FGetKbWithUnit(value)+"/s");
             }
         },
     ],
@@ -271,7 +379,7 @@ const tableColumns = {
             width: 100,
             sortable: true,
             formatter : function (value, row, index) {
-                return FGetPercentageWithUnit(value);
+                return FTableColorFormatter(loadPartition["cpu"],customPartitionColor,value,FGetPercentageWithUnit(value));
             }
         },
         {
@@ -280,7 +388,7 @@ const tableColumns = {
             width: 100,
             sortable: true,
             formatter : function (value, row, index) {
-                return FGetTemperatureWithUnit(value);
+                return FTableColorFormaterCustomColor(FGetTemperatureWithUnit(value));
             }
         },
     ],
@@ -297,7 +405,7 @@ const tableColumns = {
             width: 100,
             sortable: true,
             formatter : function (value, row, index) {
-                return FGetMBWithUnit(value);
+                return FTableColorFormaterCustomColor(FGetGBWithUnit(value));
             }
         },
     ],
@@ -361,7 +469,7 @@ const tableColumns = {
             width: 50,
             sortable: true,
             formatter : function (value, row, index) {
-                return FGetKbWithUnit(value) +"/s";
+                return FTableColorFormaterCustomColor(FGetKbWithUnit(value) +"/s");
             }
         },
         {
@@ -370,7 +478,7 @@ const tableColumns = {
             width: 50,
             sortable: true,
             formatter : function (value, row, index) {
-                return FGetKbWithUnit(value) +"/s";
+                return FTableColorFormaterCustomColor(FGetKbWithUnit(value) +"/s");
             }
         },
     ],
@@ -430,24 +538,21 @@ const tableColumns = {
         },
         {
             field: 'predictProbability',
-            title: '可信度',
+            title: '状态',
             width: 80,
             sortable: true,
             formatter : function (value, row, index) {
-                if(value === -1){
-                    return FGetLoadingImg();
-                }
-                else{
-                    var color = "";
-                    for(var i=0;i<dfpPartition.length;i++){
-                        if(value < dfpPartition[i]){
-                            color = dfpPartitionColor[i];
-                            break;
-                        }
-                    }
+                var color = "";
+                var displayValue = "";
 
-                    return '<span style="font-weight:bold;color:'+ color +'">'+FGetPercentageWithUnit(value)+'</span>';
+                for(var i=0;i<dfpPartition.length;i++){
+                    if(value < dfpPartition[i]){
+                        color = dfpPartitionColor[i];
+                        displayValue = displayValueList[i];
+                        break;
+                    }
                 }
+                return '<span style="font-weight:bold;color:'+ color +'">'+displayValue+'</span>';
             }
         },
     ],
@@ -691,16 +796,40 @@ const tableColumns = {
     //
     dfpComparison:[
         {
-            field: 'field',
+            field: 'type',
             title: '',
         },
         {
-            field: 'predict',
-            title: '预期',
+            field: 'FDR',
+            title: 'FDR',
         },
         {
-            field: 'reality',
-            title: '实际',
+            field: 'FAR',
+            title: 'FAR',
+        },
+        {
+            field: 'AUC',
+            title: 'AUC',
+        },
+        {
+            field: 'FNR',
+            title: 'FNR',
+        },
+        {
+            field: 'Accuracy',
+            title: 'Accuracy',
+        },
+        {
+            field: 'Precision',
+            title: 'Precision',
+        },
+        {
+            field: 'Specificity',
+            title: 'Specificity',
+        },
+        {
+            field: 'ErrorRate',
+            title: 'ErrorRate',
         },
     ]
 };
@@ -814,24 +943,7 @@ function FGetFormat(key){
     else if(key === "mainInfo"){
         var mainInfoFormat = {
             hostName: [],
-            summaryPart1: [
-                {
-                    hostCount: [0,0],
-                    sumCapacity: 0,
-                },
-            ],
-            summaryPart2: [
-                {
-                    windowsHostCount: 0,
-                    linuxHostCount: 0,
-                },
-            ],
-            summaryPart3: [
-                {
-                    hddCount: 0,
-                    ssdCount: 0,
-                },
-            ],
+            summaryPart: [],
             summaryChart:[
                 //cpuLoad
                 [0,0,0],
@@ -964,6 +1076,7 @@ var loadPartition ={
     disk:[30,70,100],
 };
 
+var displayValueList = ["故障","报警","正常"];
 var dfpPartition = [30,60,100];
 var dfpPartitionColor = ['#ee6767','#fac859','#92cc76'];
 //数据间隔时间
@@ -1015,7 +1128,7 @@ var summaryChartOption = {
         data: [
             {
                 value: 0,
-                name: 'Low',
+                name: '低',
                 title: {
                     offsetCenter: ['0%', '-55%']
                 },
@@ -1025,7 +1138,7 @@ var summaryChartOption = {
             },
             {
                 value: 0,
-                name: 'Medium',
+                name: '中',
                 title: {
                     offsetCenter: ['0%', '-15%']
                 },
@@ -1036,7 +1149,7 @@ var summaryChartOption = {
             {
                 value: 0,
                 count:0,
-                name: 'High',
+                name: '高',
                 title: {
                     offsetCenter: ['0%', '22%']
                 },
@@ -1095,17 +1208,17 @@ var summaryChartOption = {
         title: [
             {
                 text: "CPU负载统计",
-                left: '8%',
+                left: '11%',
                 top: '0px',
             },
             {
                 text: "内存负载统计",
-                left: '43%',
+                left: '45%',
                 top: '0px',
             },
             {
                 text: "磁盘负载统计",
-                left: '75%',
+                left: '79%',
                 top: '0px',
             },
         ],
@@ -1184,51 +1297,51 @@ function FGetTrendChartOption(){
             {
                 text: titleName[0],
                 left: '0%',
-                top: '50px',
+                top: '0px',
             },
             {
                 text: titleName[1],
                 left: '50%',
-                top: '50px',
+                top: '0px',
             },
             {
                 text: titleName[2],
                 left: '0%',
-                top: '420px',
+                top: '360px',
             },
             {
                 text: titleName[3],
                 left: '50%',
-                top: '420px',
+                top: '360px',
             },
         ],
-        legend: {},
+        /*legend: {},*/
         grid: [
             {
                 left: '1%',
                 right: '51%',
-                top: '100px',
+                top: '50px',
                 height:'300px',
                 containLabel: true
             },
             {
                 left: '51%',
                 right: '1%',
-                top: '100px',
+                top: '50px',
                 height:'300px',
                 containLabel: true
             },
             {
                 left: '1%',
                 right: '51%',
-                top: '470px',
+                top: '430px',
                 height:'300px',
                 containLabel: true
             },
             {
                 left: '51%',
                 right: '1%',
-                top: '470px',
+                top: '430px',
                 height:'300px',
                 containLabel: true
             },
@@ -1320,16 +1433,12 @@ function FGetDFPSummaryChartOption(){
 //获取CHartOption-DFPTrendChart
 function FGetDFPTrendChartOption(){
     var DFPTrendChartOption = {
-        title: {
-            text: "磁盘可信度趋势",
-            left: '48%',
-        },
         grid: {
             left: '1%',
             right: '99%',
             width: '98%',
-            top: '40px',
-            height:'230px',
+            top: '10px',
+            height:'260px',
             containLabel: true
         },
 
@@ -1367,7 +1476,19 @@ function FGetDFPTrendChartOption(){
                 show: true
             },
             axisLabel: {
-                formatter: '{value}%'
+                formatter:function (value, index) {
+                    var result = "";
+                    if(value === 100){
+                        result = displayValueList[2];
+                    }
+                    else if(value === 60){
+                        result = displayValueList[1];
+                    }
+                    else if(value === 0){
+                        result = displayValueList[0];
+                    }
+                    return result;
+                }
             },
             max:100,
         },
@@ -1385,8 +1506,6 @@ function FGetDFPTrendChartOption(){
 
 //故障类型统计chart
 function FGetFailureTypeStatisticsChartOption(diskType,hddCount,ssdCount){
-
-
     var emphasisStyle = {
         itemStyle: {
             shadowBlur: 10,
@@ -1400,7 +1519,7 @@ function FGetFailureTypeStatisticsChartOption(diskType,hddCount,ssdCount){
         },
         grid: {
             left: '0%',
-            right: '99%',
+            right: '98%',
             width: '99%',
             top: '40px',
             height:'260px',
@@ -1453,9 +1572,6 @@ function FGetFailureTypeStatisticsChartOption(diskType,hddCount,ssdCount){
 
 //
 function FGetFailureCountStatisticsChartOption(seriesData){
-
-
-
     var FailureCountStatisticsChartOption = {
         title: {
             text: "故障盘数量趋势",

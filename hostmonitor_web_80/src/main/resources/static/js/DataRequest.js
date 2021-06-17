@@ -1,14 +1,14 @@
 
 var requestCoolDownTime = {
-    RefreshDataSummary: 30000,
-    RefreshDataHostInfoAll: 30000,
-    RefreshDataDiskInfoAll: 30000,
-    RefreshDataHostInfo: 30000,
-    RefreshDataDiskInfo: 30000,
-    RefreshDataHostDetailTrend: 30000,
-    RefreshDataDFPInfoTrend: 30000,
-    RefreshDataDFPInfoAll: 10000,
-    RefreshDataSpeedMeasurementInfoAll: 10000,
+    RefreshDataSummary: 0,
+    RefreshDataHostInfoAll: 0,
+    RefreshDataDiskInfoAll: 0,
+    RefreshDataHostInfo: 0,
+    RefreshDataDiskInfo: 0,
+    RefreshDataHostDetailTrend: 0,
+    RefreshDataDFPInfoTrend: 0,
+    RefreshDataDFPInfoAll: 0,
+    RefreshDataSpeedMeasurementInfoAll: 0,
 }
 
 
@@ -373,16 +373,20 @@ function FRefreshDataSummary(uiRefreshCallbackFunc){
     if(timestamp-mainInfo["lastUpdateTime"] >= requestCoolDownTime["RefreshDataSummary"]){
         FSendGetRequest(false,"/Dispersed/getSummary/Dashboard",function (resultData){
             mainInfo["hostName"] = resultData["hostName"];
-            //summaryPart1
-            mainInfo["summaryPart1"][0]["hostCount"][0] = resultData["connectedCount"];
-            mainInfo["summaryPart1"][0]["hostCount"][1] = resultData["hostName"].length;
-            mainInfo["summaryPart1"][0]["sumCapacity"] = resultData["sumCapacity"];
-            //summaryPart2
-            mainInfo["summaryPart2"][0]["windowsHostCount"] = resultData["windowsHostCount"];
-            mainInfo["summaryPart2"][0]["linuxHostCount"] = resultData["linuxHostCount"];
-            //summaryPart3
-            mainInfo["summaryPart3"][0]["hddCount"] = resultData["hddCount"];
-            mainInfo["summaryPart3"][0]["ssdCount"] = resultData["ssdCount"];
+
+            mainInfo["summaryPart"] = [
+                {
+                    hostCount: resultData["connectedCount"],
+                    connectedCount: resultData["hostName"].length,
+                    sumCapacity: resultData["sumCapacity"],
+                    windowsHostCount: resultData["windowsHostCount"],
+                    linuxHostCount: resultData["linuxHostCount"],
+                    hddCount: resultData["hddCount"],
+                    ssdCount: resultData["ssdCount"],
+                }
+            ];
+
+
             //updateTime
             mainInfo["lastUpdateTime"] = resultData["lastUpdateTime"];
             //load
@@ -400,6 +404,7 @@ function FRefreshDataSummary(uiRefreshCallbackFunc){
 function FRefreshDataHostInfoAll(uiRefreshCallbackFunc){
     var mainInfo = FGetMainInfo();
     FSendGetRequest(false, "/Dispersed/getHostInfo/All/Dashboard", function (resultData) {
+
         var hostConnectedCount = 0;
         for (var i = 0; i < mainInfo["hostName"].length; i++) {
 

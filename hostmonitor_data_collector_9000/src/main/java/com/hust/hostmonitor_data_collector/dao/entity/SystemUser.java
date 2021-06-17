@@ -82,13 +82,14 @@ public class SystemUser {
 
     @Override
     public String toString() {
+
         return "SystemUser{" +
                 "userID='" + userID + '\'' +
                 ", userName='" + userName + '\'' +
                 ", password='" + password + '\'' +
                 ", userType=" + userType +
                 ", validState=" + validState +
-                ", lastEditTime=" + lastEditTime +
+                ", lastEditTime=" + lastEditTime.getTime() +
                 ", phone='" + phone + '\'' +
                 ", email='" + email + '\'' +
                 ", phoneValidState=" + phoneValidState +

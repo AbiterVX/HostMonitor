@@ -14,6 +14,7 @@ function FGetNavItems(){
         document.getElementById("NavItem5"),
         document.getElementById("NavItem6"),
         document.getElementById("NavItem7"),
+        document.getElementById("NavItem8"),
     ];
 }
 
@@ -25,16 +26,18 @@ var minRequireUserType = [
     1,
     2,
     2,
+    0,
 ];
 
 var innerHTMLList = [
     icon_home + '资源监控',
-    icon_bar + '主机详情',
-    icon_empty + icon_file + '故障分析',
+    icon_bar + '节点详情',
+    icon_empty + icon_bar + '数据分析',
     icon_empty + icon_file + '故障查询',
-    icon_empty + icon_file + '模型重构',
+    icon_empty + icon_file + '模型训练',
     icon_file + '系统设置',
     icon_file + '用户管理',
+    icon_file + '测速',
 ];
 
 var signInSrc = "/Signin";
@@ -47,6 +50,7 @@ var srcHtml = [
     "DFPModelTraining.html",
     "Settings.html",
     "UserManagement.html",
+    "SpeedMeasurement.html",
 ];
 
 
@@ -58,7 +62,7 @@ function FInitNav(){
     document.getElementById("Title").innerText = "数据中心资源监控";
 
     //折叠栏
-    document.getElementById("NavCollapse1").innerHTML = icon_empty + '故障预测';
+    document.getElementById("NavCollapse1").innerHTML = icon_file + '故障预测';
 
     //登录按钮
     var UserBtn = document.getElementById("UserBtn");

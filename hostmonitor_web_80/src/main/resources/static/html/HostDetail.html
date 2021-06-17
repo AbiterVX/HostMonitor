@@ -29,43 +29,31 @@
 <body>
     <!--标题-->
     <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
-        <h2 class="h2">主机配置</h2>
-        <div class="btn-toolbar mb-2 mb-md-0" role="toolbar" style="margin-right: 5px;">
-                <!-- IP-DropDown-->
-                <div>
-                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" style="width: 150px;" type="button" id="HostIpDropDownBtn" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                        0.0.0.0
-                    </button>
-                    <div id="HostIpDropDownMenu" class="dropdown-menu" aria-labelledby="HostIpDropDownBtn">
-                        <a class="dropdown-item" href="#" > 0.0.0.0</a>
-                    </div>
-                </div>
-
+        <h2 id="HostIp" class="h2">节点</h2>
+        <div style="margin-left: 20px;">
+            <!-- IP-DropDown-->
+            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" style="width: 200px;" type="button" id="HostIpDropDownBtn" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                0.0.0.0
+            </button>
+            <div id="HostIpDropDownMenu" class="dropdown-menu" aria-labelledby="HostIpDropDownBtn">
+                <a class="dropdown-item" href="#" > 0.0.0.0</a>
+            </div>
         </div>
     </div>
+
     <div class="row"  style="margin-bottom: 10px;">
         <div class="col-sm-12">
             <div class="accordion" id="accordion" style="margin-bottom: 5px;">
-                <div class="card" style="background-color: #72787b">
-                    <button class="btn" type="button" data-toggle="collapse"  data-target="#collapse">
-                        <h5 id="title" style="text-align: left;margin-top: 10px;color: white">
-                            主机配置
-                        </h5>
-                    </button>
-                </div>
-
                 <table id="hostInfo2" style="table-layout: fixed;word-break: break-all"></table>
-                <div id="collapse" style="margin-top: 5px;" class="collapse show" data-parent="#accordion">
-                    <table id="diskInfo" style="table-layout: fixed;word-break: break-all"></table>
-                    <table id="cpuInfo" style="table-layout: fixed;word-break: break-all"></table>
-                    <table id="gpuInfo" style="table-layout: fixed;word-break: break-all"></table>
-                </div>
+                <table id="diskInfo" style="table-layout: fixed;word-break: break-all;margin-top: 5px;"></table>
+                <table id="cpuInfo" style="table-layout: fixed;word-break: break-all;margin-top: 5px;"></table>
+                <table id="gpuInfo" style="table-layout: fixed;word-break: break-all;margin-top: 5px;"></table>
             </div>
         </div>
     </div>
     <!--标题-->
     <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
-        <h2 class="h2">变化趋势</h2>
+        <h2 class="h2">资源利用趋势</h2>
         <div class="btn-toolbar mb-2 mb-md-0" role="toolbar" style="margin-right: 5px;">
             <!-- 间隔时间-DropDown -->
             <div>
@@ -81,10 +69,9 @@
     <div id="TrendChart" style="width: 100%;height: 800px;"></div>
 
     <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
-        <h2 class="h2">进程信息</h2>
+        <h2 class="h2">进程资源消耗</h2>
     </div>
     <table id="processInfo" style="table-layout: fixed;word-break: break-all;"
-           data-search="true"
            data-pagination="true" data-page-size="20" data-page-list="[10,20]"></table>
     <div style="height: 500px;width: 100%"></div>
 </body>
@@ -193,7 +180,7 @@
     //刷新Table-HostDetailTable
     function refreshHostDetailTable(init,hostInfo){
         var hostName = mainInfo["hostName"][currentHostIndex];
-        document.getElementById("title").innerText = hostName;
+        document.getElementById("HostIp").innerText = hostName;
         if(init){
             $('#hostInfo2').bootstrapTable({
                 columns: tableColumns["hostInfo2"],
@@ -219,9 +206,6 @@
             $('#cpuInfo').bootstrapTable("load",hostInfo["cpuInfoList"]);
             $('#gpuInfo').bootstrapTable("load",hostInfo["gpuInfoList"]);
         }
-
-        setTimeout(function (){$("#collapse").collapse();},1000);
-
     }
     //刷新Table-ProcessInfo
     function refreshProcessInfoTable(init,hostInfo){

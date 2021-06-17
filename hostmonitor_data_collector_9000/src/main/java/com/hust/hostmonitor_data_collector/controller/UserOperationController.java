@@ -1,5 +1,6 @@
 package com.hust.hostmonitor_data_collector.controller;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.hust.hostmonitor_data_collector.dao.entity.SystemUser;
 import com.hust.hostmonitor_data_collector.service.UserService;
@@ -44,8 +45,14 @@ public class UserOperationController {
 
     @GetMapping(value = "/getUsers")
     @ResponseBody
-    public List<SystemUser> getUsers(){
-        return userService.getUsers();
+    public String getUsers(){
+        JSONArray result=new JSONArray();
+        List<SystemUser> userList = userService.getUsers();
+        for(int i=0;i<userList.size();i++){
+            result.add(userList.get(i));
+            System.out.println(userList.get(i).getLastEditTime().toString());
+        }
+        return result.toJSONString();
     }
 
     @PostMapping(value = "/updateUserInfo")
