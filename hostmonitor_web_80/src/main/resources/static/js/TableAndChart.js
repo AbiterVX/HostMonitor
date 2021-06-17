@@ -590,8 +590,8 @@ const tableColumns = {
             },
         },
         {
-            field: 'hostName',
-            title: '主机',
+            field: 'ip',
+            title: 'IP',
             width: 100,
         },
         {
@@ -813,8 +813,17 @@ const tableColumns = {
     //
     dfpComparison:[
         {
-            field: 'type',
+            field: 'field',
             title: '',
+            formatter : function (value, row, index) {
+                if(value === "predict"){
+                    return "预测";
+                }
+                else if(value === "reality"){
+                    return "真实";
+                }
+                return value;
+            }
         },
         {
             field: 'FDR',

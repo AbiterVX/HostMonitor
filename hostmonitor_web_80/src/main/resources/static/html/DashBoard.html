@@ -65,24 +65,40 @@
         //初始化SummaryChart
         SummaryChart.setOption(FGetSummaryChartOption());
 
+        refreshSummary(true);
 
+
+        //-----更新HostInfo数据.
+        FRefreshDataHostInfoAll(function (){
+            refreshHostInfoAndDiskInfoTable(true);
+        })
+
+
+        setInterval(function (){
+            FRefreshDataSummary(function (){
+                refreshSummary(false);
+            });
+            FRefreshDataHostInfoAll(function (){
+                refreshHostInfoAndDiskInfoTable(false);
+            });
+
+        },20000);
+    }
+
+    function refreshSummary(init){
         //MainInfo
         var mainInfo = FGetMainInfo();
         //Host名
         hostIpList = mainInfo["hostIp"];
         //刷新SummaryTable
-        refreshSummaryTable(true,mainInfo);
+        refreshSummaryTable(init,mainInfo);
         //刷新SummaryChart
         setTimeout(function(){
             FRefreshSummaryChartData(SummaryChart,mainInfo["summaryChart"]);
         }, 1000);
 
-
-        //-----更新HostInfo数据.
-        FRefreshDataHostInfoAll(function (){
-            refreshHostInfoAndDiskInfoTable();
-        })
     }
+
 
     //刷新Table-SummaryTable
     function refreshSummaryTable(init,mainInfo){
@@ -100,26 +116,23 @@
     }
 
     //刷新Table-HostInfo-DiskInfo-All
-    function refreshHostInfoAndDiskInfoTable(){
+    function refreshHostInfoAndDiskInfoTable(init){
 
         var dataList = [];
         for(var i=0;i<hostIpList.length;i++){
             var hostInfo = FGetHostInfo(hostIpList[i]);
-
             dataList.push(hostInfo["hostInfo1"]);
-            /*if(hostInfo["connected"] === true){
-            }
-            else{
-                document.getElementById("card_"+i).style.backgroundColor = "rgba(250,200,89,0.5)";
-                var title = document.getElementById("title_"+i);
-                title.style.color = "black";
-                title.innerText = title.innerText + " (Down)";
-            }*/
         }
-        $("#hostInfo1Table").bootstrapTable({
-            columns: tableColumns["hostInfo1"],
-            data: dataList,
-        });
+        if(init){
+            $("#hostInfo1Table").bootstrapTable({
+                columns: tableColumns["hostInfo1"],
+                data: dataList,
+            });
+        }
+        else{
+            $('#hostInfo1Table').bootstrapTable("load",dataList);
+        }
+
     }
 </script>
 

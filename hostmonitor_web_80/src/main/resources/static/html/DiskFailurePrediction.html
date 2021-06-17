@@ -31,12 +31,12 @@
     <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
         <h2 class="h2">硬盘故障趋势</h2>
         <div class="btn-toolbar mb-2 mb-md-0" role="toolbar" style="margin-right: 5px;">
-            <!-- HostName -DropDown-->
+            <!-- HostIp -DropDown-->
             <div style="margin-right: 15px;">
-                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="HostNameDropDownBtn" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="HostIpDropDownBtn" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                     0.0.0.0
                 </button>
-                <div id="HostNameDropDownMenu" class="dropdown-menu" aria-labelledby="HostNameDropDownBtn">
+                <div id="HostIpDropDownMenu" class="dropdown-menu" aria-labelledby="HostIpDropDownBtn">
                     <a class="dropdown-item" href="#"> 0.0.0.0</a>
                 </div>
             </div>
@@ -79,7 +79,7 @@
     var currentDiskIndex = 0;
     //hostDiskMap
     var hostDiskMap = null;
-    var hostNameList = null;
+    var hostIPList = null;
 
 
     window.onload=function (){
@@ -93,57 +93,57 @@
 
             //Chart
             if(hostDiskMap != null){
-                hostNameList = [];
-                for (var tempHostName in hostDiskMap){
-                    hostNameList.push(tempHostName);
+                hostIPList = [];
+                for (var tempIp in hostDiskMap){
+                    hostIPList.push(tempIp);
                 }
 
-                var hostName = hostNameList[currentHostIndex];
-                var diskName = hostDiskMap[hostName][currentDiskIndex];
-                //初始化-DropDown-HostName
-                FInitDropDown("HostNameDropDownMenu","HostNameDropDownBtn",hostNameList,"dropDownSelectHostName",currentHostIndex);
+                var ip = hostIPList[currentHostIndex];
+                var diskName = hostDiskMap[ip][currentDiskIndex];
+                //初始化-DropDown-ip
+                FInitDropDown("HostIpDropDownMenu","HostIpDropDownBtn",hostIPList,"dropDownSelectHostIp",currentHostIndex);
                 //初始化-DropDown-DiskName
-                FInitDropDown("DiskNameDropDownMenu","DiskNameDropDownBtn",hostDiskMap[hostName],"dropDownSelectDiskName",currentDiskIndex);
+                FInitDropDown("DiskNameDropDownMenu","DiskNameDropDownBtn",hostDiskMap[ip],"dropDownSelectDiskName",currentDiskIndex);
 
                 //刷新Chart数据
-                refreshDFPInfoTrend(hostName,diskName);
+                refreshDFPInfoTrend(ip,diskName);
             }
 
         });
     }
 
-    //[DropDown]选择-HostName
-    function dropDownSelectHostName(index){
+    //[DropDown]选择-HostIp
+    function dropDownSelectHostIp(index){
         if(index !== currentHostIndex){
             //下拉按钮-设置当前显示Txt
-            var hostName =hostNameList[index];
-            document.getElementById("HostNameDropDownBtn").innerText = hostName;
+            var ip =hostIPList[index];
+            document.getElementById("ipDropDownBtn").innerText = ip;
             //设置
             currentHostIndex = index;
-            //初始化-DropDown-HostName
+            //初始化-DropDown-ip
             currentDiskIndex=0;
-            FInitDropDown("DiskNameDropDownMenu","DiskNameDropDownBtn",hostDiskMap[hostName],"dropDownSelectDiskName",currentDiskIndex);
+            FInitDropDown("DiskNameDropDownMenu","DiskNameDropDownBtn",hostDiskMap[ip],"dropDownSelectDiskName",currentDiskIndex);
 
             //刷新Chart数据
-            refreshDFPInfoTrend(hostName,hostDiskMap[hostName][currentDiskIndex]);
+            refreshDFPInfoTrend(ip,hostDiskMap[ip][currentDiskIndex]);
         }
     }
     //[DropDown]选择-DiskName
     function dropDownSelectDiskName(index){
         if(index !== currentDiskIndex){
             //下拉按钮-设置当前显示Txt
-            var hostName =hostNameList[currentHostIndex];
-            document.getElementById("DiskNameDropDownBtn").innerText = hostDiskMap[hostName][index];
+            var ip =hostIPList[currentHostIndex];
+            document.getElementById("DiskNameDropDownBtn").innerText = hostDiskMap[ip][index];
             //设置
             currentDiskIndex = index;
             //刷新Chart数据
-            refreshDFPInfoTrend(hostName,hostDiskMap[hostName][currentDiskIndex]);
+            refreshDFPInfoTrend(ip,hostDiskMap[ip][currentDiskIndex]);
         }
     }
 
     //刷新故障Trend
-    function refreshDFPInfoTrend(hostName,diskName){
-        FRefreshDataDFPInfoTrend(hostName,diskName,function (trendChartData){
+    function refreshDFPInfoTrend(ip,diskName){
+        FRefreshDataDFPInfoTrend(ip,diskName,function (trendChartData){
             for(var i=0;i<trendChartData.length;i++){
                 trendChartData[i][1] *= 100;
             }

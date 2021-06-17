@@ -29,13 +29,8 @@
 <body>
     <!--标题-->
     <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
-        <h2 class="h2">系统概况</h2>
+        <h2 class="h2">故障盘统计</h2>
     </div>
-
-    <div style="margin-bottom: 30px;">
-        <table id="dfpComparison"></table>
-    </div>
-
 
     <div class="row"  style="margin-bottom: 10px;">
         <div class="col-sm-9">
@@ -45,6 +40,16 @@
             <div id="DFPSummaryChart" style="width: 300px;height: 300px;"></div>
         </div>
 
+    </div>
+
+
+
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
+        <h2 class="h2">当前模型指标比对</h2>
+    </div>
+
+    <div style="margin-bottom: 30px;">
+        <table id="dfpComparison" style="table-layout: fixed;word-break: break-all"></table>
     </div>
 
 
@@ -112,7 +117,7 @@
             //预期与实际对比
             $('#dfpComparison').bootstrapTable({
                 columns: tableColumns["dfpComparison"],
-                data: resultData["dfpComparison"][i],
+                data: resultData["dfpComparison"],
             });
             //故障类型统计
             FailureTypeStatisticsChart.setOption(FGetFailureTypeStatisticsChartOption(resultData["diskType"],resultData["hddCount"],resultData["ssdCount"]));

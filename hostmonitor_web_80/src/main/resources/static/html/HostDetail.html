@@ -102,20 +102,26 @@
             //刷新ProcessInfo
             refreshProcessInfoTable(true,hostInfo);
         });
+        FRefreshDataHostDetailTrend(mainInfo["hostIp"][currentHostIndex],function (trendChartData){
+            refreshTrendChartData(trendChartData);
+        });
+
+
         //定时刷新
         setInterval(function (){
             //-----更新HostInfo数据.
             FRefreshDataHostInfo(mainInfo["hostIp"][currentHostIndex],function (hostInfo){
                 //刷新HostDetailTable
-                refreshHostDetailTable(true,hostInfo);
+                refreshHostDetailTable(false,hostInfo);
                 //刷新ProcessInfo
-                refreshProcessInfoTable(true,hostInfo);
+                refreshProcessInfoTable(false,hostInfo);
             });
-        },requestCoolDownTime["RefreshDataHostInfo"]);
+            FRefreshDataHostDetailTrend(mainInfo["hostIp"][currentHostIndex],function (trendChartData){
+                refreshTrendChartData(trendChartData);
+            });
+        },20000);
 
-        FRefreshDataHostDetailTrend(mainInfo["hostIp"][currentHostIndex],function (trendChartData){
-            refreshTrendChartData(trendChartData);
-        });
+
 
     }
 
@@ -179,8 +185,8 @@
 
     //刷新Table-HostDetailTable
     function refreshHostDetailTable(init,hostInfo){
-        var hostName = mainInfo["hostIp"][currentHostIndex];
-        document.getElementById("HostIp").innerText = hostName;
+        var ip = mainInfo["hostIp"][currentHostIndex];
+        document.getElementById("HostIp").innerText = "节点详情: "+ip;
         if(init){
             $('#hostInfo2').bootstrapTable({
                 columns: tableColumns["hostInfo2"],
