@@ -44,10 +44,10 @@
             <!-- DiskName -DropDown-->
             <div>
                 <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="DiskNameDropDownBtn" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    0.0.0.0
+                    None Disk
                 </button>
                 <div id="DiskNameDropDownMenu" class="dropdown-menu" aria-labelledby="DiskNameDropDownBtn">
-                    <a class="dropdown-item" href="#"> 0.0.0.0</a>
+                    <a class="dropdown-item" href="#"> None Disk</a>
                 </div>
             </div>
         </div>
@@ -87,26 +87,29 @@
         DFPTrendChart.setOption(FGetDFPTrendChartOption());
         //-----更新DFPInfo数据
         FRefreshDataDFPInfoAll(function (dfpInfoList,resultHostDiskMap){
-            //刷新Table
-            refreshDFPInfoTable(true,dfpInfoList);
-            hostDiskMap = resultHostDiskMap;
+            if(dfpInfoList!==null){
+                //刷新Table
+                refreshDFPInfoTable(true,dfpInfoList);
+                hostDiskMap = resultHostDiskMap;
 
-            //Chart
-            if(hostDiskMap != null){
-                hostIPList = [];
-                for (var tempIp in hostDiskMap){
-                    hostIPList.push(tempIp);
+                //Chart
+                if(hostDiskMap != null){
+                    hostIPList = [];
+                    for (var tempIp in hostDiskMap){
+                        hostIPList.push(tempIp);
+                    }
+
+                    var ip = hostIPList[currentHostIndex];
+                    var diskName = hostDiskMap[ip][currentDiskIndex];
+                    //初始化-DropDown-ip
+                    FInitDropDown("HostIpDropDownMenu","HostIpDropDownBtn",hostIPList,"dropDownSelectHostIp",currentHostIndex);
+                    //初始化-DropDown-DiskName
+                    FInitDropDown("DiskNameDropDownMenu","DiskNameDropDownBtn",hostDiskMap[ip],"dropDownSelectDiskName",currentDiskIndex);
+
+                    //刷新Chart数据
+                    refreshDFPInfoTrend(ip,diskName);
                 }
 
-                var ip = hostIPList[currentHostIndex];
-                var diskName = hostDiskMap[ip][currentDiskIndex];
-                //初始化-DropDown-ip
-                FInitDropDown("HostIpDropDownMenu","HostIpDropDownBtn",hostIPList,"dropDownSelectHostIp",currentHostIndex);
-                //初始化-DropDown-DiskName
-                FInitDropDown("DiskNameDropDownMenu","DiskNameDropDownBtn",hostDiskMap[ip],"dropDownSelectDiskName",currentDiskIndex);
-
-                //刷新Chart数据
-                refreshDFPInfoTrend(ip,diskName);
             }
 
         });
