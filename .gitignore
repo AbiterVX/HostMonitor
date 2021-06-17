@@ -54,3 +54,6 @@ build/
 /DiskPredict/result/**
 /DiskPredict/predict_data/**
 /DiskPredict/client/sampleData/data.csv
+*.zip
+hostmonitor_data_collector_9000/DiskPredict/**
+hostmonitor_data_collector_9000/ConfigData/**

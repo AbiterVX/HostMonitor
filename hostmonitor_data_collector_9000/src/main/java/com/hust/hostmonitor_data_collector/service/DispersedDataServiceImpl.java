@@ -15,6 +15,7 @@ import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.PostConstruct;
+import java.io.File;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
@@ -84,10 +85,9 @@ public class DispersedDataServiceImpl implements DispersedDataService{
             date=addDay(date,1);
         }
         System.out.println(date);
+        System.out.println("[TimerTask:Disk Predict]Init Disk Predict:"+new Date());
+        diskPredict();
         mainTimer.schedule(diskPredictTask,date,predictInterval);
-        //FIXME
-        //mainTimer.schedule(diskPredictTask,0,predictInterval);
-        //启动阶段以以默认参数自动训练一次
 
     }
 //    @PostConstruct
@@ -372,7 +372,12 @@ public class DispersedDataServiceImpl implements DispersedDataService{
 
             Thread progressThread = new Thread(() -> {
                 try {
-                    int modelYear= 2016; //Calendar.getInstance().get(Calendar.YEAR);
+                    int modelYear= 2016;
+                    int latestYear=Calendar.getInstance().get(Calendar.YEAR);
+                    File originalData=new File(dataPath+"original_data/"+latestYear);
+                    if(originalData.exists()&&false){
+                        modelYear=latestYear;
+                    }
                     //
                     while (isTraining){
                         if(currentTrainState==0){
@@ -637,16 +642,25 @@ public class DispersedDataServiceImpl implements DispersedDataService{
 //        result.put("rightChart",rightChart);
         JSONArray hddCount=new JSONArray();
         JSONArray ssdCount=new JSONArray();
-        ssdCount.add(count[0]);
-        ssdCount.add(count[2]);
-        ssdCount.add(count[4]);
-        ssdCount.add(count[6]);
-        ssdCount.add(count[8]);
-        hddCount.add(count[1]);
-        hddCount.add(count[3]);
-        hddCount.add(count[5]);
-        hddCount.add(count[7]);
-        hddCount.add(count[9]);
+        Iterator<Object> itr=brands.iterator();
+        int m=0;
+        while(itr.hasNext()){
+
+            if(count[2*m]==0&&count[2*m+1]==0){
+                //System.out.println(""+2*m+" "+(2*m+1));
+                //System.out.println(itr.next()+" is removed");
+                itr.next();
+                itr.remove();
+            }
+            else{
+                //System.out.println(""+2*m+" "+(2*m+1));
+                //System.out.println(itr.next()+" is keeped");
+                itr.next();
+                ssdCount.add(count[2*m]);
+                hddCount.add(count[2*m+1]);
+            }
+            m++;
+        }
         result.put("diskType",brands);
         result.put("ssdCount",ssdCount);
         result.put("hddCount",hddCount);
