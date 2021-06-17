@@ -14,12 +14,12 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.StringTokenizer;
 
-public class FileReceiver {
+public class SpecialProcessor {
     private DispersedHostMonitor parent;
     private ServerSocket server;
     private String fileRepository;
     public final SimpleDateFormat sdf =new SimpleDateFormat("yyyy-MM-dd");
-    public FileReceiver(DispersedHostMonitor parent){
+    public SpecialProcessor(DispersedHostMonitor parent){
         fileRepository = System.getProperty("user.dir") +"/DiskPredict/";
         this.parent=parent;
         try {
@@ -75,7 +75,10 @@ public class FileReceiver {
 
         @Override
         public void run() {
+            //从接收方获取int即确认执行何种任务
             try {
+                int choice=inFromNode.readInt();
+                if(choice==1){
                 hostName=inFromNode.readUTF();
                 long filelength=inFromNode.readLong();
                 Calendar calendar= Calendar.getInstance();
@@ -129,7 +132,11 @@ public class FileReceiver {
                 synchronized (parent.hostInfoMap) {
                     parent.setAllDiskDFPState(hostName, false);
                 }
-            } catch (IOException e) {
+                }
+                else{
+
+                }
+            }catch (IOException e) {
                 e.printStackTrace();
             }
         }

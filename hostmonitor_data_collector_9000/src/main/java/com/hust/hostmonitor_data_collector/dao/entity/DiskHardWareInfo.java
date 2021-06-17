@@ -9,13 +9,15 @@ public class DiskHardWareInfo {
     public double size;
     public boolean isSSd;
     public String model;
+    public String hostIp;
 
-    public DiskHardWareInfo(String diskSerial, String hostName, double size, boolean isSSd, String model) {
+    public DiskHardWareInfo(String diskSerial, String hostName, double size, boolean isSSd, String model,String hostIp) {
         this.diskSerial = diskSerial;
         this.hostName = hostName;
         this.size = size;
         this.isSSd = isSSd;
         this.model = model;
+        this.hostIp=hostIp;
     }
 
 

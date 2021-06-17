@@ -14,12 +14,14 @@ public interface DiskFailureMapper {
     List<String> getDiskFailureInfo(@Param("ip")String ip,@Param("resultDate")String resultDate);
 
     @Insert("insert into diskHardwareInfo values (" +
-            "#{diskSerial},#{hostName},#{capacity},#{isSSD},#{model})")
+            "#{diskSerial},#{hostName},#{capacity},#{isSSD},#{model},#{ip})")
     void insertDiskHardwareInfo(@Param("diskSerial")String diskSerial,
                                 @Param("hostName")String hostName,
+
                                 @Param("capacity")double size,
                                 @Param("isSSD")boolean isSSD,
-                                @Param("model")String model);
+                                @Param("model")String model,
+                                @Param("ip")String ip);
 
 
 
@@ -85,12 +87,12 @@ public interface DiskFailureMapper {
             "on a.diskSerial=b.diskSerial and a.timestamp=b.timestamp) join diskHardwareInfo c on a.diskSerial=c.diskSerial")
     List<DFPRecord> selectLatestDFPRecordList();
 
-    @Select("select a.diskSerial,a.timestamp,a.predictProbability,a.modelName,c.hostName,c.size,c.isSSd,c.model from " +
+    @Select("select a.diskSerial,a.timestamp,a.predictProbability,a.modelName,c.hostName,c.hostIp,c.size,c.isSSd,c.model from " +
             "((select diskSerial,max(timestamp) timestamp from diskDFPInfo group by diskSerial) b join diskDFPInfo a " +
             "on a.diskSerial=b.diskSerial and a.timestamp=b.timestamp) join diskHardwareInfo c on a.diskSerial=c.diskSerial")
     List<HardWithDFPRecord> selectLatestDFPWithHardwareRecordList();
 
-    @Select("select a.diskSerial,a.timestamp,a.predictProbability,a.modelName,b.hostName,b.size,b.isSSd,b.model from " +
+    @Select("select a.diskSerial,a.timestamp,a.predictProbability,a.modelName,b.hostName,b.hostIp,b.size,b.isSSd,b.model from " +
             "diskDFPInfo a join diskHardwareInfo b on a.diskSerial=b.diskSerial where timestamp>=#{lowbound} order by timestamp")
     List<HardWithDFPRecord> selectRecentDFPWithHardwareRecordList(@Param("lowbound")Timestamp timestamp);
 

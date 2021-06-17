@@ -164,7 +164,8 @@ public class DispersedDataServiceImpl implements DispersedDataService{
                         diskFailureMapper.insertDiskHardwareInfo(diskSerial,tempObject.getString("hostName"),
                                 tempDiskObject.getJSONArray("diskCapacitySize").getDoubleValue(1),
                                 tempDiskObject.getIntValue("type")>0? true:false,
-                                tempDiskObject.getString("diskModel"));
+                                tempDiskObject.getString("diskModel"),
+                                tempObject.getString("ip"));
                     }
                     System.out.println("["+diskSerial+"]"+tempObject.getTimestamp("lastUpdateTime"));
                     diskFailureMapper.insertDiskSampleInfo(diskSerial, tempObject.getTimestamp("lastUpdateTime"),tempDiskObject.getDoubleValue("diskIOPS"),
@@ -194,7 +195,25 @@ public class DispersedDataServiceImpl implements DispersedDataService{
     public String getHostInfoDashboardAll() {
         JSONObject resultObject=new JSONObject();
         for(Map.Entry<String, JSONObject> entry: dispersedHostMonitor.hostInfoMap.entrySet()){
-            resultObject.put(entry.getKey(),entry.getValue());
+            JSONObject tempObject=new JSONObject();
+            tempObject.put("hostName",entry.getValue().get("hostName"));
+            tempObject.put("cpuUsage",entry.getValue().get("cpuUsage"));
+            tempObject.put("diskCapacityTotalUsage",entry.getValue().get("diskCapacityTotalUsage"));
+            tempObject.put("ip",entry.getValue().get("ip"));
+            tempObject.put("netReceivedSpeed",entry.getValue().get("netReceivedSpeed"));
+            tempObject.put("netSendSpeed",entry.getValue().get("netSendSpeed"));
+            tempObject.put("osName",entry.getValue().get("osName"));
+            double iops=0,diskWriteSpeed=0,diskReadSpeed=0;
+            JSONArray diskArray=entry.getValue().getJSONArray("diskInfoList");
+            for(int i=0;i<diskArray.size();i++){
+                iops+=diskArray.getJSONObject(i).getDouble("diskIOPS");
+                diskWriteSpeed+=diskArray.getJSONObject(i).getDouble("diskWriteSpeed");
+                diskReadSpeed+=diskArray.getJSONObject(i).getDouble("diskReadSpeed");
+            }
+            tempObject.put("diskIOPS",iops);
+            tempObject.put("diskWriteSpeed",diskWriteSpeed);
+            tempObject.put("diskReadSpeed",diskReadSpeed);
+            resultObject.put(entry.getKey(),tempObject);
         }
         return resultObject.toJSONString();
     }
@@ -209,22 +228,22 @@ public class DispersedDataServiceImpl implements DispersedDataService{
         String result=dispersedHostMonitor.hostInfoMap.get(hostName).toJSONString();
         return result;
     }
-    private JSONObject selectMainProcess(double cpuThreshold,JSONObject jsonObject){
-        JSONObject resultObject=new JSONObject();
-        resultObject.putAll(jsonObject);
-        Iterator iterator=resultObject.getJSONArray("processInfoList").iterator();
-        while(iterator.hasNext()){
-            JSONObject tempObject=(JSONObject) iterator.next();
-            if(tempObject.getDouble("cpuUsage")<cpuThreshold){
-                iterator.remove();
-            }
-            else{
-                tempObject.put("cpuUsage",doubleTo2bits_double(tempObject.getDouble("cpuUsage")*100));
-                tempObject.put("memUsage",doubleTo2bits_double(tempObject.getDouble("memoryUsage")*100));
-            }
-        }
-        return resultObject;
-    }
+//    private JSONObject selectMainProcess(double cpuThreshold,JSONObject jsonObject){
+//        JSONObject resultObject=new JSONObject();
+//        resultObject.putAll(jsonObject);
+//        Iterator iterator=resultObject.getJSONArray("processInfoList").iterator();
+//        while(iterator.hasNext()){
+//            JSONObject tempObject=(JSONObject) iterator.next();
+//            if(tempObject.getDouble("cpuUsage")<cpuThreshold){
+//                iterator.remove();
+//            }
+//            else{
+//                tempObject.put("cpuUsage",doubleTo2bits_double(tempObject.getDouble("cpuUsage")*100));
+//                tempObject.put("memUsage",doubleTo2bits_double(tempObject.getDouble("memoryUsage")*100));
+//            }
+//        }
+//        return resultObject;
+//    }
     private double doubleTo2bits_double(double original){
         BigDecimal b=new BigDecimal(original);
         return b.setScale(2,BigDecimal.ROUND_HALF_UP).doubleValue();
@@ -307,6 +326,7 @@ public class DispersedDataServiceImpl implements DispersedDataService{
         for(HardWithDFPRecord dfpRecord:hardWithDFPRecordList){
             JSONObject tempObject=new JSONObject();
             tempObject.put("hostName",dfpRecord.hostName);
+            tempObject.put("ip",dfpRecord.hostIp);
             tempObject.put("diskSerial",dfpRecord.diskSerial);
             tempObject.put("diskType",dfpRecord.isSSd?1:0);
             tempObject.put("manufacturer",dfpRecord.model);
@@ -314,6 +334,7 @@ public class DispersedDataServiceImpl implements DispersedDataService{
             tempObject.put("model",dfpRecord.modelName);
             tempObject.put("timestamp",dfpRecord.timestamp);
             tempObject.put("predictProbability",dfpRecord.predictProbability);
+            tempObject.put("predictResult",dfpRecord.predictProbability<=0.1f?1:0);
             result.add(tempObject);
         }
         return result.toJSONString();

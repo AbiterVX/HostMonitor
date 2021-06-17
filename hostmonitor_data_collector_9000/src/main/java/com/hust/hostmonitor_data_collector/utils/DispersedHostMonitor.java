@@ -25,7 +25,7 @@ public class DispersedHostMonitor {
 
     //serverSocket
     private DataReceiver dataReceiver=new DataReceiver(this);
-    private FileReceiver fileReceiver=new FileReceiver(this);
+    private SpecialProcessor specialProcessor =new SpecialProcessor(this);
 
     //单例
     private volatile static DispersedHostMonitor dispersedHostMonitor;
@@ -44,7 +44,7 @@ public class DispersedHostMonitor {
         summaryInfo = dispersedConfig.getSummaryJson();
         loadPartition = dispersedConfig.getLoadPartitionJson();
         dataReceiver.startListening();
-        fileReceiver.startListening();
+        specialProcessor.startListening();
     }
     public void UpdateSummaryInfo(){
         double totalSumCapacity=0;

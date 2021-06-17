@@ -15,12 +15,16 @@ public class DiskPredictDataSampler extends Thread {
     private final long sampleInterval=24*3600*1000;
     //private final long sampleInterval=10*1000;
     private Socket fileSocket;
-    private String collectorString="127.0.0.1";
+    private String collectorIp="";
+    private int collectorPort=7000;
+    private FormatConfig formatConfig=FormatConfig.getInstance();
     private String hostName;
     private boolean flag=true;
     private int fileRetransmitInterval=3000;
     private SenderThread sender;
     public DiskPredictDataSampler(String name){
+        collectorIp= formatConfig.getCollectorIP();
+        collectorPort= formatConfig.getPort(2);
         this.hostName=name;
         sampleFilePath = System.getProperty("user.dir") +"/DiskPredict/client/data_collector.py";
         dataFilePath=System.getProperty("user.dir") +"/DiskPredict/client/sampleData/data.csv";
@@ -47,10 +51,13 @@ public class DiskPredictDataSampler extends Thread {
 
         }
     }
+    //
     private void sendFile(String url) throws IOException {
         File file=new File(url);
         FileInputStream fis=new FileInputStream(file);
         DataOutputStream dos=new DataOutputStream(fileSocket.getOutputStream());
+        dos.writeInt(1);//代表特殊socket执行选项1，即接受文件
+        dos.flush();
         dos.writeUTF(hostName);
         dos.flush();
         //提示日期？
@@ -95,7 +102,7 @@ public class DiskPredictDataSampler extends Thread {
 //                    break;
 //                }
                 try {
-                    fileSocket = new Socket(collectorString, 7001);
+                    fileSocket = new Socket(collectorIp, collectorPort);
                     sendFile(dataFilePath);
                     fileSocket.close();
                     flag=true;

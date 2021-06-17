@@ -37,7 +37,7 @@ import java.util.Map;
 public class DataSampler {
     private SystemInfo systemInfo;
     private JSONObject dataObject;
-    private FormatConfig formatConfig=new FormatConfig();
+    private FormatConfig formatConfig=FormatConfig.getInstance();
     private JSONArray processInfoList;
     private Map<Integer,OSProcess> processMapLastSample = new HashMap<>();
     private Map<String, Float> processFilter;

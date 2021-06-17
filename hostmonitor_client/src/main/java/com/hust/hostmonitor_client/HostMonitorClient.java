@@ -2,6 +2,7 @@ package com.hust.hostmonitor_client;
 
 import com.hust.hostmonitor_client.utils.DataSampler;
 import com.hust.hostmonitor_client.utils.DiskPredictDataSampler;
+import com.hust.hostmonitor_client.utils.FormatConfig;
 import lombok.Data;
 import lombok.SneakyThrows;
 import org.apache.poi.ss.formula.functions.T;
@@ -14,9 +15,9 @@ import java.net.UnknownHostException;
 
 public class HostMonitorClient {
     public static Object lockObject=new Object();
-    public static int SamplePeriod=10000;
+    public static int SamplePeriod=20000;
     public static int sampleIndex=0;
-    private static int processFrequency=10;
+    private static int processFrequency=1;
     private static DataSampler mainSampler=new DataSampler();
     private static int WRITE_READ_UTF_MAX_LENGTH=65535;
     private static int SEGMENT_LENGTH=60000;
@@ -58,7 +59,9 @@ public class HostMonitorClient {
     }
     public static class DataSender extends Thread{
         private String contextToBeSent=null;
-        private String collectorIP="127.0.0.1";
+        private FormatConfig formatConfig=FormatConfig.getInstance();
+        private String collectorIP=formatConfig.getCollectorIP() ;
+        private int collectorPort=formatConfig.getPort(1);
         private Socket clientSocket;
         private DataOutputStream outToCollector;
         private boolean connection_state=false;
@@ -83,7 +86,7 @@ public class HostMonitorClient {
         private void connect() {
             try {
                 System.err.println("外部类"+this);
-                clientSocket = new Socket(collectorIP, 7000);
+                clientSocket = new Socket(collectorIP, collectorPort);
                 outToCollector = new DataOutputStream(clientSocket.getOutputStream());
 
                 Thread thread = new Thread(new Client_send(clientSocket, outToCollector));

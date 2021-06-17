@@ -1,6 +1,7 @@
 {
   "DataCollectorServerIP": "127.0.0.1",
   "ServerSampleListenPort": 7000,
+  "SpecialUsagePort": 7001,
   "loadPartition": {
     "cpuLoad": [30.0,70.0,100.0],
     "memoryLoad": [30.0,70.0,100.0],

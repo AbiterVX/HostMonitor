@@ -100,11 +100,11 @@ public class testService {
         calendar.add(Calendar.DAY_OF_MONTH,-1);
         long time=calendar.getTimeInMillis();
         diskFailureMapper.insertDiskDFPInfo("suma-TEST10",new Timestamp(time),0.05,"testModel");
-        diskFailureMapper.insertDiskHardwareInfo("suma-TEST10","testHost",512,false,"testDiskModel");
+        diskFailureMapper.insertDiskHardwareInfo("suma-TEST10","testHost",512,false,"testDiskModel","127.0.0.1");
         calendar.add(Calendar.DAY_OF_MONTH,-1);
         time=calendar.getTimeInMillis();
         diskFailureMapper.insertDiskDFPInfo("suma-TEST11",new Timestamp(time),0.05,"testModel");
-        diskFailureMapper.insertDiskHardwareInfo("suma-TEST11","testHost",512,false,"testDiskModel");
+        diskFailureMapper.insertDiskHardwareInfo("suma-TEST11","testHost",512,false,"testDiskModel","127.0.0.1");
 
     }
 }

@@ -10,7 +10,24 @@ import java.util.Map;
 
 public class FormatConfig {
     private final JSONObject configJson = JSONObject.parseObject(readFile("ConfigData/OriginalSampleDataFormat.json"));
+    private final JSONObject DispersedConfigJson = JSONObject.parseObject(readFile("ConfigData/DispersedConfig.json"));
     private final String path = System.getProperty("user.dir");
+    private static volatile FormatConfig formatConfig=null;
+    public static FormatConfig getInstance(){
+        if(formatConfig ==null){
+            synchronized (FormatConfig.class){
+                if(formatConfig ==null){
+                    formatConfig =new FormatConfig();
+                }
+            }
+        }
+        return formatConfig;
+    }
+
+    private FormatConfig(){
+
+    }
+
     public String readFile(String filePath){
         String resultData = "";
         File file = new File(path,filePath);
@@ -24,7 +41,18 @@ public class FormatConfig {
     private JSONObject getConfigJsonObject(String key){
         return JSONObject.parseObject(configJson.getJSONObject(key).toJSONString());
     }
-
+    public String getCollectorIP(){
+        return DispersedConfigJson.getString("DataCollectorServerIP");
+    }
+    public int getPort(int choice){
+        if(choice==1){
+            return DispersedConfigJson.getIntValue("ServerSampleListenPort");
+        }
+        else if(choice==2){
+            return DispersedConfigJson.getIntValue("SpecialUsagePort");
+        }
+        return 7000;
+    }
     //-----获取配置文件JsonObject-对外接口-----
     public JSONObject getHostInfoJson(){
         return getConfigJsonObject("hostInfo");
