@@ -8,7 +8,7 @@
     "diskLoad": [30.0,70.0,100.0]
   },
   "summary": {
-    "hostName":[],
+    "hostIp":[],
     "connectedCount": 0,
     "sumCapacity": 0,
     "windowsHostCount": 0,

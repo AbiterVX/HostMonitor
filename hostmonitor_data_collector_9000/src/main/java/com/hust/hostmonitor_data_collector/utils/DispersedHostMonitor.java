@@ -50,10 +50,10 @@ public class DispersedHostMonitor {
         double totalSumCapacity=0;
         int windowsCount=0,linuxCount=0,HDDCount=0,SSDCount=0,connectedCount=0;
         float[][] loadCount = new float[][]{{0,0,0},{0,0,0},{0,0,0}};
-        JSONArray hostNames=new JSONArray();
+        JSONArray hostIp=new JSONArray();
         for(Map.Entry<String,JSONObject> hostInfo: hostInfoMap.entrySet()){
             JSONObject hostInfoJson = hostInfo.getValue();
-            hostNames.add(hostInfoJson.get("hostName"));
+            hostIp.add(hostInfo.getKey());
             totalSumCapacity+=hostInfoJson.getJSONArray("diskCapacityTotalUsage").getDouble(1);
             if(hostInfoJson.getString("osName").toLowerCase().contains(("windows").toLowerCase())){
                 windowsCount++;
@@ -111,7 +111,7 @@ public class DispersedHostMonitor {
 
         }
 
-        summaryInfo.put("hostName",hostNames);
+        summaryInfo.put("hostIp",hostIp);
         summaryInfo.put("sumCapacity",totalSumCapacity);
         summaryInfo.put("windowsHostCount",windowsCount);
         summaryInfo.put("linuxHostCount",linuxCount);

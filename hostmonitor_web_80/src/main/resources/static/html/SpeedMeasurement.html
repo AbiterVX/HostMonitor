@@ -57,16 +57,16 @@
                 columns: tableColumns["speedMeasurement"],
                 data: speedMeasurementInfoList,
                 onCheck:function(row, $element){
-                    selectedItems.add(row["hostName"]);
+                    selectedItems.add(row["ip"]);
                 },
                 onUncheck:function(row, $element){
-                    selectedItems.delete(row["hostName"]);
+                    selectedItems.delete(row["ip"]);
                 },
                 onCheckAll: function (rowsAfter,rowsBefore) {
                     selectedItems.clear();
                     for(var i=0;i<rowsAfter.length;i++){
                         if(rowsAfter[i]["diskIOSpeed"] !== -1){
-                            selectedItems.add(rowsAfter[i]["hostName"]);
+                            selectedItems.add(rowsAfter[i]["ip"]);
                         }
                     }
                 },
@@ -81,11 +81,11 @@
     }
 
     function measureBtnOnclick(){
-        var hostNameList = Array.from(selectedItems);
+        var hostIpList = Array.from(selectedItems);
         var smInfoList = FGetSpeedMeasurementInfoList()["speedMeasurementInfo"];
         for(var i=0;i<smInfoList.length;i++){
-            for(var j=0;j<hostNameList.length;j++){
-                if(smInfoList[i]["hostName"] === hostNameList[j]){
+            for(var j=0;j<hostIpList.length;j++){
+                if(smInfoList[i]["ip"] === hostIpList[j]){
                     smInfoList[i]["netSendSpeed"] = -1;
                     smInfoList[i]["netDownloadSpeed"] = -1;
                     smInfoList[i]["diskIOSpeed"] = -1;

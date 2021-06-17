@@ -1,14 +1,14 @@
 
 var requestCoolDownTime = {
-    RefreshDataSummary: 30000,
-    RefreshDataHostInfoAll: 30000,
-    RefreshDataDiskInfoAll: 30000,
-    RefreshDataHostInfo: 30000,
-    RefreshDataDiskInfo: 30000,
-    RefreshDataHostDetailTrend: 30000,
-    RefreshDataDFPInfoTrend: 30000,
-    RefreshDataDFPInfoAll: 10000,
-    RefreshDataSpeedMeasurementInfoAll: 10000,
+    RefreshDataSummary: 0,
+    RefreshDataHostInfoAll: 0,
+    RefreshDataDiskInfoAll: 0,
+    RefreshDataHostInfo: 0,
+    RefreshDataDiskInfo: 0,
+    RefreshDataHostDetailTrend: 0,
+    RefreshDataDFPInfoTrend: 0,
+    RefreshDataDFPInfoAll: 0,
+    RefreshDataSpeedMeasurementInfoAll: 0,
 }
 
 
@@ -372,17 +372,21 @@ function FRefreshDataSummary(uiRefreshCallbackFunc){
     var timestamp=new Date().getTime();
     if(timestamp-mainInfo["lastUpdateTime"] >= requestCoolDownTime["RefreshDataSummary"]){
         FSendGetRequest(false,"/Dispersed/getSummary/Dashboard",function (resultData){
-            mainInfo["hostName"] = resultData["hostName"];
-            //summaryPart1
-            mainInfo["summaryPart1"][0]["hostCount"][0] = resultData["connectedCount"];
-            mainInfo["summaryPart1"][0]["hostCount"][1] = resultData["hostName"].length;
-            mainInfo["summaryPart1"][0]["sumCapacity"] = resultData["sumCapacity"];
-            //summaryPart2
-            mainInfo["summaryPart2"][0]["windowsHostCount"] = resultData["windowsHostCount"];
-            mainInfo["summaryPart2"][0]["linuxHostCount"] = resultData["linuxHostCount"];
-            //summaryPart3
-            mainInfo["summaryPart3"][0]["hddCount"] = resultData["hddCount"];
-            mainInfo["summaryPart3"][0]["ssdCount"] = resultData["ssdCount"];
+            mainInfo["hostIp"] = resultData["hostIp"];
+
+            mainInfo["summaryPart"] = [
+                {
+                    hostCount: resultData["connectedCount"],
+                    connectedCount: resultData["hostIp"].length,
+                    sumCapacity: resultData["sumCapacity"],
+                    windowsHostCount: resultData["windowsHostCount"],
+                    linuxHostCount: resultData["linuxHostCount"],
+                    hddCount: resultData["hddCount"],
+                    ssdCount: resultData["ssdCount"],
+                }
+            ];
+
+
             //updateTime
             mainInfo["lastUpdateTime"] = resultData["lastUpdateTime"];
             //load
@@ -400,44 +404,47 @@ function FRefreshDataSummary(uiRefreshCallbackFunc){
 function FRefreshDataHostInfoAll(uiRefreshCallbackFunc){
     var mainInfo = FGetMainInfo();
     FSendGetRequest(false, "/Dispersed/getHostInfo/All/Dashboard", function (resultData) {
-        var hostConnectedCount = 0;
-        for (var i = 0; i < mainInfo["hostName"].length; i++) {
 
-            var hostName = mainInfo["hostName"][i];
-            var hostInfo = FGetHostInfo(hostName);
+        var hostConnectedCount = 0;
+        for (var i = 0; i < mainInfo["hostIp"].length; i++) {
+
+            var ip = mainInfo["hostIp"][i];
+            var hostInfo = FGetHostInfo(ip);
 
             //连接个数
-            if (resultData[hostName]["connected"] === true) {
+            if (resultData[ip]["connected"] === true) {
                 hostConnectedCount += 1;
             }
             //hostInfo1
             for (var key in hostInfo["hostInfo1"]) {
-                hostInfo["hostInfo1"][key] = resultData[hostName][key];
+
+                hostInfo["hostInfo1"][key] = resultData[ip][key];
             }
+
             //hostInfo2
             for (var key in hostInfo["hostInfo2"]) {
-                hostInfo["hostInfo2"][key] = resultData[hostName][key];
+                hostInfo["hostInfo2"][key] = resultData[ip][key];
             }
 
             //diskInfoList
-            hostInfo["diskInfoList"] = resultData[hostName]["diskInfoList"];
+            hostInfo["diskInfoList"] = resultData[ip]["diskInfoList"];
             for (var j = 0; j < hostInfo["diskInfoList"].length; j++) {
                 hostInfo["diskInfoList"][j]["diskCapacityUsage"] = (hostInfo["diskInfoList"][j]["diskCapacitySize"][0] / hostInfo["diskInfoList"][j]["diskCapacitySize"][1] * 100).toFixed(2);
             }
 
             //connected
-            hostInfo["connected"] = resultData[hostName]["connected"];
+            hostInfo["connected"] = resultData[ip]["connected"];
             //cpuInfoList
-            hostInfo["cpuInfoList"] = resultData[hostName]["cpuInfoList"];
+            hostInfo["cpuInfoList"] = resultData[ip]["cpuInfoList"];
             //gpuInfoList
-            hostInfo["gpuInfoList"] = resultData[hostName]["gpuInfoList"];
+            hostInfo["gpuInfoList"] = resultData[ip]["gpuInfoList"];
             //processInfoList
-            hostInfo["processInfoList"] = resultData[hostName]["processInfoList"];
+            hostInfo["processInfoList"] = resultData[ip]["processInfoList"];
             //lastUpdateTime
             //hostInfo["lastUpdateTime"] = 100000;
 
             //更新hostInfo缓存
-            FSetData("hostInfo_" + hostName, hostInfo);
+            FSetData("hostInfo_" + ip, hostInfo);
         }
         uiRefreshCallbackFunc();
     });
@@ -523,13 +530,13 @@ function FRefreshDataDiskInfo(hostName,uiRefreshCallbackFunc){
     });
 }
 
-function FRefreshDataDFPInfoTrend(hostName,diskName,uiRefreshCallbackFunc){
-    var dfpInfoTrend = FGetDFPInfoTrend(hostName,diskName);
+function FRefreshDataDFPInfoTrend(ip,diskName,uiRefreshCallbackFunc){
+    var dfpInfoTrend = FGetDFPInfoTrend(ip,diskName);
     var timestamp=new Date().getTime();
     if(timestamp-dfpInfoTrend["lastUpdateTime"] >= requestCoolDownTime["RefreshDataDFPInfoTrend"]) {
-        FSendGetRequest(false,"/Dispersed/getDFPInfo/Trend/"+hostName+"/"+diskName,function (resultData){
+        FSendGetRequest(false,"/Dispersed/getDFPInfo/Trend/"+ip+"/"+diskName,function (resultData){
             dfpInfoTrend["dfpInfoTrend"] = resultData;
-            FSetData("dfpInfoTrend_"+hostName+"_"+diskName,dfpInfoTrend);
+            FSetData("dfpInfoTrend_"+ip+"_"+diskName,dfpInfoTrend);
             uiRefreshCallbackFunc(dfpInfoTrend["dfpInfoTrend"]);
         });
     }
@@ -541,21 +548,21 @@ function FRefreshDataDFPInfoTrend(hostName,diskName,uiRefreshCallbackFunc){
 
 function FRefreshDataDFPInfoAll(uiRefreshCallbackFunc){
     FSendGetRequest(false,"/Dispersed/getDFPInfo/List",function (resultData){
-        for(var i=0;i<resultData.length;i++){
-            resultData[i]["predictProbability"] *= 100;
-        }
-
         if(resultData != null){
+            for(var i=0;i<resultData.length;i++){
+                resultData[i]["predictProbability"] *= 100;
+            }
+
             var hostDiskMap = {};
             for(var i=0;i<resultData.length;i++){
-                var currentHostName = resultData[i]["hostName"];
+                var currentIp = resultData[i]["ip"];
                 var currentDiskName = resultData[i]["diskSerial"];
-                if(hostDiskMap.hasOwnProperty(currentHostName)){
-                    hostDiskMap[currentHostName].push(currentDiskName);
+                if(hostDiskMap.hasOwnProperty(currentIp)){
+                    hostDiskMap[currentIp].push(currentDiskName);
                 }
                 else{
-                    hostDiskMap[currentHostName] = [];
-                    hostDiskMap[currentHostName].push(currentDiskName);
+                    hostDiskMap[currentIp] = [];
+                    hostDiskMap[currentIp].push(currentDiskName);
                 }
             }
             FSetData("dfpInfoList",resultData);
@@ -574,7 +581,29 @@ function FRefreshDataDFPInfoAll(uiRefreshCallbackFunc){
 function FRefreshDataSpeedMeasurementInfoAll(uiRefreshCallbackFunc){
     var speedMeasurementInfoList = FGetSpeedMeasurementInfoList();
     var timestamp=new Date().getTime();
+
+    speedMeasurementInfoList["speedMeasurementInfo"] = resultData = [
+        {
+            ip: "127.0.0.1",
+            ioTestLastTime: 1621865263000,
+            netSendSpeed: 200,
+            netDownloadSpeed: 100,
+            diskIOSpeed: 50,
+        },
+        {
+            ip: "127.0.0.2",
+            ioTestLastTime: 1601865263000,
+            netSendSpeed: 100,
+            netDownloadSpeed: 50,
+            diskIOSpeed: 10,
+        },
+    ];
+    FSetData("speedMeasurementInfoList",speedMeasurementInfoList);
+    uiRefreshCallbackFunc(speedMeasurementInfoList["speedMeasurementInfo"]);
+    /*
     if(timestamp-speedMeasurementInfoList["lastUpdateTime"] >= requestCoolDownTime["RefreshDataSpeedMeasurementInfoAll"]) {
+
+
         FSendGetRequest(false,"/Dispersed/getSpeedMeasurementInfo/All",function (resultData){
             speedMeasurementInfoList["speedMeasurementInfo"] = resultData;
             FSetData("speedMeasurementInfoList",speedMeasurementInfoList);
@@ -583,7 +612,7 @@ function FRefreshDataSpeedMeasurementInfoAll(uiRefreshCallbackFunc){
     }
     else{
         uiRefreshCallbackFunc(speedMeasurementInfoList["speedMeasurementInfo"]);
-    }
+    }*/
 }
 
 //-----故障预测

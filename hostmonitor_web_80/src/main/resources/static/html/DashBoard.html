@@ -29,28 +29,27 @@
 <body>
     <!--标题-->
     <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
-        <h2 class="h2">概要</h2>
+        <h2 class="h2">系统概况</h2>
     </div>
     <!--摘要部分-->
+    <div style="margin-bottom: 10px;">
+        <table id="summaryPart" data-show-header="false"></table>
+    </div>
+
+
+
     <div class="row"  style="margin-bottom: 10px;">
-        <!--摘要Table-->
-        <div class="col-sm-3">
-            <table id="summaryPart1"></table>
-            <table id="summaryPart2"></table>
-            <table id="summaryPart3"></table>
-        </div>
         <!--摘要Chart-->
-        <div class="col-sm-9">
-            <div id="SummaryChart" style="width: 100%;height: 300px;"></div>
-        </div>
+        <div id="SummaryChart" style="width: 100%;height: 300px;"></div>
     </div>
 
     <!--标题-->
     <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
-        <h2 class="h2">主机状态</h2>
+        <h2 class="h2">节点状态</h2>
     </div>
     <!--主机状态Table-->
-    <div id="HostStateTable"></div>
+    <table id="hostInfo1Table" style="table-layout: fixed;word-break: break-all"></table>
+
     <div style="height: 100px;width: 100%"></div>
 </body>
 
@@ -58,121 +57,82 @@
     //摘要Chart
     var SummaryChart = echarts.init(document.getElementById("SummaryChart"));
     //状态Table
-    var HostStateTable = document.getElementById("HostStateTable");
+    var hostInfo1Table = document.getElementById("hostInfo1Table");
     //Host名
-    var hostNameList = [];
+    var hostIpList = [];
     //加载后执行
     window.onload=function (){
         //初始化SummaryChart
         SummaryChart.setOption(FGetSummaryChartOption());
 
+        refreshSummary(true);
 
+
+        //-----更新HostInfo数据.
+        FRefreshDataHostInfoAll(function (){
+            refreshHostInfoAndDiskInfoTable(true);
+        })
+
+
+        setInterval(function (){
+            FRefreshDataSummary(function (){
+                refreshSummary(false);
+            });
+            FRefreshDataHostInfoAll(function (){
+                refreshHostInfoAndDiskInfoTable(false);
+            });
+
+        },20000);
+    }
+
+    function refreshSummary(init){
         //MainInfo
         var mainInfo = FGetMainInfo();
         //Host名
-        hostNameList = mainInfo["hostName"];
+        hostIpList = mainInfo["hostIp"];
         //刷新SummaryTable
-        refreshSummaryTable(true,mainInfo);
-        //刷新Table
-        refreshHostStateTable();
-        //折叠Table硬盘信息
-        setTimeout(function (){collapseAllDiskInfo()},1000);
+        refreshSummaryTable(init,mainInfo);
         //刷新SummaryChart
         setTimeout(function(){
             FRefreshSummaryChartData(SummaryChart,mainInfo["summaryChart"]);
         }, 1000);
 
-
-        //-----更新HostInfo数据.
-        FRefreshDataHostInfoAll(function (){
-            refreshHostInfoAndDiskInfoTable();
-        })
     }
+
 
     //刷新Table-SummaryTable
     function refreshSummaryTable(init,mainInfo){
         if(init){
-            $('#summaryPart1').bootstrapTable({
-                columns: tableColumns["summaryPart1"],
-                data: mainInfo["summaryPart1"],
-                classes : 'table table-bordered'
-            });
-            $('#summaryPart2').bootstrapTable({
-                columns: tableColumns["summaryPart2"],
-                data: mainInfo["summaryPart2"],
-                classes : 'table table-bordered'
-            });
-            $('#summaryPart3').bootstrapTable({
-                columns: tableColumns["summaryPart3"],
-                data: mainInfo["summaryPart3"],
+            $('#summaryPart').bootstrapTable({
+                columns: tableColumns["summaryPart"],
+                data: mainInfo["summaryPart"],
                 classes : 'table table-bordered'
             });
         }
         else{
-            $('#summaryPart1').bootstrapTable("load",mainInfo["summaryPart1"]);
-            $('#summaryPart2').bootstrapTable("load",mainInfo["summaryPart2"]);
-            $('#summaryPart3').bootstrapTable("load",mainInfo["summaryPart3"]);
+            $('#summaryPart').bootstrapTable("load",mainInfo["summaryPart"]);
         }
 
-    }
-
-    //刷新Table-生成-HostStateTable
-    function refreshHostStateTable(){
-        var tableHTML = "";
-        for(var i=0;i<hostNameList.length;i++){
-            var accordionId = "accordion_" + i;
-            var collapseId = "collapse_" + i;
-            var hostInfo1ID = "hostInfo1_" + i;
-            var diskInfoID = "diskInfo_" + i;
-            var titleID = "title_" + i;
-            var cardID = "card_" + i;
-            tableHTML +=
-                '<div class="accordion" id="'+accordionId+'" style="margin-bottom: 5px;">\n' +
-                '     <div id="'+cardID+'" class="card" style="background-color: #72787b">\n' +
-                '          <button class="btn" type="button" data-toggle="collapse"  data-target="#'+collapseId+'">\n' +
-                '                <h5 id="'+titleID+'" style="text-align: left;margin-top: 10px;color: white">\n' +
-                                    hostNameList[i] +
-                '                </h5>\n' +
-                '          </button>\n' +
-                '     </div>\n' +
-                '     <table id="'+hostInfo1ID+'" style="table-layout: fixed;word-break: break-all"></table>\n' +
-                '     <div id="'+collapseId+'" style="margin-top: 5px;" class="collapse show" data-parent="#'+accordionId+'">\n' +
-                '          <table id="'+diskInfoID+'" style="table-layout: fixed;word-break: break-all"></table>\n' +
-                '     </div>\n' +
-                '</div>';
-        }
-        HostStateTable.innerHTML = tableHTML;
-    }
-
-    //折叠全部
-    function collapseAllDiskInfo(){
-        for(var i=0;i<hostNameList.length;i++){
-            $("#collapse_" + i).collapse();
-        }
     }
 
     //刷新Table-HostInfo-DiskInfo-All
-    function refreshHostInfoAndDiskInfoTable(){
-        for(var i=0;i<hostNameList.length;i++){
-            var hostInfo = FGetHostInfo(hostNameList[i]);
-            $("#hostInfo1_" + i).bootstrapTable({
-                columns: tableColumns["hostInfo1"],
-                data: [hostInfo["hostInfo1"]],
-            });
-            $("#diskInfo_" + i).bootstrapTable({
-                columns: tableColumns["diskInfo"],
-                data: hostInfo["diskInfoList"],
-            });
-            if(hostInfo["connected"] === true){
-            }
-            else{
-                document.getElementById("card_"+i).style.backgroundColor = "rgba(250,200,89,0.5)";
-                var title = document.getElementById("title_"+i);
-                title.style.color = "black";
-                title.innerText = title.innerText + " (Down)";
-            }
+    function refreshHostInfoAndDiskInfoTable(init){
 
+        var dataList = [];
+        for(var i=0;i<hostIpList.length;i++){
+            var hostInfo = FGetHostInfo(hostIpList[i]);
+            dataList.push(hostInfo["hostInfo1"]);
         }
+        if(init){
+            $("#hostInfo1Table").bootstrapTable({
+                columns: tableColumns["hostInfo1"],
+                data: dataList,
+            });
+        }
+        else{
+            $('#hostInfo1Table').bootstrapTable("load",dataList);
+        }
+
     }
 </script>
 
