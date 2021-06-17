@@ -59,7 +59,7 @@
     //状态Table
     var hostInfo1Table = document.getElementById("hostInfo1Table");
     //Host名
-    var hostNameList = [];
+    var hostIpList = [];
     //加载后执行
     window.onload=function (){
         //初始化SummaryChart
@@ -69,7 +69,7 @@
         //MainInfo
         var mainInfo = FGetMainInfo();
         //Host名
-        hostNameList = mainInfo["hostName"];
+        hostIpList = mainInfo["hostIp"];
         //刷新SummaryTable
         refreshSummaryTable(true,mainInfo);
         //刷新SummaryChart
@@ -101,9 +101,11 @@
 
     //刷新Table-HostInfo-DiskInfo-All
     function refreshHostInfoAndDiskInfoTable(){
+
         var dataList = [];
-        for(var i=0;i<hostNameList.length;i++){
-            var hostInfo = FGetHostInfo(hostNameList[i]);
+        for(var i=0;i<hostIpList.length;i++){
+            var hostInfo = FGetHostInfo(hostIpList[i]);
+
             dataList.push(hostInfo["hostInfo1"]);
             /*if(hostInfo["connected"] === true){
             }

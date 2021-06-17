@@ -89,14 +89,14 @@
     //加载后执行
     window.onload=function (){
         //初始化-DropDown-IP
-        FInitDropDown("HostIpDropDownMenu","HostIpDropDownBtn",mainInfo["hostName"],"dropDownSelectHostIp",currentHostIndex);
+        FInitDropDown("HostIpDropDownMenu","HostIpDropDownBtn",mainInfo["hostIp"],"dropDownSelectHostIp",currentHostIndex);
         //初始化-DropDown-TimeInterval
         FInitDropDown("DateIntervalDropDownMenu","DateIntervalDropDownBtn",DateIntervalText,"dropDownSelectDateInterval",currentDateIntervalIndex);
 
         //初始化SummaryChart
         TrendChart.setOption(FGetTrendChartOption());
         //-----更新HostInfo数据.
-        FRefreshDataHostInfo(mainInfo["hostName"][currentHostIndex],function (hostInfo){
+        FRefreshDataHostInfo(mainInfo["hostIp"][currentHostIndex],function (hostInfo){
             //刷新HostDetailTable
             refreshHostDetailTable(true,hostInfo);
             //刷新ProcessInfo
@@ -105,7 +105,7 @@
         //定时刷新
         setInterval(function (){
             //-----更新HostInfo数据.
-            FRefreshDataHostInfo(mainInfo["hostName"][currentHostIndex],function (hostInfo){
+            FRefreshDataHostInfo(mainInfo["hostIp"][currentHostIndex],function (hostInfo){
                 //刷新HostDetailTable
                 refreshHostDetailTable(true,hostInfo);
                 //刷新ProcessInfo
@@ -113,7 +113,7 @@
             });
         },requestCoolDownTime["RefreshDataHostInfo"]);
 
-        FRefreshDataHostDetailTrend(mainInfo["hostName"][currentHostIndex],function (trendChartData){
+        FRefreshDataHostDetailTrend(mainInfo["hostIp"][currentHostIndex],function (trendChartData){
             refreshTrendChartData(trendChartData);
         });
 
@@ -125,10 +125,10 @@
     function dropDownSelectHostIp(index){
         if(index !== currentHostIndex){
             //下拉按钮-设置当前显示Txt
-            document.getElementById("HostIpDropDownBtn").innerText = mainInfo["hostName"][index];
+            document.getElementById("HostIpDropDownBtn").innerText = mainInfo["hostIp"][index];
             //设置
             currentHostIndex = index;
-            FRefreshDataHostInfo(mainInfo["hostName"][currentHostIndex],function (hostInfo){
+            FRefreshDataHostInfo(mainInfo["hostIp"][currentHostIndex],function (hostInfo){
                 //刷新HostDetailTable
                 refreshHostDetailTable(false,hostInfo);
                 //刷新ProcessInfo
@@ -154,7 +154,7 @@
     }
     //刷新Chart
     function refreshTrendChart(){
-        FRefreshDataHostDetailTrend(mainInfo["hostName"][currentHostIndex],function (trendChartData){
+        FRefreshDataHostDetailTrend(mainInfo["hostIp"][currentHostIndex],function (trendChartData){
             if(currentDateIntervalIndex === 0){
                 refreshTrendChartData(trendChartData);
             }
@@ -179,7 +179,7 @@
 
     //刷新Table-HostDetailTable
     function refreshHostDetailTable(init,hostInfo){
-        var hostName = mainInfo["hostName"][currentHostIndex];
+        var hostName = mainInfo["hostIp"][currentHostIndex];
         document.getElementById("HostIp").innerText = hostName;
         if(init){
             $('#hostInfo2').bootstrapTable({

@@ -199,6 +199,14 @@ const tableColumns = {
             field: 'ip',
             title: 'IP',
             width: 100,
+            formatter : function (value, row, index) {
+                if(row["connected"] === true){
+                    return value;
+                }
+                else{
+                    return '<span style="font-weight:bold;color:#ee6767">'+ value+' (Down)</span>';
+                }
+            }
         },
         {
             field: 'osName',
@@ -246,22 +254,31 @@ const tableColumns = {
             }
         },
         {
-            field: 'diskIOPS',
+            field: 'diskTotalIOPS',
             title: 'iops',
             width: 50,
             sortable: true,
+            formatter : function (value, row, index) {
+                return FTableColorFormaterCustomColor(value);
+            }
         },
         {
-            field: 'diskReadSpeed',
+            field: 'diskTotalReadSpeed',
             title: '硬盘读取',
             width: 70,
             sortable: true,
+            formatter : function (value, row, index) {
+                return FTableColorFormaterCustomColor(FGetKbWithUnit(value)+"/s");
+            }
         },
         {
-            field: 'diskWriteSpeed',
+            field: 'diskTotalWriteSpeed',
             title: '硬盘写入',
             width: 70,
             sortable: true,
+            formatter : function (value, row, index) {
+                return FTableColorFormaterCustomColor(FGetKbWithUnit(value)+"/s");
+            }
         },
     ],
     //磁盘状态
@@ -909,12 +926,17 @@ function FGetFormat(key){
             connected: false,
             //Dashboard
             hostInfo1:{
+                connected: false,
                 osName: "OS",
                 cpuUsage: 0,
                 memoryUsage: [0,0],
                 diskCapacityTotalUsage: [0,0],
                 netReceiveSpeed: 0,
                 netSendSpeed: 0,
+                ip:"0.0.0.0",
+                diskTotalIOPS:0,
+                diskTotalReadSpeed:0,
+                diskTotalWriteSpeed:0,
             },
             //Detail
             hostInfo2:{
@@ -942,7 +964,7 @@ function FGetFormat(key){
     }
     else if(key === "mainInfo"){
         var mainInfoFormat = {
-            hostName: [],
+            hostIp: [],
             summaryPart: [],
             summaryChart:[
                 //cpuLoad
