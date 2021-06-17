@@ -23,10 +23,10 @@ public interface DispersedMapper {
                          @Param("DiskReadRates") double DiskReadRates,
                          @Param("DiskWriteRates") double DiskWriteRates);
     @Select("Select * from DispersedMonitorRecord " +
-            "where hostname=#{hostname} and timestamp<#{highbound} and timestamp>#{lowbound} " +
+            "where ip=#{ip} and timestamp<#{highbound} and timestamp>#{lowbound} " +
             "order by timestamp")
     List<DispersedRecord> queryRecordsWithTimeLimit(@Param("lowbound")Timestamp lowbound,
                                                     @Param("highbound")Timestamp highbound,
-                                                    @Param("hostname")String hostname);
+                                                    @Param("ip")String ip);
 
 }

@@ -130,7 +130,7 @@ public class SpecialProcessor {
 //                Files.copy(file.toPath(),file2.toPath(), StandardCopyOption.REPLACE_EXISTING);
 //                System.out.println("[File]And a copy has been put into: "+path);
                 synchronized (parent.hostInfoMap) {
-                    parent.setAllDiskDFPState(hostName, false);
+                    parent.setAllDiskDFPState(remoteIp, false);
                 }
                 }
                 else{

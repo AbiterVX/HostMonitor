@@ -45,7 +45,7 @@ public class StreamProcessor implements Runnable{
                 }
                 receivedString=tempString.toString();
                 JSONObject UpdateObject=JSON.parseObject(receivedString);
-                JSONObject oldDataObject=parent.hostInfoMap.get(hostName);
+                JSONObject oldDataObject=parent.hostInfoMap.get(remoteIp);
                 oldDataObject.putAll(UpdateObject);
                 oldDataObject.put("lastUpdateTime",new Timestamp(System.currentTimeMillis()));
                 oldDataObject.put("connected",true);
@@ -55,7 +55,7 @@ public class StreamProcessor implements Runnable{
             } catch (IOException e) {
                 e.printStackTrace();
                 inFromNode.close();
-                parent.hostInfoMap.get(hostName).put("connected",false);
+                parent.hostInfoMap.get(remoteIp).put("connected",false);
                 socket.close();
                 break;
             }
@@ -65,12 +65,12 @@ public class StreamProcessor implements Runnable{
     @SneakyThrows
     private void detect(){
        hostName=inFromNode.readUTF();
-        if(parent.hostInfoMap.get(hostName)==null){
+        if(parent.hostInfoMap.get(remoteIp)==null){
             JSONObject hostInfoObject=new JSONObject();
             hostInfoObject.putAll(DispersedConfig.getInstance().getHostInfoJson());
             hostInfoObject.put("ip",remoteIp);
             hostInfoObject.put("hostName",hostName);
-            parent.hostInfoMap.put(hostName,hostInfoObject);
+            parent.hostInfoMap.put(remoteIp,hostInfoObject);
         }
     }
 }

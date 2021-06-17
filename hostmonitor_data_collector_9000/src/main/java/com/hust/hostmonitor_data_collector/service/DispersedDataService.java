@@ -20,7 +20,7 @@ public interface DispersedDataService {
 
     String getHostInfoDetailTrend(String hostName);
 
-    String getDFPInfoTrend(String hostName,String diskName);
+    String getDFPInfoTrend(String hostIp,String diskName);
 
     String getDFPInfoAll();
 

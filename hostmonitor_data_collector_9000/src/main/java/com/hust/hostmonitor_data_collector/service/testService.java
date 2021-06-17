@@ -4,6 +4,7 @@ import com.hust.hostmonitor_data_collector.dao.DiskFailureMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.Calendar;
 
@@ -99,12 +100,15 @@ public class testService {
         Calendar calendar=Calendar.getInstance();
         calendar.add(Calendar.DAY_OF_MONTH,-1);
         long time=calendar.getTimeInMillis();
-        diskFailureMapper.insertDiskDFPInfo("suma-TEST10",new Timestamp(time),0.05,"testModel");
-        diskFailureMapper.insertDiskHardwareInfo("suma-TEST10","testHost",512,false,"testDiskModel","127.0.0.1");
-        calendar.add(Calendar.DAY_OF_MONTH,-1);
-        time=calendar.getTimeInMillis();
-        diskFailureMapper.insertDiskDFPInfo("suma-TEST11",new Timestamp(time),0.05,"testModel");
-        diskFailureMapper.insertDiskHardwareInfo("suma-TEST11","testHost",512,false,"testDiskModel","127.0.0.1");
+        diskFailureMapper.insertDiskDFPInfo("suma-TEST13",new Timestamp(time),0.05,"testModel");
+        diskFailureMapper.insertDiskHardwareInfo("suma-TEST13","testHost",512,false,"testDiskModel","127.0.0.1");
+        System.out.println(time);
+        System.out.println(new Timestamp(time));
+        System.out.println(calendar);
+//        calendar.add(Calendar.DAY_OF_MONTH,-1);
+//        time=calendar.getTimeInMillis();
+//        diskFailureMapper.insertDiskDFPInfo("suma-TEST11",new Timestamp(time),0.05,"testModel");
+//        diskFailureMapper.insertDiskHardwareInfo("suma-TEST11","testHost",512,false,"testDiskModel","127.0.0.1");
 
     }
 }

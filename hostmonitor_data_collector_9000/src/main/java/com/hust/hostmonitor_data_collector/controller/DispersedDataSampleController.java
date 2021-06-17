@@ -35,7 +35,7 @@ public class DispersedDataSampleController {
 
     /**
      * 获取信息-Dashboard-HostInfo-全部Host
-     * 格式：{"hostName1":{"hostInfo":{},"cpuInfoList":[],"gpuInfoList":{},"processInfoList":{}}, }
+     * 格式：{"Ip1":{"hostInfo":{},"cpuInfoList":[],"gpuInfoList":{},"processInfoList":{}}, }
      */
     @GetMapping(value="/getHostInfo/All/Dashboard")
     @ResponseBody
@@ -46,7 +46,7 @@ public class DispersedDataSampleController {
 
     /**
      * 获取信息-Dashboard-DiskInfo-全部Host
-     * 格式：{"hostName1":[{},{}], }
+     * 格式：{"Ip1":[{},{}], }
      */
     @GetMapping(value="/getDiskInfo/All/Dashboard")
     @ResponseBody
@@ -57,37 +57,37 @@ public class DispersedDataSampleController {
 
     /**
      * 获取信息-HostDetail-HostInfo-某个Host
-     * 参数：hostName
+     * 参数：Ip
      * 格式：{"hostInfo":{},"cpuInfoList":[],"gpuInfoList":{},"processInfoList":{}}
      */
-    @GetMapping(value="/getHostInfo/HostDetail/{hostName}")
+    @GetMapping(value="/getHostInfo/HostDetail/{Ip}")
     @ResponseBody
     public String getHostInfo_HostDetail(@PathVariable Map<String,String> map){
-        String result= dispersedDataService.getHostInfoDetail(map.get("hostName"));
+        String result= dispersedDataService.getHostInfoDetail(map.get("Ip"));
         return result;
     }
 
     /**
      * 获取信息-HostDetail-HostInfo-Trend-某个Host
-     * 参数：hostName
+     * 参数：Ip
      * 格式：{"cpuUsage":{},"memoryUsage":{},"diskIO":{},"netIO":{}}
      */
-    @GetMapping(value="/getHostInfo/Trend/HostDetail/{hostName}")
+    @GetMapping(value="/getHostInfo/Trend/HostDetail/{Ip}")
     @ResponseBody
     public String getHostInfo_Trend_HostDetail(@PathVariable Map<String,String> map){
-        String result= dispersedDataService.getHostInfoDetailTrend(map.get("hostName"));
+        String result= dispersedDataService.getHostInfoDetailTrend(map.get("Ip"));
         return result;
     }
 
     /**
      * 获取信息-HostDetail-DiskInfo-某个Host
-     * 参数：hostName
+     * 参数：Ip
      * 格式：{}
      */
-    @GetMapping(value="/getDiskInfo/{hostName}")
+    @GetMapping(value="/getDiskInfo/{Ip}")
     @ResponseBody
     public String getDiskInfo(@PathVariable Map<String,String> map){
-        String result= dispersedDataService.getDiskInfo(map.get("hostName"));
+        String result= dispersedDataService.getDiskInfo(map.get("Ip"));
         return null;
     }
 
@@ -117,13 +117,13 @@ public class DispersedDataSampleController {
 
     /**
      * 获取信息-DFP-Trend-某个Host
-     * 参数：hostName,diskName
+     * 参数：Ip,diskName
      * 格式：[[0,0], ]
      */
-    @GetMapping(value="/getDFPInfo/Trend/{hostName}/{diskName}")
+    @GetMapping(value="/getDFPInfo/Trend/{Ip}/{diskName}")
     @ResponseBody
     public String getDFPInfoTrend(@PathVariable Map<String,String> map){
-        String result= dispersedDataService.getDFPInfoTrend(map.get("hostName"),map.get("diskName"));
+        String result= dispersedDataService.getDFPInfoTrend(map.get("Ip"),map.get("diskName"));
         return result;
     }
 
@@ -191,13 +191,13 @@ public class DispersedDataSampleController {
 
 
     }
-//    @GetMapping(value = "/insertTestData")
-//    @ResponseBody
-//    public String signUp() {
-//        testService1.insertTestData();
-//        return "hhhh";
-//
-//    }
+    @GetMapping(value = "/insertTestData")
+    @ResponseBody
+    public String signUp() {
+        testService1.insertTestData();
+        return "hhhh";
+
+    }
 
 
 }

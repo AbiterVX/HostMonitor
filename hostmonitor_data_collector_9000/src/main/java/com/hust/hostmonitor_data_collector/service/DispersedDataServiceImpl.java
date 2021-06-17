@@ -195,14 +195,18 @@ public class DispersedDataServiceImpl implements DispersedDataService{
     public String getHostInfoDashboardAll() {
         JSONObject resultObject=new JSONObject();
         for(Map.Entry<String, JSONObject> entry: dispersedHostMonitor.hostInfoMap.entrySet()){
-            JSONObject tempObject=new JSONObject();
-            tempObject.put("hostName",entry.getValue().get("hostName"));
-            tempObject.put("cpuUsage",entry.getValue().get("cpuUsage"));
-            tempObject.put("diskCapacityTotalUsage",entry.getValue().get("diskCapacityTotalUsage"));
-            tempObject.put("ip",entry.getValue().get("ip"));
-            tempObject.put("netReceivedSpeed",entry.getValue().get("netReceivedSpeed"));
-            tempObject.put("netSendSpeed",entry.getValue().get("netSendSpeed"));
-            tempObject.put("osName",entry.getValue().get("osName"));
+//            JSONObject tempObject=new JSONObject();
+//            tempObject.put("hostName",entry.getValue().get("hostName"));
+//            tempObject.put("cpuUsage",entry.getValue().get("cpuUsage"));
+//            tempObject.put("diskCapacityTotalUsage",entry.getValue().get("diskCapacityTotalUsage"));
+//            tempObject.put("ip",entry.getValue().get("ip"));
+//            tempObject.put("netReceivedSpeed",entry.getValue().get("netReceivedSpeed"));
+//            tempObject.put("netSendSpeed",entry.getValue().get("netSendSpeed"));
+//            tempObject.put("osName",entry.getValue().get("osName"));
+//            tempObject.put("connected",entry.getValue().get("connected"));
+//            tempObject.put("cpuInfoList",entry.getValue().get("cpuInfoList"));
+//            tempObject.put("gpuInfoList",entry.getValue().get("gpuInfoList"));
+            resultObject.put(entry.getKey(),entry.getValue());
             double iops=0,diskWriteSpeed=0,diskReadSpeed=0;
             JSONArray diskArray=entry.getValue().getJSONArray("diskInfoList");
             for(int i=0;i<diskArray.size();i++){
@@ -210,22 +214,21 @@ public class DispersedDataServiceImpl implements DispersedDataService{
                 diskWriteSpeed+=diskArray.getJSONObject(i).getDouble("diskWriteSpeed");
                 diskReadSpeed+=diskArray.getJSONObject(i).getDouble("diskReadSpeed");
             }
-            tempObject.put("diskIOPS",iops);
-            tempObject.put("diskWriteSpeed",diskWriteSpeed);
-            tempObject.put("diskReadSpeed",diskReadSpeed);
-            resultObject.put(entry.getKey(),tempObject);
+            resultObject.getJSONObject(entry.getKey()).put("diskTotalIOPS",iops);
+            resultObject.getJSONObject(entry.getKey()).put("diskTotalWriteSpeed",diskWriteSpeed);
+            resultObject.getJSONObject(entry.getKey()).put("diskTotalReadSpeed",diskReadSpeed);
         }
         return resultObject.toJSONString();
     }
 
     /**
      * 获取信息-HostDetail-HostInfo-某个Host
-     * 参数：hostName
+     * 参数：Ip
      * 格式：{"hostInfo":{},"cpuInfoList":[],"gpuInfoList":{},"processInfoList":{}}
      */
     @Override
-    public String getHostInfoDetail(String hostName) {
-        String result=dispersedHostMonitor.hostInfoMap.get(hostName).toJSONString();
+    public String getHostInfoDetail(String Ip) {
+        String result=dispersedHostMonitor.hostInfoMap.get(Ip).toJSONString();
         return result;
     }
 //    private JSONObject selectMainProcess(double cpuThreshold,JSONObject jsonObject){
@@ -251,7 +254,7 @@ public class DispersedDataServiceImpl implements DispersedDataService{
 
     /**
      * 获取信息-Dashboard-DiskInfo-全部Host
-     * 格式：{"hostName1":[{},{}], }
+     * 格式：{"Ip1":[{},{}], }
      */
     public String getDiskInfoAll() {
         return null;
@@ -259,20 +262,20 @@ public class DispersedDataServiceImpl implements DispersedDataService{
 
     /**
      * 获取信息-HostDetail-DiskInfo-某个Host
-     * 参数：hostName
+     * 参数：Ip
      * 格式：{}
      */
-    public String getDiskInfo(String hostName) {
+    public String getDiskInfo(String Ip) {
         return null;
     }
 
     //时间段 cpuusage,memory,
     @Override
-    public String getHostInfoDetailTrend(String hostName) {
+    public String getHostInfoDetailTrend(String Ip) {
         int hours=24;
         Timestamp highbound=new Timestamp(System.currentTimeMillis());
         Timestamp lowbound=new Timestamp(System.currentTimeMillis()-hours*3600*1000);
-        List<DispersedRecord> dispersedRecordList= dispersedMapper.queryRecordsWithTimeLimit(lowbound,highbound,hostName);
+        List<DispersedRecord> dispersedRecordList= dispersedMapper.queryRecordsWithTimeLimit(lowbound,highbound,Ip);
 
         JSONArray result=new JSONArray();
         for(int i=0;i<6;i++){
@@ -301,11 +304,11 @@ public class DispersedDataServiceImpl implements DispersedDataService{
 
     /**
      * 获取信息-DFP-Trend-某个Host
-     * 参数：hostName,diskName
+     * 参数：Ip,diskName
      * 格式：[[0,0], ]
      */
     @Override
-    public String getDFPInfoTrend(String hostName, String diskSerial) {
+    public String getDFPInfoTrend(String Ip, String diskSerial) {
         JSONArray result=new JSONArray();
         List<DFPRecord> dfpRecordList=diskFailureMapper.selectDFPRecords(diskSerial);
         for(DFPRecord dfpRecord:dfpRecordList){
@@ -317,7 +320,7 @@ public class DispersedDataServiceImpl implements DispersedDataService{
     /**
      * 获取信息-DFP-All
      * 格式：[{},{} ]
-     * hostName,diskName,diskType,manufacturer,diskCapacity,model,predictTime,predictProbability,
+     * hostName,ip,diskName,diskType,manufacturer,diskCapacity,model,predictTime,predictProbability,
      */
     @Override
     public String getDFPInfoAll() {
@@ -355,7 +358,7 @@ public class DispersedDataServiceImpl implements DispersedDataService{
             diskFailureMapper.insertDiskDFPInfo(jsonObject.getString("diskSerial"), jsonObject.getTimestamp("timestamp"), doubleTo2bits_double(jsonObject.getDoubleValue("predictProbability")*100), jsonObject.getString("modelName"));
         }
     }
-
+    //TODO 用户名改IP？？
     @Override
     public void train(int modelType, float positiveDataProportion, float negativeDataProportion, float verifyProportion, JSONObject extraParams,String operatorID){
         if(!isTraining){
@@ -370,7 +373,7 @@ public class DispersedDataServiceImpl implements DispersedDataService{
             Thread progressThread = new Thread(() -> {
                 try {
                     int modelYear= 2016; //Calendar.getInstance().get(Calendar.YEAR);
-
+                    //
                     while (isTraining){
                         if(currentTrainState==0){
                             if(preprocessProgress== null){

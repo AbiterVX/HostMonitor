@@ -139,24 +139,24 @@ public class DispersedHostMonitor {
         DispersedHostMonitor.getInstance();
     }
 
-    public void setDiskDFPState(String hostName, String diskName, boolean b) {
-        if(hostInfoMap.containsKey(hostName)){
-            JSONObject jsonObject=hostInfoMap.get(hostName);
+    public void setDiskDFPState(String hostIp, String diskName, boolean b) {
+        if(hostInfoMap.containsKey(hostIp)){
+            JSONObject jsonObject=hostInfoMap.get(hostIp);
             jsonObject.getJSONObject("DFPList").put(diskName,b);
         }
     }
-    public boolean getDiskDFPState(String hostName,String diskName){
+    public boolean getDiskDFPState(String hostIp,String diskName){
         boolean result=false;
-        if(hostInfoMap.containsKey(hostName)){
-            if(hostInfoMap.get(hostName).getJSONObject("DFPList").containsKey(diskName))
-                result=hostInfoMap.get(hostName).getJSONObject("DFPList").getBoolean(diskName);
+        if(hostInfoMap.containsKey(hostIp)){
+            if(hostInfoMap.get(hostIp).getJSONObject("DFPList").containsKey(diskName))
+                result=hostInfoMap.get(hostIp).getJSONObject("DFPList").getBoolean(diskName);
         }
         return result;
     }
 
-    public void setAllDiskDFPState(String hostName, boolean b) {
-        if(hostInfoMap.containsKey(hostName)){
-            JSONObject jsonObject=hostInfoMap.get(hostName);
+    public void setAllDiskDFPState(String hostIp, boolean b) {
+        if(hostInfoMap.containsKey(hostIp)){
+            JSONObject jsonObject=hostInfoMap.get(hostIp);
             JSONArray diskArray=jsonObject.getJSONArray("diskInfoList");
             for(int i=0;i<diskArray.size();i++) {
                 String diskName=diskArray.getJSONObject(i).getString("diskName");
