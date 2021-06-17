@@ -61,6 +61,8 @@
     <div class="row">
         <div id="FailureCountStatisticsChart" style="width: 100%;height: 350px;"></div>
     </div>
+
+    <div style="height: 100px;width: 100%"></div>
 </body>
 
 <script>
@@ -71,75 +73,41 @@
     var FailureCountStatisticsChart = echarts.init(document.getElementById("FailureCountStatisticsChart"));
 
     window.onload=function (){
+        DFPSummaryChart.setOption(FGetDFPSummaryChartOption());
+        $('#dfpComparison').bootstrapTable({
+            columns: tableColumns["dfpComparison"],
+        });
+        FailureTypeStatisticsChart.setOption(FGetFailureTypeStatisticsChartOption(["无"],[0],[0]));
+        FailureCountStatisticsChart.setOption(FGetFailureCountStatisticsChartOption([[0,0]]));
+
         //刷新SummaryChart
         FSendGetRequest(false,"/Dispersed/getDFPSummaryInfo",function (resultData){
-            //-----测速数据
-            /*var resultData = {};
-            resultData["dfpComparison"] = [
-                {
-                    field:"FDR",
-                    predict:0.5546,
-                    reality:0.6813,
-                },
-                {
-                    field:"FAR",
-                    predict:0.782,
-                    reality:0.54358,
-                },
-                {
-                    field:"FDR",
-                    predict:0.5546,
-                    reality:0.6813,
-                },
-                {
-                    field:"FDR",
-                    predict:0.5546,
-                    reality:0.6813,
-                },
-                {
-                    field:"FDR",
-                    predict:0.5546,
-                    reality:0.6813,
-                },
-            ];
-            resultData["diskType"] = ["类型1","类型2","类型3","类型4","类型5"];
-            resultData["hddCount"] = [0,2,8,6,3];
-            resultData["ssdCount"] = [6,2,8,3,7];
-            resultData["trend"] = [];
-            resultData["SummaryChart"] = [1,2,3];
-            var dataLength = 100;
-            var timestamp=new Date().getTime();
-            for(var i=0;i<dataLength;i++){
-                var currentDate = timestamp - (dataLength-i)*120000;
-                resultData["trend"].push([currentDate,Math.ceil(Math.random()*10)]);
-            }*/
+            if(resultData!==null) {
+                //预期与实际对比
+                $('#dfpComparison').bootstrapTable("load", resultData["dfpComparison"]);
 
-            //预期与实际对比
-            $('#dfpComparison').bootstrapTable({
-                columns: tableColumns["dfpComparison"],
-                data: resultData["dfpComparison"],
-            });
-            //故障类型统计
-            FailureTypeStatisticsChart.setOption(FGetFailureTypeStatisticsChartOption(resultData["diskType"],resultData["hddCount"],resultData["ssdCount"]));
-            //趋势统计
-            FailureCountStatisticsChart.setOption(FGetFailureCountStatisticsChartOption(resultData["trend"]));
+                //故障类型统计
+                FailureTypeStatisticsChart.setOption(FGetFailureTypeStatisticsChartOption(resultData["diskType"], resultData["hddCount"], resultData["ssdCount"]));
+                //趋势统计
+                FailureCountStatisticsChart.setOption(FGetFailureCountStatisticsChartOption(resultData["trend"]));
 
 
-            //故障预测统计
-            var option = FGetDFPSummaryChartOption();
-            var percentage = [];
-            var sum = 0;
-            for(var i=0;i<resultData["SummaryChart"].length;i++){
-                sum += resultData["SummaryChart"][i];
+                //故障预测统计
+                var option = FGetDFPSummaryChartOption();
+                var percentage = [];
+                var sum = 0;
+                for (var i = 0; i < resultData["SummaryChart"].length; i++) {
+                    sum += resultData["SummaryChart"][i];
+                }
+                for (var i = 0; i < 3; i++) {
+                    percentage.push((resultData["SummaryChart"][i] / sum * 100).toFixed(1));
+                }
+                for (var i = 0; i < 3; i++) {
+                    option["series"][0]["data"][i]["value"] = percentage[i];
+                    option["series"][1]["data"][i]["value"] = resultData["SummaryChart"][i];
+                }
+                DFPSummaryChart.setOption(option);
             }
-            for(var i=0;i<3;i++){
-                percentage.push( (resultData["SummaryChart"][i]/sum* 100).toFixed(1) ) ;
-            }
-            for(var i=0;i<3;i++){
-                option["series"][0]["data"][i]["value"] = percentage[i];
-                option["series"][1]["data"][i]["value"] = resultData["SummaryChart"][i];
-            }
-            DFPSummaryChart.setOption(option);
         });
 
     }
