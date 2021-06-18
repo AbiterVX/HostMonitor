@@ -52,8 +52,8 @@ public class UserService {
     //-----用户
     //注册
     public String signUp(String userName,String password){
-        System.out.println(userName);
-        System.out.println(password);
+        //System.out.println(userName);
+        //System.out.println(password);
         return userDao.signUp(userName,password);
     }
     //登录
@@ -73,7 +73,7 @@ public class UserService {
                         int phoneValidState,int emailValidState, String userID){
         SystemUser operateUser = userDao.signIn(operateUserID,operateUserPassword);
         if(operateUser!=null){
-            System.out.println("[updateUserInfo:]" + operateUser.isSuperAdmin());
+            //System.out.println("[updateUserInfo:]" + operateUser.isSuperAdmin());
 
             if(operateUserID.equals(userID)){
                 //无法修改自己用户类型

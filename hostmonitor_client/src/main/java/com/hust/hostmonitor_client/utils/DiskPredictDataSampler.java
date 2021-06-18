@@ -70,7 +70,7 @@ public class DiskPredictDataSampler extends Thread {
             dos.write(bytes,0,length);
             dos.flush();
         }
-        System.out.println("[File]Send "+hostName+"-data.csv");
+        //System.out.println("[File]Send "+hostName+"-data.csv");
         fis.close();
         dos.close();
 
@@ -108,7 +108,7 @@ public class DiskPredictDataSampler extends Thread {
                     flag=true;
                 } catch (IOException e) {
                     e.printStackTrace();
-                    System.out.println("Can't connect to the collector.The disk sample file will be retransmitted in "+fileRetransmitInterval+"ms");
+                    System.err.println("Can't connect to the collector.The disk sample file will be retransmitted in "+fileRetransmitInterval+"ms");
                     try {
                         Thread.sleep(fileRetransmitInterval);
                     } catch (InterruptedException interruptedException) {
@@ -117,7 +117,7 @@ public class DiskPredictDataSampler extends Thread {
                 }
             }
             if(!keepLooping){
-                System.out.println("Because of the collector's disconnection"+new Date(System.currentTimeMillis()-24*3600*100)+" 's data doesn't be uploaded successfully");
+                System.err.println("Because of the collector's disconnection"+new Date(System.currentTimeMillis()-24*3600*100)+" 's data doesn't be uploaded successfully");
             }
         }
     }

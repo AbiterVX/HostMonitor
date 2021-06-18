@@ -142,7 +142,7 @@ public class DispersedDataSampleController {
     @PostMapping(value="/dfpTrain",produces = "application/json;charset=UTF-8")
     @ResponseBody
     public String dfpTrain(@RequestBody JSONObject jsonParam){
-        System.out.println(jsonParam);
+        //System.out.println(jsonParam);
 
         //服务端身份验证-管理员
         String userID = jsonParam.getString("userID");

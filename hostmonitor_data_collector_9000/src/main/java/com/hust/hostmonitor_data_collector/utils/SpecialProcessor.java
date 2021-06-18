@@ -29,14 +29,14 @@ public class SpecialProcessor {
         }
     }
     public void startListening(){
-        System.out.println("[FileReceiver]Start listening for disk data");
+        //System.out.println("[FileReceiver]Start listening for disk data");
         Thread listeningThread=new ThreadListening();
         listeningThread.start();
     }
     public class ThreadListening extends Thread{
         public void run(){
             try {
-                System.out.println("===========Server Listening============");
+                //System.out.println("===========Server Listening============");
                 while (true){
                     Socket socket = server.accept();
                     // 建立好连接后，从socket中获取输入流，并建立缓冲区进行读取
@@ -109,10 +109,10 @@ public class SpecialProcessor {
                 File integratedFile=new File(path+sdf.format(calendar.getTime())+".csv");
                 if(integratedFile.exists()){
                     DiskPredict.diskSampleDataIntegration(path+sdf.format(calendar.getTime())+".csv",path+hostName+".csv");
-                    System.out.println("[File]New file data has been added to integrated file.");
-                    System.out.println("[File]Temp file delete status:"+file.delete());
+                    //System.out.println("[File]New file data has been added to integrated file.");
+                    //System.out.println("[File]Temp file delete status:"+file.delete());
                 }else {
-                    System.out.println("[File]New file rename status:"+file.renameTo(integratedFile));
+                    //System.out.println("[File]New file rename status:"+file.renameTo(integratedFile));
                 }
 //                File file2;
 //                path=fileRepository+"predict_data";

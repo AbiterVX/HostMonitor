@@ -46,14 +46,13 @@ public class DispersedDataServiceImpl implements DispersedDataService{
         @Override
         public void run() {
             //采样
-            System.out.println("[TimerTask:Data Persistance]"+new Date());
+            //System.out.println("[TimerTask:Data Persistance]"+new Date());
             try {
                 Thread.sleep(sampleStoreDelayMS);
                 //存储新采样的数据
                 storeSampleData();
             } catch (InterruptedException e) {
-                //e.printStackTrace();
-                System.out.println("[Thread Sleep Error]: In TimerTask run()");
+                System.err.println("[Thread Sleep Error]: In TimerTask run()");
             }
         }
     };
@@ -61,7 +60,7 @@ public class DispersedDataServiceImpl implements DispersedDataService{
     private final TimerTask diskPredictTask= new TimerTask() {
         @Override
         public void run() {
-            System.out.println("[TimerTask:Disk Predict]"+new Date());
+            //System.out.println("[TimerTask:Disk Predict]"+new Date());
             diskPredict();
         }
     };
@@ -85,7 +84,7 @@ public class DispersedDataServiceImpl implements DispersedDataService{
         if(date.before(new Date())){
             date=addDay(date,1);
         }
-        System.out.println(date);
+        //System.out.println(date);
 
         mainTimer.schedule(diskPredictTask,date,predictInterval);
 
@@ -142,7 +141,7 @@ public class DispersedDataServiceImpl implements DispersedDataService{
     }
 
     private void storeSampleData(){
-        System.out.println("[hostInfoMap size]"+dispersedHostMonitor.hostInfoMap.size());
+        System.out.println("[hosts size]"+dispersedHostMonitor.hostInfoMap.size());
         for(Map.Entry<String, JSONObject> entry: dispersedHostMonitor.hostInfoMap.entrySet()){
             JSONObject tempObject=entry.getValue();
 
@@ -164,7 +163,7 @@ public class DispersedDataServiceImpl implements DispersedDataService{
                         tempObject.getDouble("netReceiveSpeed"),
                         tempObject.getDouble("netSendSpeed"),DiskReadRates,DiskWriteRates);
                 entry.getValue().put("hasPersistent",true);
-                System.out.println("[Database]Insert a record.");
+                //System.out.println("[Database]Insert a record.");
                 JSONArray diskArray=tempObject.getJSONArray("diskInfoList");
                 for(int i=0;i<diskArray.size();i++){
                     JSONObject tempDiskObject=diskArray.getJSONObject(i);
@@ -179,7 +178,7 @@ public class DispersedDataServiceImpl implements DispersedDataService{
                                 tempDiskObject.getString("diskModel"),
                                 tempObject.getString("ip"));
                     }
-                    System.out.println("["+diskSerial+"]"+tempObject.getTimestamp("lastUpdateTime"));
+                    //System.out.println("["+diskSerial+"]"+tempObject.getTimestamp("lastUpdateTime"));
                     diskFailureMapper.insertDiskSampleInfo(diskSerial, tempObject.getTimestamp("lastUpdateTime"),tempDiskObject.getDoubleValue("diskIOPS"),
                             tempDiskObject.getDoubleValue("diskReadSpeed"),tempDiskObject.getDoubleValue("diskWriteSpeed"));
                 }
@@ -566,7 +565,7 @@ public class DispersedDataServiceImpl implements DispersedDataService{
         //仪表盘
         Timestamp timestamp=diskFailureMapper.selectLatestRecordTime();
         if(timestamp==null){
-            System.out.println("There is no dfp records in mysql");
+            System.err.println("[Database]There is no dfp records in mysql");
             JSONArray SummaryChart=new JSONArray();
             SummaryChart.add(0);
             SummaryChart.add(0);
@@ -674,14 +673,12 @@ public class DispersedDataServiceImpl implements DispersedDataService{
         while(itr.hasNext()){
 
             if(count[2*m]==0&&count[2*m+1]==0){
-                //System.out.println(""+2*m+" "+(2*m+1));
-                //System.out.println(itr.next()+" is removed");
+
                 itr.next();
                 itr.remove();
             }
             else{
-                //System.out.println(""+2*m+" "+(2*m+1));
-                //System.out.println(itr.next()+" is keeped");
+
                 itr.next();
                 ssdCount.add(count[2*m]);
                 hddCount.add(count[2*m+1]);

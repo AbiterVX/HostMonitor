@@ -19,7 +19,7 @@ public class DataReceiver {
     public static void main(String[] args){
         try {
             ServerSocket serverSocket = new ServerSocket(7000);
-            System.out.println("===========Server Listening============");
+            //System.out.println("===========Server Listening============");
             while (true){
                 Socket socket = serverSocket.accept();
                 // 建立好连接后，从socket中获取输入流，并建立缓冲区进行读取
@@ -42,7 +42,7 @@ public class DataReceiver {
         public void run(){
             try {
                 ServerSocket serverSocket = new ServerSocket(7000);
-                System.out.println("===========Server Listening============");
+                //System.out.println("===========Server Listening============");
                 while (true){
                     Socket socket = serverSocket.accept();
                     // 建立好连接后，从socket中获取输入流，并建立缓冲区进行读取

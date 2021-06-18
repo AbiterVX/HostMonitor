@@ -94,7 +94,7 @@ public class HostMonitorClient {
                 connection_state = true;
             } catch (IOException e) {
                 //e.printStackTrace();
-                System.out.println("["+Thread.currentThread().getName()+"]"+"Can't connect to the collector");
+                System.err.println("["+Thread.currentThread().getName()+"]"+"Can't connect to the collector");
             }
         }
         private void reconnect() throws IOException {
@@ -148,8 +148,8 @@ public class HostMonitorClient {
                     e.printStackTrace();
                     try {
                         socket.close();
-                        System.out.println("["+Thread.currentThread().getName()+"]"+"Can't connect to the collector.The client keeps sampling but don't upload.");
-                        System.out.println("["+Thread.currentThread().getName()+"]"+"Client will try to reconnect to the collector with the period of "+reconnectInterval+"ms");
+                        System.err.println("["+Thread.currentThread().getName()+"]"+"Can't connect to the collector.The client keeps sampling but don't upload.");
+                        System.err.println("["+Thread.currentThread().getName()+"]"+"Client will try to reconnect to the collector with the period of "+reconnectInterval+"ms");
                         connection_state=false;
                         reconnect();
                     } catch (IOException ioException) {

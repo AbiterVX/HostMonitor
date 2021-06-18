@@ -264,7 +264,7 @@ public class DataSampler {
         dataObject.put("netReceiveSpeed",FormatUtils.doubleTo2bits_double(totalNetRecv/1024/1024));
         dataObject.put("netSendSpeed",FormatUtils.doubleTo2bits_double(totalNetSent/1024/1024));
 
-        System.out.println("[Data Sample]Sample Finish");
+        //System.out.println("[Data Sample]Sample Finish");
     }
     private List<partionInfo> processing(List<OSFileStore> fsList){
         ArrayList<partionInfo> result=new ArrayList<>();
@@ -387,7 +387,7 @@ public class DataSampler {
             dataObject.getJSONArray("netInterfaceList").getJSONObject(k).put("sentBytes",SentBytes);
 
         }
-        System.out.println("[Data Sample]Sample Finish");
+        //System.out.println("[Data Sample]Sample Finish");
 
     }
     public String outputSampleData(boolean insertProcessOrNot){
