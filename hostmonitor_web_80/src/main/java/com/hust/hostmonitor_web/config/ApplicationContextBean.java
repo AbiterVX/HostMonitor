@@ -16,8 +16,8 @@ public class ApplicationContextBean {
     //@LoadBalanced  //若不使用Nacos需关闭ApplicationContextBean.RestTemplate.LoadBalanced
     public RestTemplate getRestTemplate()
     {
-        String url = "";
-        int port = 0;
+        String url = "222.20.95.235";
+        int port = 9001;
 
         SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
 
