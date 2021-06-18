@@ -67,7 +67,10 @@ if __name__ == '__main__':
         print('parameter transport error:', sys.argv)
         sys.exit(0)
     try:
+        sys.argv[1] = sys.argv[1].replace('\\"','')
         param = json.loads(sys.argv[1])
+        print(sys.argv[1])
+        print(param)
         data_path = str(param['file_path'])
         replace = int(param['replace'])
         root_path = str(param['root_path'])
