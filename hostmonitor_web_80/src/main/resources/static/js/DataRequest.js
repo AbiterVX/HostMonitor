@@ -376,8 +376,8 @@ function FRefreshDataSummary(uiRefreshCallbackFunc){
 
             mainInfo["summaryPart"] = [
                 {
-                    hostCount: resultData["connectedCount"],
-                    connectedCount: resultData["hostIp"].length,
+                    hostCount: resultData["hostIp"].length,
+                    connectedCount: resultData["connectedCount"],
                     sumCapacity: resultData["sumCapacity"],
                     windowsHostCount: resultData["windowsHostCount"],
                     linuxHostCount: resultData["linuxHostCount"],

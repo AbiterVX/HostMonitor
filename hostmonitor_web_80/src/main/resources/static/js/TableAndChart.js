@@ -502,8 +502,8 @@ const tableColumns = {
     //故障预测信息
     diskFailurePredictInfo:[
         {
-            field: 'hostName',
-            title: '主机',
+            field: 'ip',
+            title: 'IP',
             width: 100,
             sortable: true,
         },
