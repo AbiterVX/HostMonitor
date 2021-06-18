@@ -30,10 +30,10 @@ public class ConsoleTest {
             }
             switch (Integer.valueOf(cmd)){
                 case 1:
-                    DiskPredict.DataPreProcess("\"2021\"", 0,null);
+                    DiskPredict.DataPreProcess("\"2016\"", 0,null);
                     break;
                 case 2:
-                    DiskPredict.GetTrainData("\"2021\"", 1.0f/3, 0.1f,null);
+                    DiskPredict.GetTrainData("\"2016\"", 1.0f/3, 0.1f,null);
                     break;
                 case 3:
                     JSONObject params = new JSONObject();
