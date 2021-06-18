@@ -93,8 +93,13 @@ public interface DiskFailureMapper {
             "on a.diskSerial=b.diskSerial and a.timestamp=b.timestamp) join diskHardwareInfo c on a.diskSerial=c.diskSerial")
     List<HardWithDFPRecord> selectLatestDFPWithHardwareRecordList();
 
-    @Select("select a.diskSerial,a.timestamp,a.predictProbability,a.modelName,b.hostName,b.hostIp,b.size,b.isSSd,b.model from " +
-            "diskDFPInfo a join diskHardwareInfo b on a.diskSerial=b.diskSerial where timestamp>=#{lowbound} order by timestamp")
+//    @Select("select a.diskSerial,a.timestamp,a.predictProbability,a.modelName,b.hostName,b.hostIp,b.size,b.isSSd,b.model from " +
+//            "diskDFPInfo a join diskHardwareInfo b on a.diskSerial=b.diskSerial where timestamp>=#{lowbound} order by timestamp")
+//    List<HardWithDFPRecord> selectRecentDFPWithHardwareRecordList(@Param("lowbound")Timestamp timestamp);
+
+    @Select("select a.diskSerial diskSerial,a.timestamp timestamp,a.predictProbability predictProbability,a.modelName modelName,b.hostName hostName,b.hostIp hostIp,b.size size,b.isSSd isSSd,b.model model from " +
+            "(diskDFPInfo a join diskHardwareInfo b on a.diskSerial=b.diskSerial) " +
+            "join (select max(timestamp) maxtimestamp from diskDFPInfo where timestamp>=#{lowbound} group by diskSerial) c on c.maxtimestamp=a.timestamp order by timestamp")
     List<HardWithDFPRecord> selectRecentDFPWithHardwareRecordList(@Param("lowbound")Timestamp timestamp);
 
     @Select("select a.diskSerial,b.hostName,b.isSSd,a.timestamp,a.predictProbability,a.modelName from " +
@@ -105,7 +110,8 @@ public interface DiskFailureMapper {
     Timestamp selectLatestRecordTime();
 
     @Select("select a.diskSerial,b.hostName,b.isSSd,a.timestamp,a.predictProbability,a.modelName" +
-            " from diskDFPInfo a join diskHardwareInfo b on a.diskSerial=b.diskSerial where timestamp>=#{lowbound}")
+            " from (diskDFPInfo a join diskHardwareInfo b on a.diskSerial=b.diskSerial) " +
+            "join (select max(timestamp)maxtimestamp from diskDFPInfo where timestamp>=#{lowbound} group by diskSerial)c on c.maxtimestamp=a.timestamp")
     List<DFPRecord> selectDFPRecordsByLowbound(@Param("lowbound")Timestamp lowbound);
 
     @Select("select diskSerial from diskHardwareInfo where diskSerial=#{diskSerial}")

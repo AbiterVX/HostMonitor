@@ -157,6 +157,7 @@ public class DiskPredict {
                 reader.close();
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
+                System.out.println("Yesterday has no update records,so the diskPredict() will do nothing");
             } catch (IOException e) {
                 e.printStackTrace();
             }

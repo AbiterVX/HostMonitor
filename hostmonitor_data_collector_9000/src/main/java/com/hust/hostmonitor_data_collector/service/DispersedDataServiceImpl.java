@@ -86,6 +86,7 @@ public class DispersedDataServiceImpl implements DispersedDataService{
             date=addDay(date,1);
         }
         System.out.println(date);
+
         mainTimer.schedule(diskPredictTask,date,predictInterval);
 
     }
@@ -386,10 +387,12 @@ public class DispersedDataServiceImpl implements DispersedDataService{
                     int modelYear= 2016;
                     int latestYear=Calendar.getInstance().get(Calendar.YEAR);
                     File originalData=new File(dataPath+"original_data/"+latestYear);
-                    
+                    File modelConfig=new File(dataPath+"models");
                     //TODO 检查数据量
-                    if(originalData.exists()&&false){
+                    if(originalData.exists()&&modelConfig.exists()&&false){
                         modelYear=latestYear;
+                    }
+                    if(modelYear==2016){
                         doSpecPredict=true;
                     }
                     //
@@ -463,6 +466,10 @@ public class DispersedDataServiceImpl implements DispersedDataService{
                     progressPercentage = new ArrayList(Arrays.asList(-1,-1,-1));
                     currentTrainState = 0;
                     isTraining = false;
+                    if(doSpecPredict){
+                        System.out.println("Special disk predict task");
+                        diskPredict();
+                    }
                 } catch (Exception e) {
                     e.printStackTrace();
                     System.out.println("[模型训练]错误！无文件");
@@ -472,11 +479,6 @@ public class DispersedDataServiceImpl implements DispersedDataService{
                 }
             });
             progressThread.start();
-        }
-
-        if(doSpecPredict){
-            System.out.println("Special disk predict task");
-            diskPredict();
         }
     }
 
