@@ -549,9 +549,9 @@ function FRefreshDataDFPInfoTrend(ip,diskName,uiRefreshCallbackFunc){
 function FRefreshDataDFPInfoAll(uiRefreshCallbackFunc){
     FSendGetRequest(false,"/Dispersed/getDFPInfo/List",function (resultData){
         if(resultData != null){
-            for(var i=0;i<resultData.length;i++){
+            /*for(var i=0;i<resultData.length;i++){
                 resultData[i]["predictProbability"] *= 100;
-            }
+            }*/
 
             var hostDiskMap = {};
             for(var i=0;i<resultData.length;i++){

@@ -147,9 +147,9 @@
     //刷新故障Trend
     function refreshDFPInfoTrend(ip,diskName){
         FRefreshDataDFPInfoTrend(ip,diskName,function (trendChartData){
-            for(var i=0;i<trendChartData.length;i++){
+            /*for(var i=0;i<trendChartData.length;i++){
                 trendChartData[i][1] *= 100;
-            }
+            }*/
 
             refreshDFPTrendChartData(trendChartData);
         });
@@ -165,6 +165,7 @@
 
     //刷新Table-DFPInfo
     function refreshDFPInfoTable(init,dfpInfoList){
+        //alert(JSON.stringify(dfpInfoList));
         if(init){
             $('#diskFailurePredictInfo').bootstrapTable({
                 columns: tableColumns["diskFailurePredictInfo"],
