@@ -237,7 +237,17 @@ if __name__ == '__main__':
         print('parameter transport error:', sys.argv)
         sys.exit(0)
     try:
-        sys.argv[1] = sys.argv[1].replace('\\"','')
+        #sys.argv[1] = sys.argv[1].replace('\\"','')
+
+        print(sys.argv[1])
+        sys.argv[1] = sys.argv[1].replace('\"\\"','\"')
+        sys.argv[1] = sys.argv[1].replace('\\\"\"','\"')
+        sys.argv[1] = sys.argv[1].replace('\\\"','\"')
+        sys.argv[1] = sys.argv[1].replace('\"{','{')
+        sys.argv[1] = sys.argv[1].replace('}\"','}')
+        print(sys.argv[1])
+
+
         param = json.loads(sys.argv[1])
         data_path = str(param['file_path'])
         model = str(param['model'])
