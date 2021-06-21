@@ -109,10 +109,10 @@ public class SpecialProcessor {
                 File integratedFile=new File(path+sdf.format(calendar.getTime())+".csv");
                 if(integratedFile.exists()){
                     DiskPredict.diskSampleDataIntegration(path+sdf.format(calendar.getTime())+".csv",path+hostName+".csv");
-                    //System.out.println("[File]New file data has been added to integrated file.");
-                    //System.out.println("[File]Temp file delete status:"+file.delete());
+                    System.out.println("[File]New file data has been added to integrated file.");
+                    System.out.println("[File]Temp file delete status:"+file.delete());
                 }else {
-                    //System.out.println("[File]New file rename status:"+file.renameTo(integratedFile));
+                    System.out.println("[File]New file rename status:"+file.renameTo(integratedFile));
                 }
 //                File file2;
 //                path=fileRepository+"predict_data";
