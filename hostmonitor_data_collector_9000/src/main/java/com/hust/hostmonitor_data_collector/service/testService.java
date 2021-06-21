@@ -100,7 +100,7 @@ public class testService {
         Calendar calendar=Calendar.getInstance();
         calendar.add(Calendar.DAY_OF_MONTH,-1);
         long time=calendar.getTimeInMillis();
-        diskFailureMapper.insertDiskDFPInfo("suma-TEST13",new Timestamp(time),0.05,"testModel");
+        diskFailureMapper.insertDiskDFPInfo("suma-TEST13",new Timestamp(time),0.05,"testModel",new Timestamp(System.currentTimeMillis()));
         diskFailureMapper.insertDiskHardwareInfo("suma-TEST13","testHost",512,false,"testDiskModel","127.0.0.1");
         System.out.println(time);
         System.out.println(new Timestamp(time));

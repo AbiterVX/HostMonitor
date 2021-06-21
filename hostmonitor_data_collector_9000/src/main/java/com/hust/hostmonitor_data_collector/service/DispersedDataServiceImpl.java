@@ -356,6 +356,7 @@ public class DispersedDataServiceImpl implements DispersedDataService{
 
     //有待实现对预测范围的选择
     private void diskPredict(){
+        Timestamp predictTime=new Timestamp(System.currentTimeMillis());
         Calendar calendar=Calendar.getInstance();
         calendar.add(Calendar.DAY_OF_MONTH,-1);
         String date=sdf.format(calendar.getTime());
@@ -379,11 +380,17 @@ public class DispersedDataServiceImpl implements DispersedDataService{
         // 插入数据库，注意修改接受文件时同时修改下列状态
         for(JSONObject jsonObject:result) {
             System.out.println(jsonObject);
-            if(diskFailureMapper.checkRecordExists(jsonObject.getString("diskSerial"), jsonObject.getTimestamp("timestamp"))==0)
-                diskFailureMapper.insertDiskDFPInfo(jsonObject.getString("diskSerial"), jsonObject.getTimestamp("timestamp"), doubleTo2bits_double(jsonObject.getDoubleValue("predictProbability")*100), jsonObject.getString("modelName"));
+            if (diskFailureMapper.checkRecordExists(jsonObject.getString("diskSerial"), jsonObject.getTimestamp("timestamp")) == 0) {
+
+                diskFailureMapper.insertDiskDFPInfo(jsonObject.getString("diskSerial"), jsonObject.getTimestamp("timestamp"), doubleTo2bits_double(jsonObject.getDoubleValue("predictProbability") * 100), jsonObject.getString("modelName"),predictTime);
+
+            }
+            else{
+                //TODO 更新
+            }
+
         }
     }
-    //TODO 用户名改IP？？
     @Override
     public void train(int modelType, float positiveDataProportion, float negativeDataProportion, float verifyProportion, JSONObject extraParams,String operatorID){
         if(!isTraining){

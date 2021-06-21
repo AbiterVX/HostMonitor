@@ -35,11 +35,12 @@ public interface DiskFailureMapper {
                               @Param("WriteSpeed")double WriteSpeed);
 
     @Insert("insert into diskDFPInfo values (" +
-            "#{diskSerial},#{timestamp},#{predictProbability},#{modelName})")
+            "#{diskSerial},#{timestamp},#{predictProbability},#{modelName},#{predictTime})")
     void insertDiskDFPInfo(@Param("diskSerial")String diskSerial,
                            @Param("timestamp")Timestamp timestamp,
                            @Param("predictProbability") double predictProbability,
-                           @Param("modelName")String modelName);
+                           @Param("modelName")String modelName,
+                           @Param("predictTime")Timestamp predictTime);
 
 
 
@@ -151,7 +152,7 @@ public interface DiskFailureMapper {
     @Select("select * from trainInfo order by Timestamp desc")
     List<TrainInfo> selectAllTrainInfo();
 
-    @Select("select count(*) from diskDFPInfo where diskSerial=#{diskSerial} and timestamp#{timestamp}")
+    @Select("select count(*) from diskDFPInfo where diskSerial=#{diskSerial} and timestamp=#{timestamp}")
     int checkRecordExists(@Param("diskSerial")String diskSerial,
                           @Param("timestamp")Timestamp timestamp);
 }
