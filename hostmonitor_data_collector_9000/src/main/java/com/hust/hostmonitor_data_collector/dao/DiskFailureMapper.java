@@ -148,7 +148,7 @@ public interface DiskFailureMapper {
 
 
 
-    @Select("select * from trainInfo")
+    @Select("select * from trainInfo order by Timestamp desc")
     List<TrainInfo> selectAllTrainInfo();
 
     @Select("select count(*) from diskDFPInfo where diskSerial=#{diskSerial} and timestamp#{timestamp}")

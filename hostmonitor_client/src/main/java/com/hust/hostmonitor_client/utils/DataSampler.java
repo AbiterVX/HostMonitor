@@ -201,7 +201,10 @@ public class DataSampler {
             long total=0;
             for(HWPartition hwPartition:hwpList){
                 for(partionInfo pInfo:pList){
-                    if(hwPartition.getUuid().equals(pInfo.volumn)){
+                    String id=hwPartition.getUuid()+hwPartition.getIdentification()+hwPartition.getName();
+                    //System.out.println(id);
+                    //System.out.println(pInfo.volumn);
+                    if(id.contains(pInfo.volumn)){
                         usable+=pInfo.usable;
                         total+=pInfo.total;
                         break;
@@ -269,10 +272,16 @@ public class DataSampler {
     private List<partionInfo> processing(List<OSFileStore> fsList){
         ArrayList<partionInfo> result=new ArrayList<>();
         for(OSFileStore OSfs: fsList){
+
             String volumn=OSfs.getVolume();
-            int left=volumn.indexOf("{");
-            int right=volumn.indexOf("}");
-            volumn=volumn.substring(left+1,right);
+            //System.out.println(volumn);
+            if(volumn.contains("{")) {
+                int left = volumn.indexOf("{");
+                //System.out.println(""+left);
+                int right = volumn.indexOf("}");
+                //System.out.println(""+right);
+                volumn = volumn.substring(left + 1, right);
+            }
             partionInfo pInfo=new partionInfo(volumn,OSfs.getTotalSpace(),OSfs.getUsableSpace());
             result.add(pInfo);
         }
@@ -348,7 +357,10 @@ public class DataSampler {
             long total=0;
             for(HWPartition hwPartition:hwpList){
                 for(partionInfo pInfo:pList){
-                    if(hwPartition.getUuid().equals(pInfo.volumn)){
+                    String id=hwPartition.getUuid()+hwPartition.getIdentification()+hwPartition.getName();
+                    //System.out.println(id);
+                    //System.out.println(pInfo.volumn);
+                    if(id.contains(pInfo.volumn)){
                         usable+=pInfo.usable;
                         total+=pInfo.total;
                         break;

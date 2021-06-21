@@ -359,8 +359,21 @@ public class DispersedDataServiceImpl implements DispersedDataService{
         Calendar calendar=Calendar.getInstance();
         calendar.add(Calendar.DAY_OF_MONTH,-1);
         String date=sdf.format(calendar.getTime());
-        DiskPredict.predictWithoutProgess(System.getProperty("user.dir")+"/DiskPredict/original_data/"+calendar.get(Calendar.YEAR)+"/"+(calendar.get(Calendar.MONTH)+1),date+".csv");
-        //+"/"+date+".csv"
+        File file=new File(System.getProperty("user.dir")+"/DiskPredict/original_data/"+calendar.get(Calendar.YEAR)+"/"+(calendar.get(Calendar.MONTH)+1)+"/"+date+".csv");
+        if(file.exists()) {
+            DiskPredict.predictWithoutProgess(System.getProperty("user.dir") + "/DiskPredict/original_data/" + calendar.get(Calendar.YEAR) + "/" + (calendar.get(Calendar.MONTH) + 1), date + ".csv");
+        }else {
+            calendar.add(Calendar.DAY_OF_MONTH,1);
+            date=sdf.format(calendar.getTime());
+            file=new File(System.getProperty("user.dir")+"/DiskPredict/original_data/"+calendar.get(Calendar.YEAR)+"/"+(calendar.get(Calendar.MONTH)+1)+"/"+date+".csv");
+            if(file.exists()){
+                DiskPredict.predictWithoutProgess(System.getProperty("user.dir") + "/DiskPredict/original_data/" + calendar.get(Calendar.YEAR) + "/" + (calendar.get(Calendar.MONTH) + 1), date + ".csv");
+            }
+            else {
+                System.err.println("Today and yesterday neither have the updated data,the diskPredict() will do nothing.");
+                return;
+            }
+        }
         //在路径下读出所有的预测结果
         List<JSONObject> result=DiskPredict.getDiskPredictResult("/DiskPredict/result/"+sdf.format(new Date())+"/"+date+".csv");
         // 插入数据库，注意修改接受文件时同时修改下列状态
