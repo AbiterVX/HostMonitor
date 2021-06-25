@@ -55,3 +55,13 @@ build/
 /DiskPredict/predict_data/**
 /DiskPredict/client/sampleData/data.csv
 *.zip
+
+
+### python
+/hostmonitor_client_v2/__pycache__/**
+/hostmonitor_client_v2/build/**
+/hostmonitor_client_v2/dist/**
+/hostmonitor_client_v2/HostMonitorClient.spec
+
+
+/DiskPredict/client/pySMART/__pycache__/**
