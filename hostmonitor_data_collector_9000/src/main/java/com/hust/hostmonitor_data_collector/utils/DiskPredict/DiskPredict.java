@@ -227,6 +227,7 @@ public class DiskPredict {
                     firstline=false;
                     continue;
                 }
+                //写前需要检查此行是否已经存在
                 writer.write(str+"\n");
             }
             writer.flush();

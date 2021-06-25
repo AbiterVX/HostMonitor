@@ -13,6 +13,7 @@
         <module>hostmonitor_data_collector_9000</module>
         <module>hostmonitor_commons</module>
         <module>hostmonitor_client</module>
+        <module>oshiTest</module>
     </modules>
 
     <properties>

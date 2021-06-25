@@ -134,7 +134,13 @@ public class DataSampler {
     private HashMap<String,Integer> readDisktypes(){
         HashMap<String,Integer> types=new HashMap<>();
         File file=new File(diskDataPath);
-
+        if(!file.exists()){
+            try {
+                file.createNewFile();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
         try {
             FileReader fr=new FileReader(file);
             BufferedReader br=new BufferedReader(fr);
