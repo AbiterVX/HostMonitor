@@ -76,5 +76,6 @@ if __name__ == '__main__':
     #print(lists)
     # 写文件路径
     saveFilePath = "./DiskPredict/client/sampleData/data.csv"
+    #saveFilePath = "data.csv"
     save_data(saveFilePath)
     print("data_collector write complete")
