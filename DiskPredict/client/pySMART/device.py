@@ -98,6 +98,7 @@ class Device(object):
         """**(str):** Device's model number."""
         self.serial = None
         self.serialAlternative = []
+        self.valid = True
         """**(str):** Device's serial number."""
         self.interface = None if interface == 'UNKNOWN INTERFACE' else interface
         """
@@ -901,6 +902,10 @@ class Device(object):
             if 'User Capacity' in line:
                 self.capacity = (
                     line.replace(']', '[').split('[')[1].lstrip().rstrip())
+            if 'Total NVM Capacity' in line:
+                self.capacity = (
+                    line.replace(']', '[').split('[')[1].lstrip().rstrip())
+                self.valid = False
             if 'SMART support' in line:
                 # self.smart_capable = 'Available' in line
                 # self.smart_enabled = 'Enabled' in line

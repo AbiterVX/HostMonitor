@@ -49,7 +49,10 @@ def getData():
         lists[i].append('/'.join(physical_disk.serialAlternative))
 
         # failure
-        lists[i].append(0)
+        if physical_disk.valid == False:
+            lists[i].append(-1)
+        else:
+            lists[i].append(0)
         # is_ssd
         if physical_disk.is_ssd:
             lists[i].append(1)

@@ -15,7 +15,7 @@ pip3 install pyinstaller
 进入到项目目录，打包。
 
 ```
-pyinstaller -F HostMonitorClient.py
+pyinstaller -F data_collector.py
 ```
 
 在项目dist文件中得到exe文件
@@ -23,3 +23,4 @@ pyinstaller -F HostMonitorClient.py
 
 
 ## 2.
+
