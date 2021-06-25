@@ -81,8 +81,12 @@ class DeviceList(object):
                         if device.serial == otherdevice.serial:
                             to_delete.append(otherindex)
                             device._sd_name = otherdevice.name
+
+            #TODO 临时修改
             if device.capacity is None and index not in to_delete:
-                to_delete.append(index)
+                device.valid = False
+                #to_delete.append(index)
+
         # Recreate the self.devices list without the marked indeces
         self.devices[:] = [v for i, v in enumerate(self.devices)
                            if i not in to_delete]
