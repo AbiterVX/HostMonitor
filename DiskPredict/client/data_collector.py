@@ -4,7 +4,7 @@ import pySMART
 import platform
 
 lists = []
-header = ['date','serial_number', 'model', 'capacity_bytes', 'failure', 'is_ssd','pt_d']
+header = ['date','serial_number', 'model', 'serialAlternative', 'failure', 'is_ssd','pt_d']
 smartTag = "smart_"
 smartTagAttributes = ["_normalized","_raw"]
 smartCount = 256
@@ -45,8 +45,9 @@ def getData():
         lists[i].append(physical_disk.serial)
         # model
         lists[i].append(physical_disk.model)
-        # capacity_bytes
-        lists[i].append(physical_disk.capacity)
+        # serialAlternative
+        lists[i].append('/'.join(physical_disk.serialAlternative))
+
         # failure
         lists[i].append(0)
         # is_ssd
