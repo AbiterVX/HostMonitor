@@ -88,7 +88,7 @@ public class DataSampler {
         CentralProcessor centralProcessor = systemInfo.getHardware().getProcessor();
         CentralProcessor.ProcessorIdentifier identifier=centralProcessor.getProcessorIdentifier();
         dataObject.getJSONArray("cpuInfoList").getJSONObject(0).put("cpuName",identifier.getName());
-        HashMap<String,Integer> types=readDisktypes();
+        HashMap<String,SmartInfo> types=readDiskSmartInfo();
         //磁盘
         List<HWDiskStore> hwDiskStoreList=systemInfo.getHardware().getDiskStores();
         int i=0;
@@ -101,10 +101,19 @@ public class DataSampler {
             dataObject.getJSONArray("diskInfoList").getJSONObject(i).put("lastUpdateTime",timestamp);
             String serial=tempDiskStore.getSerial().trim();
             for(String string:types.keySet()){
-                if(string.contains(serial)){
-                    dataObject.getJSONArray("diskInfoList").getJSONObject(i).put("type",types.get(string));
+                if(string.toLowerCase().contains(serial.toLowerCase())||stringReorder(string.toLowerCase()).contains(serial.toLowerCase())){
+                    dataObject.getJSONArray("diskInfoList").getJSONObject(i).put("type",types.get(string).isSsd);
                     dataObject.getJSONArray("diskInfoList").getJSONObject(i).put("diskName",string);
                     break;
+                }else{
+                    for(String backsn:types.get(string).backup){
+                        if(backsn.toLowerCase().contains(serial.toLowerCase())){
+                            String[] tokens=backsn.split(":");
+                            dataObject.getJSONArray("diskInfoList").getJSONObject(i).put("diskName",tokens[1]);
+                            dataObject.getJSONArray("diskInfoList").getJSONObject(i).put("type",types.get(string).isSsd);
+                            break;
+                        }
+                    }
                 }
             }
             totalsize+=tempDiskStore.getSize();
@@ -131,8 +140,20 @@ public class DataSampler {
             dataObject.getJSONArray("netInterfaceList").getJSONObject(i).put("netInterfaceName",tempNetworkIF.getDisplayName());
         }
     }
-    private HashMap<String,Integer> readDisktypes(){
-        HashMap<String,Integer> types=new HashMap<>();
+    public String stringReorder(String original){
+        StringBuffer stringBuffer=new StringBuffer();
+        int groupNumber=original.length()/2;
+        int i=0;
+        for(i=0;i<groupNumber;i++){
+            stringBuffer.append(original.charAt(i*2+1));
+            stringBuffer.append(original.charAt(i*2));
+        }
+        if(i*2==original.length()-1);
+        stringBuffer.append(original.charAt(i*2));
+        return stringBuffer.toString();
+    }
+    private HashMap<String,SmartInfo> readDiskSmartInfo(){
+        HashMap<String,SmartInfo> types=new HashMap<>();
         File file=new File(diskDataPath);
         if(!file.exists()){
             try {
@@ -152,8 +173,15 @@ public class DataSampler {
                     continue;
                 }
                 String[] tokens=str.split(",");
-                types.put(tokens[1],Integer.parseInt(tokens[5]));
-
+                SmartInfo tempSmartInfo=new SmartInfo();
+                tempSmartInfo.isSsd=Integer.parseInt(tokens[5]);
+                ArrayList<String> snList=new ArrayList<>();
+                String[] sns=tokens[3].split("/");
+                for(int i=0;i<sns.length;i++){
+                    snList.add(sns[i]);
+                }
+                tempSmartInfo.backup=snList;
+                types.put(tokens[1],tempSmartInfo);
             }
         } catch (FileNotFoundException e) {
             e.printStackTrace();
