@@ -763,6 +763,30 @@ class Device(object):
             return (selftest_return_value, str(self.tests[0]) if output == 'str' else self.tests[0])
         return selftest_results[:2]
 
+    def getSerialAlternative(self):
+        serialAlternative = []
+        for key in smartctl_type:
+            currentInterface = smartctl_type[key]
+            popen_list = [
+                SMARTCTL_PATH,
+                '-d',
+                currentInterface,
+                *self.smart_options,
+                '-a',
+                os.path.join('/dev/', self.name)
+            ]
+            popen_list = list(filter(None, popen_list))
+            cmd = Popen(popen_list, stdout=PIPE, stderr=PIPE)
+            _stdout, _stderr = [i.decode('utf8', 'ignore') for i in cmd.communicate()]
+            _stdout = _stdout.split('\n')[4:]
+
+            for line in _stdout:
+                if 'Serial Number' in line or 'Serial number' in line:
+                    serialAlternative.append(key+":"+line.split(':')[1].split()[0].rstrip())
+                    break
+
+        return serialAlternative
+
     def update(self):
         """
         Queries for device information using smartctl and updates all
@@ -772,8 +796,13 @@ class Device(object):
         """
         # set temperature back to None so that if update() is called more than once
         # any logic that relies on self.temperature to be None to rescan it works.it
+
+
         self.temperature = None
-        self.serialAlternative = []
+        # print(self.name+"，Device序列号: /n")
+        self.serialAlternative = self.getSerialAlternative()
+
+
         if self.abridged:
             interface = None
             popen_list = [
