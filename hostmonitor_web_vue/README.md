@@ -47,7 +47,8 @@ npm run serve
 （7）浏览器进入
 
 ```
-http://localhost:8080/#/homepage
+http://localhost
+http://localhost/#/homepage
 ```
 
 
