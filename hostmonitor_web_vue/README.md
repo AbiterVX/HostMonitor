@@ -44,12 +44,33 @@ npm install
 npm run serve
 ```
 
-（7）浏览器进入
+（7）安装vue-resource
+
+npm install axios
+
+```undefined
+npm i vue-resource -S
+```
+
+（8）浏览器进入
 
 ```
 http://localhost
 http://localhost/#/homepage
 ```
+
+
+
+### 1.3 IDEA 运行vue 项目
+
+https://www.cnblogs.com/ya-qiang/p/9639187.html
+
+
+### 1.4 vue
+
+(1)vue生命周期
+
+https://zhuanlan.zhihu.com/p/176035713
 
 
 
