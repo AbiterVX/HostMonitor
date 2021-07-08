@@ -7,9 +7,9 @@ import "@/utils/element.js";    // 按需加载
 
 import 'element-ui/lib/theme-chalk/index.css';
 import "@/utils/quan.js"; //全局注册
+import VueResource from 'vue-resource'
 
-
-
+Vue.use(VueResource)
 Vue.config.productionTip = false;
 
 

@@ -4,10 +4,10 @@
             <p class="title">系统概况</p>
             <div>
                 <ul class="top_ul">
-                    <li>Linux:{{topdata.first}}</li>
-                    <li>Windows:{{topdata.second}}</li>
-                    <li>硬盘:{{topdata.third}}</li>
-                    <li>其他:{{topdata.four}}</li>
+                    <li>Linux:{{summaryData.topdata.first}}</li>
+                    <li>Windows:{{summaryData.topdata.second}}</li>
+                    <li>硬盘:{{summaryData.topdata.third}}</li>
+                    <li>其他:{{summaryData.topdata.four}}</li>
                 </ul>
             </div>
         </div>
@@ -18,15 +18,15 @@
                      <ul>
                          <li>
                              <p>Total</p>
-                             <p>{{leftdata.first}}</p>
+                             <p>{{summaryData.leftdata.first}}</p>
                          </li>
                          <li>
                              <p>Free</p>
-                             <p>{{leftdata.second}}</p>
+                             <p>{{summaryData.leftdata.second}}</p>
                          </li>
                          <li>
                              <p>Used</p>
-                             <p>{{leftdata.third}}</p>
+                             <p>{{summaryData.leftdata.third}}</p>
                          </li>
                      </ul>
                 </div>  
@@ -47,26 +47,46 @@
     </div>
 </template>
 
+
+
 <script>
+
+
 export default {
     data(){
         return{
-            topdata:{
-                first:20,
-                second:30,
-                third:40,
-                four:50,
-            },
-            leftdata:{
-                first:20,
-                second:30,
-                third:40,
-            },
+            summaryData:{
+                topdata:{
+                    first:20,
+                    second:30,
+                    third:40,
+                    four:50,
+                },
+                leftdata:{
+                    first:20,
+                    second:30,
+                    third:40,
+                },
+            }
+
         }
     },
     created(){
+        this.getData();
     },
     methods:{
+        getData: function (){
+            var url = '/vue_web_api/vue_web/homepage/getSummary';
+            this.$http.get(url).then((response)=>{
+                alert(JSON.stringify(response.data));
+                this.summaryData = response.data;
+            },(error)=>{
+                alert("请求失败处理");
+                console.log('请求失败');
+                console.log(error);
+            });
+
+        }
     }
 }
 </script>

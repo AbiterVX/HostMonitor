@@ -16,7 +16,9 @@ public class DispersedConfig {
     //配置文件
     private final JSONObject configJson = JSONObject.parseObject(readFile("ConfigData/DispersedConfig.json"));
     private final String systemSettingFilePath = "ConfigData/SystemSetting.json";
+    private final String vueWebConfigFilePath = "ConfigData/VueWebConfig";
     private JSONObject systemSetting = JSONObject.parseObject(readFile(systemSettingFilePath));
+    private JSONObject vueWebConfig = JSONObject.parseObject(readFile(vueWebConfigFilePath));
 
     //配置文件父路径-最终为打包jar的同级目录
     private final String path = System.getProperty("user.dir");
@@ -128,6 +130,10 @@ public class DispersedConfig {
         systemSetting = JSONObject.parseObject(_systemSetting.toJSONString());
         writeFile(systemSettingFilePath,systemSetting.toString());
         return systemSetting;
+    }
+
+    public JSONObject getVueWebConfig(){
+        return JSONObject.parseObject(vueWebConfig.toJSONString());
     }
 
     public static void main(String[] args) {
