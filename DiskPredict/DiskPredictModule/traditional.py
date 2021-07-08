@@ -1,3 +1,4 @@
+# coding=gbk
 '''
 Author: your name
 Date: 2021-05-16 18:12:24
@@ -64,7 +65,7 @@ class Traditional_Train:
         ]
         for func in funcList:
             func()
-            #è¿›åº¦
+            #½ø¶È
             print('Progress:' + str(count) + "/" + str(sum_progress), end='\r')
             count += 1
 
@@ -97,7 +98,7 @@ class Traditional_Train:
         train_data = None
 
     def get_scale(self):
-        print("\n#2 å½’ä¸€åŒ–")
+        print("\n#2 ¹éÒ»»¯")
         scale_file_path = os.path.join(root_path, 'models', self.model, time.strftime("%Y-%m-%d"), 'scale.pkl')
         if os.path.exists(scale_file_path):
             self.scale_exits_ = True
@@ -110,7 +111,7 @@ class Traditional_Train:
             self.test_data_[X_]= pd.DataFrame(self.scale_.transform(self.test_data_[X_]))
         
     def get_feature(self):
-        print("\n#3 ç‰¹å¾é€‰æ‹©")
+        print("\n#3 ÌØÕ÷Ñ¡Ôñ")
         # sfs = SequentialFeatureSelector(
         #     estimator=self.model_,
         #     k_features='best',
@@ -125,14 +126,14 @@ class Traditional_Train:
             estimator=clf,
             prefit=True
         )
-        print(' --- ç‰¹å¾é‡è¦æ€§:')
+        print(' --- ÌØÕ÷ÖØÒªĞÔ:')
         print(clf.feature_importances_)
         self.feature_ = list(sfm.get_support(indices=True))
-        print(" --- æœ€ä½³ç‰¹å¾ï¼š", self.feature_)
+        print(" --- ×î¼ÑÌØÕ÷£º", self.feature_)
 
 
     def grid_search(self):
-        print("\n#4 ç½‘æ ¼æœç´¢/äº¤å‰éªŒè¯")
+        print("\n#4 Íø¸ñËÑË÷/½»²æÑéÖ¤")
         self.train_data_[X_] = self.train_data_[X_].iloc[:, self.feature_]
         self.test_data_[X_] = self.test_data_[X_].iloc[:, self.feature_]
         k_folds = StratifiedKFold(n_splits=self.folds_, shuffle=True, random_state=self.random_state_)
@@ -145,14 +146,14 @@ class Traditional_Train:
             verbose=2)
         gscv.fit(X=self.train_data_[X_], y=self.train_data_[y_])
         self.model_ = gscv.best_estimator_
-        print(" --- æœ€ä½³å‚æ•°ï¼š", self.model_.get_params())
+        print(" --- ×î¼Ñ²ÎÊı£º", self.model_.get_params())
 
     def model_score(self):
-        print("\n#5 æ¨¡å‹è¯„ä¼°")
+        print("\n#5 Ä£ĞÍÆÀ¹À")
         predict_y = self.model_.predict(self.test_data_[X_])
         matrix_ = confusion_matrix(y_pred=predict_y, y_true=self.test_data_[y_])
-        print("æ··æ·†çŸ©é˜µï¼š\n", matrix_)
-        print("æ¨¡å‹è¯„ä¼°ï¼š\n", classification_report(y_true=self.test_data_[y_], y_pred=predict_y))
+        print("»ìÏı¾ØÕó£º\n", matrix_)
+        print("Ä£ĞÍÆÀ¹À£º\n", classification_report(y_true=self.test_data_[y_], y_pred=predict_y))
         Score.print_confusion_matrix(confusion_matrix=matrix_, y_true=self.test_data_[y_], y_score=predict_y, output_to_java=True,model_name=self.model)
 
     @staticmethod
@@ -160,11 +161,11 @@ class Traditional_Train:
         return datetime.datetime.strftime(datetime.datetime.strptime(str(old_date_str), date_form) + relativedelta(months=1), date_form)
 
     def model_verify(self):
-        print("\n#6 æ¨¡å‹éªŒè¯ï¼ˆæŒ‰æœˆä»½åˆ’åˆ†éªŒè¯é›†ï¼‰")
+        print("\n#6 Ä£ĞÍÑéÖ¤£¨°´ÔÂ·İ»®·ÖÑéÖ¤¼¯£©")
 
         begin_date = self.verify_data_.iloc[0, self.index_dict_['date']]
         end_date = self.verify_data_.iloc[-1, self.index_dict_['date']]
-        print("--- æ•°æ®æ—¶é—´è·¨åº¦[%s, %s)ï¼š" % (begin_date, end_date))
+        print("--- Êı¾İÊ±¼ä¿ç¶È[%s, %s)£º" % (begin_date, end_date))
         print(" features:", self.feature_)
         print(" params:")
         print(pd.Series(self.model_.get_params()))
@@ -178,18 +179,18 @@ class Traditional_Train:
             if len(cur_data_y.value_counts()) < 2:
                 break
             cur_data_X = cur_data.iloc[:, self.index_dict_['data']:]
-            cur_data_X = pd.DataFrame(self.scale_.transform(cur_data_X))  # å¯¹å½“å‰æµ‹è¯•æ•°æ®è¿›è¡Œå½’ä¸€åŒ–
-            cur_data_X = cur_data_X.iloc[:, self.feature_]  # å¯¹å½“å‰æµ‹è¯•æ•°æ®æå–ç‰¹å¾
+            cur_data_X = pd.DataFrame(self.scale_.transform(cur_data_X))  # ¶Ôµ±Ç°²âÊÔÊı¾İ½øĞĞ¹éÒ»»¯
+            cur_data_X = cur_data_X.iloc[:, self.feature_]  # ¶Ôµ±Ç°²âÊÔÊı¾İÌáÈ¡ÌØÕ÷
 
-            predict_y = self.model_.predict(cur_data_X)  # ä½¿ç”¨å½“å‰æ¨¡å‹è¿›è¡Œé¢„æµ‹
+            predict_y = self.model_.predict(cur_data_X)  # Ê¹ÓÃµ±Ç°Ä£ĞÍ½øĞĞÔ¤²â
             matrix = confusion_matrix(cur_data_y, predict_y)
 
-            print("\n--- å½“å‰æµ‹è¯•ç»“æœ[%s, %s)ï¼š" % (begin_date, cur_date))
+            print("\n--- µ±Ç°²âÊÔ½á¹û[%s, %s)£º" % (begin_date, cur_date))
             Score.print_confusion_matrix(confusion_matrix=matrix, y_true=cur_data_y, y_score=predict_y, output_to_java=False,model_name=self.model)
             begin_date = cur_date
 
     def save_model(self):
-        print("\n#7 æ¨¡å‹ä¿å­˜")
+        print("\n#7 Ä£ĞÍ±£´æ")
         first_name = self.model_.__class__.__name__
         last_name = '.pkl'
         now_time = time.strftime("%Y-%m-%d")
@@ -206,7 +207,7 @@ class Traditional_Train:
                 pickle.dump(obj=self.scale_, file=file)
 
         with open(os.path.join(os.path.join(root_path, 'models', self.model), 'config.json'), mode='w+') as file:
-            # å½“å‰ model çš„æ‰€æœ‰æ¨¡å‹çš„æœ€ä½³ feature å’Œ å½“å‰æ­£åœ¨ä½¿ç”¨çš„æ¨¡å‹
+            # µ±Ç° model µÄËùÓĞÄ£ĞÍµÄ×î¼Ñ feature ºÍ µ±Ç°ÕıÔÚÊ¹ÓÃµÄÄ£ĞÍ
             try:
                 config = json.load(file)
             except JSONDecodeError:
@@ -222,7 +223,7 @@ class Traditional_Train:
             
 
         with open(os.path.join(root_path, 'models', 'features.json'), mode='w+') as file:
-            # ç»Ÿä¸€ç®¡ç†æ‰€æœ‰ model çš„å½“å‰æ¨¡å‹çš„æœ€ä½³ feature
+            # Í³Ò»¹ÜÀíËùÓĞ model µÄµ±Ç°Ä£ĞÍµÄ×î¼Ñ feature
             try:
                 features = json.load(file)
             except JSONDecodeError:

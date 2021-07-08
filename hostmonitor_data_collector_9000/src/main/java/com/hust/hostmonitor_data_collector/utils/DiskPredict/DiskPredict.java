@@ -17,9 +17,7 @@ import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 public class DiskPredict {
     private static final String userDirPath = System.getProperty("user.dir");
@@ -197,12 +195,10 @@ public class DiskPredict {
             CsvReader reader = new CsvReader(projectPath + readFileName, ',', StandardCharsets.UTF_8);
             reader.readHeaders();
             while (reader.readRecord()) {
-
                 String[] currentRow = reader.getValues();
                 if(!diskSerial.equals(currentRow[1])){
                     return true;
                 }
-
             }
             reader.close();
         } catch (FileNotFoundException e) {
@@ -214,6 +210,20 @@ public class DiskPredict {
     }
     public static void diskSampleDataIntegration(String integratedFileName,String newFile){
         String projectPath = System.getProperty("user.dir");
+        HashSet<String> rows=new HashSet<>();
+        try {
+            FileReader integratedFileReader=new FileReader(integratedFileName);
+            BufferedReader ibr=new BufferedReader(integratedFileReader);
+            String records=null;
+            while((records=ibr.readLine())!=null){
+                String[] tokens=records.split(",");
+                rows.add(tokens[0]+":"+tokens[1]);
+            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         try {
             FileWriter writer;
             writer = new FileWriter(integratedFileName,true);
@@ -227,8 +237,11 @@ public class DiskPredict {
                     firstline=false;
                     continue;
                 }
-                //写前需要检查此行是否已经存在
-                writer.write(str+"\n");
+                String[] rowTokens=str.split(",");
+                if(!rows.contains(rowTokens[0]+":"+rowTokens[1])) {
+                    writer.write(str + "\n");
+                    rows.add(rowTokens[0]+":"+rowTokens[1]);
+                }
             }
             writer.flush();
             writer.close();

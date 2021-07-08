@@ -43,6 +43,7 @@ def getData():
         lists[i].append(localtime)
         # serial_number
         lists[i].append(physical_disk.serial)
+        print(physical_disk.serial)
         # model
         lists[i].append(physical_disk.model)
         # serialAlternative

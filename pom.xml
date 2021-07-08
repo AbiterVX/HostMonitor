@@ -14,6 +14,7 @@
         <module>hostmonitor_commons</module>
         <module>hostmonitor_client</module>
         <module>oshiTest</module>
+        <module>hostmonitor_data_escape</module>
     </modules>
 
     <properties>

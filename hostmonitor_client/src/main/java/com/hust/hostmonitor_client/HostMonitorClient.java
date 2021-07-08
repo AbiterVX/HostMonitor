@@ -85,7 +85,7 @@ public class HostMonitorClient {
         }
         private void connect() {
             try {
-                System.err.println("外部类"+this);
+                //System.err.println("外部类"+this);
                 clientSocket = new Socket(collectorIP, collectorPort);
                 outToCollector = new DataOutputStream(clientSocket.getOutputStream());
 
@@ -121,7 +121,7 @@ public class HostMonitorClient {
             }
             @Override
             public void run() {
-                System.err.println("内部类"+DataSender.this);
+                //System.err.println("内部类"+DataSender.this);
                 try{
                     outToCollector.writeUTF(mainSampler.getHostName());
                     synchronized (lockObject) {

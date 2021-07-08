@@ -1,3 +1,4 @@
+# coding=gbk
 '''
 Descripttion: 
 Version: xxx
@@ -7,7 +8,7 @@ LastEditors: WanJu
 LastEditTime: 2021-05-26 19:00:56
 '''
 
-# #åº“æ–‡ä»¶
+# #¿âÎÄ¼ş
 # import sys
 # sys.path.insert(0, sys.path[0]+'/Lib')
 
@@ -29,7 +30,7 @@ from pandas.core.series import Series
 chunk_size = 10000
 root_path = ''
 
-str_model = 'model'  # æè¿°ç¡¬ç›˜çš„ç³»åˆ—
+str_model = 'model'  # ÃèÊöÓ²ÅÌµÄÏµÁĞ
 index_dict = {
     'data':5,
     'date':0
@@ -45,7 +46,7 @@ class predict:
         self.predict()
 
     def get_config(self):
-        print('#1 è¯»å–é…ç½®æ–‡ä»¶...')
+        print('#1 ¶ÁÈ¡ÅäÖÃÎÄ¼ş...')
         config_path = os.path.join(root_path, 'models', 'features.json')
         try:
             with open(config_path, mode='r') as file:
@@ -58,7 +59,7 @@ class predict:
             sys.exit(0)
 
     def get_model_name(self, model, features_name):
-        # æ‰¾åˆ°åŒ¹é…åº¦æœ€é«˜çš„ model
+        # ÕÒµ½Æ¥Åä¶È×î¸ßµÄ model
         model = re.sub('[\\/:*?\"<>|.]', '-', str(model))
         scores = []
         if model in self.model_dict_.keys():
@@ -129,7 +130,7 @@ class predict:
             
     
     def predict(self):
-        print('#2 æ•…éšœé¢„æµ‹...')
+        print('#2 ¹ÊÕÏÔ¤²â...')
         model_dict = {}
         try:
             save_path = os.path.join(root_path, 'result', time.strftime("%Y-%m-%d"))

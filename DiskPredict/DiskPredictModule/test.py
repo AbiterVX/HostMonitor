@@ -1,3 +1,4 @@
+# coding=gbk
 '''
 Descripttion: 
 Version: xxx

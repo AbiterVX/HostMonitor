@@ -1,0 +1,22 @@
+Rem Select Disk 2
+Select Disk 2
+list partition
+
+Rem Clean Disk 2
+clean
+list partition
+
+convert gpt noerr
+
+Rem Create the primary partition on the disk
+Create partition primary size=10240
+assign letter=n
+format quick fs=ntfs label='dadwqe'
+list partition
+
+Rem Create the primary partition on the disk
+Create partition primary size=10240
+assign letter=m
+format quick fs=ntfs label='nqejwe'
+list partition
+

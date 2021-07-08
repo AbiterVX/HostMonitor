@@ -31,7 +31,7 @@ public class JavaExePython {
             Process proc;
             Runtime runtime = Runtime.getRuntime();
             List<String> cmd = new ArrayList<String>();
-            cmd.add("python");
+            cmd.add("python3");
             cmd.add("-u");  // 实时显示Python输出
             cmd.add(filePath);  // 待执行的Python文件 这是sys.argv[0]
             cmd.add(param.toJSONString());  // 需要执行的python参数 这是sys.argv[1]

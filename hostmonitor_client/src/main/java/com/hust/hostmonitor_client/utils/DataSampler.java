@@ -105,14 +105,20 @@ public class DataSampler {
                     dataObject.getJSONArray("diskInfoList").getJSONObject(i).put("type",types.get(string).isSsd);
                     dataObject.getJSONArray("diskInfoList").getJSONObject(i).put("diskName",string);
                     break;
-                }else{
+                }
+                else{
+                    boolean ifbreak=false;
                     for(String backsn:types.get(string).backup){
                         if(backsn.toLowerCase().contains(serial.toLowerCase())){
                             String[] tokens=backsn.split(":");
-                            dataObject.getJSONArray("diskInfoList").getJSONObject(i).put("diskName",tokens[1]);
+                            dataObject.getJSONArray("diskInfoList").getJSONObject(i).put("diskName",string);
                             dataObject.getJSONArray("diskInfoList").getJSONObject(i).put("type",types.get(string).isSsd);
+                            ifbreak=true;
                             break;
                         }
+                    }
+                    if(ifbreak){
+                        break;
                     }
                 }
             }
@@ -148,8 +154,9 @@ public class DataSampler {
             stringBuffer.append(original.charAt(i*2+1));
             stringBuffer.append(original.charAt(i*2));
         }
-        if(i*2==original.length()-1);
-        stringBuffer.append(original.charAt(i*2));
+        if(i*2==original.length()-1) {
+            stringBuffer.append(original.charAt(i * 2));
+        }
         return stringBuffer.toString();
     }
     private HashMap<String,SmartInfo> readDiskSmartInfo(){
@@ -246,7 +253,13 @@ public class DataSampler {
                 }
             }
             double usage=usable*1.0/total;
-            double usage2bits=FormatUtils.doubleTo2bits_double(usage);
+            double usage2bits=0.0;
+            try {
+                usage2bits = FormatUtils.doubleTo2bits_double(usage);
+            } catch (Exception e) {
+                //e.printStackTrace();
+                System.out.println("usage2bitsError");
+            }
             JSONArray singleArray=new JSONArray();
             double singleTotalSize=dataObject.getJSONArray("diskInfoList").getJSONObject(j).getDouble("diskCapacityTotalSize");
             singleArray.add(FormatUtils.doubleTo2bits_double((total-usable)*1.0/1024/1024/1024));
@@ -392,8 +405,8 @@ public class DataSampler {
             for(HWPartition hwPartition:hwpList){
                 for(partionInfo pInfo:pList){
                     String id=hwPartition.getUuid()+hwPartition.getIdentification()+hwPartition.getName();
-                    //System.out.println(id);
-                    //System.out.println(pInfo.volumn);
+                    System.out.println(id);
+                    System.out.println(pInfo.volumn);
                     if(id.contains(pInfo.volumn)){
                         usable+=pInfo.usable;
                         total+=pInfo.total;
@@ -402,7 +415,14 @@ public class DataSampler {
                 }
             }
             double usage=usable*1.0/total;
-            double usage2bits=FormatUtils.doubleTo2bits_double(usage);
+            double usage2bits=0.0;
+            try {
+                usage2bits = FormatUtils.doubleTo2bits_double(usage);
+            } catch (Exception e) {
+                //e.printStackTrace();
+                System.out.println("usage2bitsError");
+            }
+
             JSONArray singleArray=new JSONArray();
             double singleTotalSize=dataObject.getJSONArray("diskInfoList").getJSONObject(j).getDouble("diskCapacityTotalSize");
             singleArray.add(FormatUtils.doubleTo2bits_double((total-usable)*1.0/1024/1024/1024));

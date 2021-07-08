@@ -1,3 +1,4 @@
+# coding=gbk
 '''
 Descripttion: 
 Version: xxx
@@ -16,7 +17,7 @@ import pandas as pd
 import re
 
 root_path = ''
-str_model = 'model'  # æè¿°ç¡¬ç›˜çš„ç³»åˆ—
+str_model = 'model'  # ÃèÊöÓ²ÅÌµÄÏµÁĞ
 
 class preProcess:
     def __init__(self, data_path, replace) -> None:
@@ -27,9 +28,9 @@ class preProcess:
         data_path = os.path.join(root_path, 'original_data', self.data_path_)
         save_root = os.path.join(root_path, 'processed_data', self.data_path_)
         if os.path.exists(save_root) and not self.replace_:
-            # è·¯å¾„å­˜åœ¨åˆ™è¯´æ˜æ•°æ®å·²ç»é¢„å¤„ç†è¿‡
+            # Â·¾¶´æÔÚÔòËµÃ÷Êı¾İÒÑ¾­Ô¤´¦Àí¹ı
             print('[Preprocessed] Original datas in "%s" has been preprocessed\r' % self.data_path_)
-            # è¿›åº¦
+            # ½ø¶È
             print('Progress:1/1', end='\r')
             return
 
@@ -57,7 +58,7 @@ class preProcess:
                     group.dropna(axis=1, how='all', inplace=True)
                     group.to_csv(os.path.join(save_path, file), header=True, index=False)
 
-                #è¿›åº¦
+                #½ø¶È
                 print('Progress:'+str(count)+"/"+str(sumFileCount), end='\r')
                 count+=1
 

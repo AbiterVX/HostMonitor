@@ -19,6 +19,10 @@ public class UserOperationController {
     @Resource
     UserService userService;
 
+    /**
+     * 用于用户注册的接口
+     *
+     */
     @PostMapping(value = "/SignUp")
     @ResponseBody
     public String signUp(@RequestBody Map<String,String> params) {
@@ -33,6 +37,10 @@ public class UserOperationController {
         }
     }
 
+    /**
+     * 用于用户登录的接口
+     *
+     */
     @PostMapping(value = "/SignIn")
     @ResponseBody
     public SystemUser signIn(@RequestBody Map<String,String> params) {
@@ -43,6 +51,40 @@ public class UserOperationController {
         return user;
     }
 
+    /**
+     * 用于获取所有的注册用户的相关信息
+     * 返回值格式：
+     * [
+     *     {
+     *         "admin": false,          是否为管理员
+     *         "email": "222222",       邮箱
+     *         "emailValidState": false,    邮箱是否验证
+     *         "lastEditTime": 1624003586000,   上次编辑时间戳
+     *         "password": "",      密码
+     *         "phone": "112",      电话号码
+     *         "phoneValidState": true,     电话号码是否验证
+     *         "superAdmin": false,     是否为超级管理员
+     *         "userID": "10006",       用户id
+     *         "userName": "VX_1",          用户名
+     *         "userType": 0,           用户类型
+     *         "validState": false      用户状态
+     *     },
+     *     {
+     *         "admin": true,
+     *         "email": "576412173@qq.com",
+     *         "emailValidState": false,
+     *         "lastEditTime": 1622978531000,
+     *         "password": "",
+     *         "phone": "18332630632",
+     *         "phoneValidState": false,
+     *         "superAdmin": false,
+     *         "userID": "10007",
+     *         "userName": "AbiterVX",
+     *         "userType": 1,
+     *         "validState": true
+     *     },...
+     * ]
+     */
     @GetMapping(value = "/getUsers")
     @ResponseBody
     public String getUsers(){
@@ -55,6 +97,11 @@ public class UserOperationController {
         return result.toJSONString();
     }
 
+    /**
+     * 更新用户相关信息
+     * @param params 需要将更新的信息放入请求参数中
+     * @return
+     */
     @PostMapping(value = "/updateUserInfo")
     @ResponseBody
     public String updateUserInfo(@RequestBody Map<String,String> params) {
@@ -74,6 +121,11 @@ public class UserOperationController {
         return "Complete";
     }
 
+    /**
+     * 更新用户密码的接口
+     * @param params
+     * @return
+     */
     @PostMapping(value = "/updateUserPassword")
     @ResponseBody
     public String updateUserPassword(@RequestBody Map<String,String> params) {
@@ -94,6 +146,11 @@ public class UserOperationController {
         return userService.sendSMS(phoneNumber,diskName);
     }*/
 
+    /**
+     * 用于发送邮件的接口，处于测试中
+     * @param map
+     * @return
+     */
 
     @GetMapping(value = "/Email/{emailAddress}")
     @ResponseBody
@@ -103,7 +160,20 @@ public class UserOperationController {
         return "";
     }
 
-
+    /**
+     * 获取用户当前的系统参数设置
+     * 返回值格式：
+     * {
+     *     "BackupTimingInterval": 8,           备份时间周期
+     *     "ReportTimingInterval": 6,           报告时间周期
+     *     "ReportEmergency": false,        是否进行紧急报告
+     *     "BackupTiming": false,
+     *     "ReportTiming": false,
+     *     "BackupEmergency": false,        是否进行紧急备份
+     *     "ReportFailureRateThreshold": 7.0,       报告的磁盘警告阈值
+     *     "BackupFailureRateThreshold": 9.0        备份的磁盘警告阈值
+     * }
+     */
     @GetMapping(value = "/SystemSetting/Get")
     @ResponseBody
     public String getSystemSetting() {
@@ -111,6 +181,11 @@ public class UserOperationController {
         return userService.getSystemSetting();
     }
 
+    /**
+     * 用于进行用户系统设定的接口，需要将请求的参数传入
+     * @param params
+     * @return
+     */
     @PostMapping(value = "/SystemSetting/Reset")
     @ResponseBody
     public String resetSystemSetting(@RequestBody Map<String,String> params) {

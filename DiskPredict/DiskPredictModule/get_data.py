@@ -1,3 +1,4 @@
+# coding=gbk
 '''
 Descripttion: 
 Version: xxx
@@ -15,7 +16,7 @@ from numpy.lib.npyio import save
 import pandas as pd
 
 root_path = ''
-min_data_num = 200  # å½“è®­ç»ƒé›†æ•°æ®å°‘äº min_data_num æ—¶ï¼Œæ¨¡å‹è®­ç»ƒæ•ˆæœå°†å¾ˆå·®
+min_data_num = 200  # µ±ÑµÁ·¼¯Êı¾İÉÙÓÚ min_data_num Ê±£¬Ä£ĞÍÑµÁ·Ğ§¹û½«ºÜ²î
 str_failure = 'failure'
 int_pos = 1
 int_neg = 0
@@ -46,7 +47,7 @@ class getData:
             print('Preprocessing:', sub_path, end='\r')
             for file in sorted(list(os.listdir(sub_path))):
                 file_path = os.path.join(sub_path, file)
-                # æŒ‰æ¯”ä¾‹æå–è®­ç»ƒé›†ã€éªŒè¯é›†
+                # °´±ÈÀıÌáÈ¡ÑµÁ·¼¯¡¢ÑéÖ¤¼¯
                 df = pd.read_csv(file_path)
                 pos_data = df[df[str_failure] == int_pos].fillna(method='ffill', axis=1)
                 if pos_data.shape[0] == 0:
@@ -71,7 +72,7 @@ class getData:
                 train_data.to_csv(os.path.join(save_path, 'train.csv'), index=False, header=True)
                 verify_data.to_csv(os.path.join(save_path, 'verify.csv'), index=False, header=True)
 
-            # è¿›åº¦
+            # ½ø¶È
             count += len(os.listdir(sub_path))
             print('Progress:' + str(count) + "/" + str(sumFileCount), end='\r')
 

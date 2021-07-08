@@ -26,7 +26,7 @@ public class DiskPredictDataSampler extends Thread {
         collectorIp= formatConfig.getCollectorIP();
         collectorPort= formatConfig.getPort(2);
         this.hostName=name;
-        sampleFilePath = System.getProperty("user.dir") +"/DiskPredict/client/data_collector.exe";
+        sampleFilePath = System.getProperty("user.dir") +"/DiskPredict/client/data_collector.py";
         dataFilePath=System.getProperty("user.dir") +"/DiskPredict/client/sampleData/data.csv";
     }
     //修改成定时任务最好
@@ -80,7 +80,22 @@ public class DiskPredictDataSampler extends Thread {
         public int run(String[] strings) {
             try {
                 Runtime rt = Runtime.getRuntime();
-                rt.exec(sampleFilePath);
+                System.out.println("python3");
+                Process process=rt.exec("python3 "+sampleFilePath);
+                BufferedReader stdInput=new BufferedReader(new InputStreamReader(process.getInputStream()));
+                BufferedReader ErrInput=new BufferedReader(new InputStreamReader(process.getErrorStream()));
+
+                String s;
+                while((s=stdInput.readLine())!=null){
+                    System.out.println(s);
+                }
+                while((s=ErrInput.readLine())!=null){
+                    System.out.println(s);
+                }
+
+                stdInput.close();
+                ErrInput.close();
+                System.out.println("python3 finishes");
             } catch (IOException e) {
                 e.printStackTrace();
             }
