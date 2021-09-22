@@ -1159,7 +1159,7 @@ var summaryChartOption = {
         data: [
             {
                 value: 0,
-                name: '低',
+                name: '低负载',
                 title: {
                     offsetCenter: ['0%', '-55%']
                 },
@@ -1169,7 +1169,7 @@ var summaryChartOption = {
             },
             {
                 value: 0,
-                name: '中',
+                name: '中负载',
                 title: {
                     offsetCenter: ['0%', '-15%']
                 },
@@ -1180,7 +1180,7 @@ var summaryChartOption = {
             {
                 value: 0,
                 count:0,
-                name: '高',
+                name: '高负载',
                 title: {
                     offsetCenter: ['0%', '22%']
                 },
@@ -1191,7 +1191,7 @@ var summaryChartOption = {
         ],
         title: {
             fontWeight: 'bold',
-            fontSize: 20,
+            fontSize: 18,
         },
         detail: {
             width: 60,
@@ -1205,7 +1205,7 @@ var summaryChartOption = {
         }
     },
     pieOption: {
-        name: '数量',
+        name: '节点数量:',
         type: 'pie',
         center: ['16%', '54%'],
         radius: ['64%', '90%'],
@@ -1218,15 +1218,15 @@ var summaryChartOption = {
         data: [
             {
                 value: 0,
-                name: 'Low'
+                name: '低负载'
             },
             {
                 value: 0,
-                name: 'Medium'
+                name: '中负载'
             },
             {
                 value: 0,
-                name: 'High'
+                name: '高负载'
             },
         ]
     },
