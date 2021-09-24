@@ -136,12 +136,11 @@
                             </div>
                             <a id="NavItem1" class="nav-link" href="#"></a>
                         </li>
-                        <li class="nav-item nav-item0">
-                            <div class="active">
-                                <div class="nav-item1"></div>
-                                <div class="nav-item2"></div>
-                            </div>
-                            <a id="NavItem2" class="nav-link" href="#"></a>
+
+                        <li class="nav-item">
+                            <a id="NavItem2" href="#hostList" data-toggle="collapse" class="dropdown-toggle nav-link"></a>
+                            <ul id="hostList" class="collapse list-unstyled show">
+                            </ul>
                         </li>
                         <li class="nav-item nav-item0">
                             <div class="active">
@@ -191,13 +190,10 @@
                             </div>
                             <a id="NavItem7" class="nav-link" href="#"></a>
                         </li>
-                        <li class="nav-item nav-item0">
-                            <div class="active">
-                                <div class="nav-item1"></div>
-                                <div class="nav-item2"></div>
-                            </div>
-                            <a id="NavItem8" class="nav-link" href="#" style="color:white"></a>
-                        </li>
+
+                        <!--<li class="nav-item">
+                            <a id="NavItem8" class="nav-link" href="#"></a>
+                        </li>-->
 
                     </ul>
                 </div>
@@ -251,6 +247,10 @@
             //设置初始界面
             FSetCurrentNavItem(0);
         });
+    }
+
+    function hostDetail(index){
+        window.location.href = signInSrc;
     }
 
     function pageResize(){
