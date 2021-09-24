@@ -391,7 +391,7 @@ function FRefreshDataSummary(uiRefreshCallbackFunc){
             mainInfo["lastUpdateTime"] = resultData["lastUpdateTime"];
             //load
             mainInfo["summaryChart"] = resultData["load"]
-
+            console.log(mainInfo)
             FSetData("mainInfo",mainInfo);
             uiRefreshCallbackFunc();
         });
@@ -400,7 +400,6 @@ function FRefreshDataSummary(uiRefreshCallbackFunc){
         uiRefreshCallbackFunc();
     }
 }
-
 function FRefreshDataHostInfoAll(uiRefreshCallbackFunc){
     var mainInfo = FGetMainInfo();
     FSendGetRequest(false, "/Dispersed/getHostInfo/All/Dashboard", function (resultData) {
@@ -431,7 +430,6 @@ function FRefreshDataHostInfoAll(uiRefreshCallbackFunc){
             for (var j = 0; j < hostInfo["diskInfoList"].length; j++) {
                 hostInfo["diskInfoList"][j]["diskCapacityUsage"] = (hostInfo["diskInfoList"][j]["diskCapacitySize"][0] / hostInfo["diskInfoList"][j]["diskCapacitySize"][1] * 100).toFixed(2);
             }
-
             //connected
             hostInfo["connected"] = resultData[ip]["connected"];
             //cpuInfoList
@@ -442,9 +440,12 @@ function FRefreshDataHostInfoAll(uiRefreshCallbackFunc){
             hostInfo["processInfoList"] = resultData[ip]["processInfoList"];
             //lastUpdateTime
             //hostInfo["lastUpdateTime"] = 100000;
-
+            console.log(hostInfo)
+            console.log(hostInfo.processInfoList)
+            console.log(hostInfo.processInfoList.length)
             //更新hostInfo缓存
             FSetData("hostInfo_" + ip, hostInfo);
+            FSetData("meterchartdata", hostInfo.processInfoList);
         }
         uiRefreshCallbackFunc();
     });

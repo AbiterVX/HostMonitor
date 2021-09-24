@@ -256,6 +256,19 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-mail</artifactId>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/com.dameng/Dm7JdbcDriver17 -->
+        <dependency>
+            <groupId>com.dameng</groupId>
+            <artifactId>Dm7JdbcDriver17</artifactId>
+            <version>7.6.0.77</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/com.dameng/Dm8JdbcDriver18 -->
+        <dependency>
+            <groupId>com.dameng</groupId>
+            <artifactId>Dm8JdbcDriver18</artifactId>
+            <version>8.1.1.49</version>
+        </dependency>
+
     </dependencies>
 
     <build>

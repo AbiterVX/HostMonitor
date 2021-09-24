@@ -9,16 +9,19 @@ function FGetNavItems(){
     return [
         document.getElementById("NavItem1"),
         document.getElementById("NavItem2"),
+        document.getElementById("NavItem9"),
         document.getElementById("NavItem3"),
         document.getElementById("NavItem4"),
         document.getElementById("NavItem5"),
         document.getElementById("NavItem6"),
         document.getElementById("NavItem7"),
         document.getElementById("NavItem8"),
+
     ];
 }
 
 var minRequireUserType = [
+    0,
     0,
     0,
     0,
@@ -32,12 +35,18 @@ var minRequireUserType = [
 var innerHTMLList = [
     icon_home + '资源监控',
     icon_bar + '节点详情',
-    icon_empty + icon_bar + '数据分析',
-    icon_empty + icon_file + '故障查询',
-    icon_empty + icon_file + '模型训练',
+    icon_bar + '实时监控',
+    // icon_empty + icon_bar + '数据分析',
+    // icon_empty + icon_file + '故障查询',
+    // icon_empty + icon_file + '模型训练',
+    icon_empty + '数据分析',
+    icon_empty + '故障查询',
+    icon_empty + '模型训练',
     icon_file + '系统设置',
     icon_file + '用户管理',
     icon_file + '测速',
+
+
 ];
 
 var signInSrc = "/Signin";
@@ -45,6 +54,7 @@ var parentPath = "html/";
 var srcHtml = [
     "DashBoard.html",
     "HostDetail.html",
+    "InstrumentPanel.html",
     "DFPAnalysis.html",
     "DiskFailurePrediction.html",
     "DFPModelTraining.html",
@@ -87,7 +97,7 @@ function FInitNav(){
         NavItems[i].innerHTML = innerHTMLList[i];
         const index = i;
         NavItems[i].onclick = function (){
-            if(index === 4 || index === 5 || index === 6){
+            if(index === 3 || index === 4 || index === 5){
                 var user = FGetUser();
                 if(user == null){
                     window.location.href = signInSrc;
@@ -115,13 +125,16 @@ function FSetCurrentNavItem(leftNavItemIndex){
     if(currentIndex !== leftNavItemIndex){
         currentIndex = leftNavItemIndex;
         var NavItems = FGetNavItems();
+        var activelist=$(".active")
         for(var i=0;i<NavItems.length;i++){
             if(i === leftNavItemIndex){
-                NavItems[i].style.color ="black";
+                activelist[i].style.opacity=1
+                // NavItems[i].style.color ="white";
                 NavItems[i].style.fontWeight = "bold";
             }
             else{
-                NavItems[i].style.color = '';
+                activelist[i].style.opacity=0
+                NavItems[i].style.color = "#007bff";
                 NavItems[i].style.fontWeight = '';
             }
         }
@@ -135,21 +148,26 @@ function FSetCurrentNavItem(leftNavItemIndex){
 
 //[下拉菜单]-init
 function FInitDropDown(dropDownMenuId,dropDownBtnId,dropDownItems,selectBtnCallback,index){
-
     var dropDownMenu = document.getElementById(dropDownMenuId);
+    console.log(dropDownItems)
     var dropDownMenuHtml = "";
     //下拉菜单-设置选项
     for(var i=0;i< dropDownItems.length;i++){
         dropDownMenuHtml += '<a class="dropdown-item" href="javascript:void(0)" ' +
             'onclick="FDropDownOnClick('+ i + ','+  selectBtnCallback +')">' + dropDownItems[i] +'</a>';
+
     }//
     dropDownMenu.innerHTML = dropDownMenuHtml;
+
     //下拉按钮-设置当前显示Txt
     document.getElementById(dropDownBtnId).innerText = dropDownItems[index];
 }
 
+
 //[下拉菜单]-onclick选择
 function FDropDownOnClick(index,callbackFunc){
+    var value=mainInfo["hostIp"][index]
+    MeterChart.setOption(getMeterChartOption(value));
     callbackFunc(index);
 }
 

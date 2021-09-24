@@ -6,6 +6,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.hust.hostmonitor_data_collector.dao.DiskFailureMapper;
 import com.hust.hostmonitor_data_collector.dao.DispersedMapper;
 import com.hust.hostmonitor_data_collector.dao.UserDao;
+import com.hust.hostmonitor_data_collector.dao.dmMapper.*;
 import com.hust.hostmonitor_data_collector.dao.entity.*;
 import com.hust.hostmonitor_data_collector.utils.DiskPredict.DiskPredict;
 import com.hust.hostmonitor_data_collector.utils.DiskPredict.DiskPredictProgress;
@@ -24,11 +25,11 @@ import java.util.*;
 
 public class DispersedDataServiceImpl implements DispersedDataService{
     @Autowired
-    DispersedMapper dispersedMapper;
+    DMDispersedMapper dispersedMapper;
     @Autowired
-    DiskFailureMapper diskFailureMapper;
+    DMDiskFailureMapper diskFailureMapper;
     @Autowired
-    UserDao userDao;
+    DMUserDao userDao;
     private DispersedHostMonitor dispersedHostMonitor;
     private String dataPath;
     //定时器周期参数
@@ -239,6 +240,10 @@ public class DispersedDataServiceImpl implements DispersedDataService{
      */
     @Override
     public String getHostInfoDetail(String Ip) {
+        if(Ip.equals("undefined")){
+            System.out.println("No Nodes Now");
+            return null;
+        }
         String result=dispersedHostMonitor.hostInfoMap.get(Ip).toJSONString();
         return result;
     }
@@ -297,7 +302,7 @@ public class DispersedDataServiceImpl implements DispersedDataService{
             Timestamp timestamp = dispersedRecord.getTimestamp();
 
             result.getJSONArray(0).add(createNewValue(timestamp,dispersedRecord.getCpuUsage()));
-            result.getJSONArray(1).add(createNewValue(timestamp,dispersedRecord.getMemUsage()));
+            result.getJSONArray(1).add(createNewValue(timestamp,dispersedRecord.getMemUsage()*100));
             result.getJSONArray(2).add(createNewValue(timestamp,dispersedRecord.getDiskReadRates()));
             result.getJSONArray(3).add(createNewValue(timestamp,dispersedRecord.getDiskWriteRates()));
             result.getJSONArray(4).add(createNewValue(timestamp,dispersedRecord.getNetRecv()));
@@ -321,8 +326,8 @@ public class DispersedDataServiceImpl implements DispersedDataService{
     @Override
     public String getDFPInfoTrend(String Ip, String diskSerial) {
         JSONArray result=new JSONArray();
-        List<DFPRecord> dfpRecordList=diskFailureMapper.selectDFPRecords(diskSerial);
-        for(DFPRecord dfpRecord:dfpRecordList){
+        List<DMDFPRecord> dfpRecordList=diskFailureMapper.selectDFPRecords(diskSerial);
+        for(DMDFPRecord dfpRecord:dfpRecordList){
                result.add(createNewValue(dfpRecord.timestamp,dfpRecord.predictProbability));
         }
         return result.toJSONString();
@@ -336,8 +341,8 @@ public class DispersedDataServiceImpl implements DispersedDataService{
     @Override
     public String getDFPInfoAll() {
         JSONArray result=new JSONArray();
-        List<HardWithDFPRecord> hardWithDFPRecordList=diskFailureMapper.selectLatestDFPWithHardwareRecordList();
-        for(HardWithDFPRecord dfpRecord:hardWithDFPRecordList){
+        List<DMHardWithDFPRecord> hardWithDFPRecordList=diskFailureMapper.selectLatestDFPWithHardwareRecordList();
+        for(DMHardWithDFPRecord dfpRecord:hardWithDFPRecordList){
             JSONObject tempObject=new JSONObject();
             tempObject.put("hostName",dfpRecord.hostName);
             tempObject.put("ip",dfpRecord.hostIp);
@@ -605,9 +610,9 @@ public class DispersedDataServiceImpl implements DispersedDataService{
         calendar.set(Calendar.HOUR_OF_DAY,0);
         Timestamp lowbound=new Timestamp(calendar.getTimeInMillis());
 
-        List<DFPRecord> queryList=diskFailureMapper.selectDFPRecordsByLowbound(lowbound);
+        List<DMDFPRecord> queryList=diskFailureMapper.selectDFPRecordsByLowbound(lowbound);
         int lowCount=0,mediumCount=0,highCount=0;
-        for(DFPRecord dfpRecord:queryList){
+        for(DMDFPRecord dfpRecord:queryList){
             if(dfpRecord.predictProbability<=mediumLow){
                 highCount++;
             }
@@ -647,7 +652,7 @@ public class DispersedDataServiceImpl implements DispersedDataService{
 //
 //        }
         //TODO 临时版本 ,暂定四个厂商
-        List<HardWithDFPRecord> RecordList=diskFailureMapper.selectRecentDFPWithHardwareRecordList(lowbound);
+        List<DMHardWithDFPRecord> RecordList=diskFailureMapper.selectRecentDFPWithHardwareRecordList(lowbound);
 //        JSONObject rightChart=new JSONObject();
 //        rightChart.put("西部数据",new JSONArray());
 //        rightChart.put("希捷",new JSONArray());
@@ -664,7 +669,7 @@ public class DispersedDataServiceImpl implements DispersedDataService{
         for(int i=0;i<10;i++){
             count[i]=0;
         }
-        for(HardWithDFPRecord hardWithDFPRecord:RecordList){
+        for(DMHardWithDFPRecord hardWithDFPRecord:RecordList){
             int index;
             if(hardWithDFPRecord.predictProbability<=mediumLow){
                 index=QueryResources.queryDiskIndex(hardWithDFPRecord.diskSerial);
@@ -723,7 +728,7 @@ public class DispersedDataServiceImpl implements DispersedDataService{
         int i=0;
         calendar.add(Calendar.DAY_OF_MONTH,1);
         long highbound=calendar.getTimeInMillis();
-        for(HardWithDFPRecord hardWithDFPRecord:RecordList){
+        for(DMHardWithDFPRecord hardWithDFPRecord:RecordList){
             if(hardWithDFPRecord.timestamp.getTime()>highbound){
                 i++;
                 calendar.add(Calendar.DAY_OF_MONTH,1);

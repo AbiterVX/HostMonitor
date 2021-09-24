@@ -2,7 +2,7 @@ package com.hust.hostmonitor_data_collector.dao.entity;
 
 import java.sql.Timestamp;
 
-public class DFPRecord {
+public class DFPRecord implements GeneralDFP{
 
     public String diskSerial;
     public String hostName;

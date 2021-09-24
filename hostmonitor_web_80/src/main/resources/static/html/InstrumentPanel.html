@@ -50,7 +50,6 @@
             margin:0 15px 0 0 !important;
 
         }
-
         body{
             background-color: #021132;
             padding:20px;
@@ -79,92 +78,95 @@
             color:#2FAFEB !important;
         }
         .btn-outline-secondary{
-             border:1px solid #2FAFEB !important;
-             color:#2FAFEB !important
+            border:1px solid #2FAFEB !important;
+            color:#2FAFEB !important
         }
-        .pagination{
-            background-color:#2DA9E4 !important;
-        }
-        .btn-secondary{
-            background-color: #5dbcfe !important;
+        .btn-outline-secondary{
+            border:1px solid #2FAFEB !important;
+            color:#2FAFEB !important
         }
     </style>
 </head>
 <body>
-    <!--标题-->
-    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
-        <div class="h2title">
-            <p class="h2title1"></p>
-            <h2 class="h2" id="HostIp">
-                <span>节点</span>
-            </h2>
+<!--标题-->
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
+    <div class="h2title">
+        <p class="h2title1"></p>
+        <h2 class="h2" id="HostIp">
+            <span>节点</span>
+        </h2>
+    </div>
+    <div style="margin-left: 20px;">
+        <!-- IP-DropDown-->
+        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" style="width: 200px;" type="button" id="HostIpDropDownBtn" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            0.0.0.0
+        </button>
+        <div id="HostIpDropDownMenu" class="dropdown-menu" style="width: 200px;"   aria-labelledby="HostIpDropDownBtn">
+            <a class="dropdown-item" href="#" > 0.0.0.0</a>
         </div>
-        <div style="margin-left: 20px;">
-            <!-- IP-DropDown-->
-            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" style="width: 200px;" type="button" id="HostIpDropDownBtn" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                0.0.0.0
-            </button>
+    </div>
+</div>
 
-            <div id="HostIpDropDownMenu" class="dropdown-menu" aria-labelledby="HostIpDropDownBtn" style="width:200px;">
+<div class="row"  style="margin-bottom: 10px;">
+    <div class="col-sm-12">
+        <div class="accordion" id="accordion" style="margin-bottom: 5px;">
+            <table  class="table1" id="hostInfo2" style="table-layout: fixed;word-break: break-all"></table>
+            <table class="table1" id="diskInfo" style="table-layout: fixed;word-break: break-all;margin-top: 5px;"></table>
+            <table class="table1" id="cpuInfo" style="table-layout: fixed;word-break: break-all;margin-top: 5px;"></table>
+            <table class="table1" id="gpuInfo" style="table-layout: fixed;word-break: break-all;margin-top: 5px;"></table>
+        </div>
+    </div>
+</div>
+<!--标题-->
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom" style="margin-top: 50px">
+    <div class="h2title">
+        <p class="h2title1"></p>
+        <h2 class="h2" >
+            <span>资源利用趋势</span>
+        </h2>
+    </div>
+    <div class="btn-toolbar mb-2 mb-md-0" role="toolbar" style="margin-right: 5px;">
+        <!-- 间隔时间-DropDown -->
+        <div>
+            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" style="width: 100px;" type="button" id="DateIntervalDropDownBtn" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                1
+            </button>
+            <div id="DateIntervalDropDownMenu" class="dropdown-menu" style="width: 100px;" aria-labelledby="DateIntervalDropDownBtn">
                 <a class="dropdown-item" href="#" > 0.0.0.0</a>
             </div>
         </div>
     </div>
+</div>
+<div id="TrendChart" style="width: 100%;height: 800px;"></div>
 
-    <div class="row"  style="margin-bottom: 10px;">
-        <div class="col-sm-12">
-            <div class="accordion" id="accordion" style="margin-bottom: 5px;">
-                <table  class="table1" id="hostInfo2" style="table-layout: fixed;word-break: break-all"></table>
-                <table class="table1" id="diskInfo" style="table-layout: fixed;word-break: break-all;margin-top: 5px;"></table>
-                <table class="table1" id="cpuInfo" style="table-layout: fixed;word-break: break-all;margin-top: 5px;"></table>
-                <table class="table1" id="gpuInfo" style="table-layout: fixed;word-break: break-all;margin-top: 5px;"></table>
-            </div>
-        </div>
+<!--标题-->
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
+    <div class="h2title">
+        <p class="h2title1"></p>
+        <h2 class="h2">
+            <span>实时监控</span>
+        </h2>
     </div>
-    <!--标题-->
-    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom" style="margin-top: 50px">
-        <div class="h2title">
-            <p class="h2title1"></p>
-            <h2 class="h2" >
-                <span>资源利用趋势</span>
-            </h2>
-        </div>
-        <div class="btn-toolbar mb-2 mb-md-0" role="toolbar" style="margin-right: 5px;">
-            <!-- 间隔时间-DropDown -->
-            <div>
-                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" style="width: 100px;" type="button" id="DateIntervalDropDownBtn" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    1
-                </button>
-                <div id="DateIntervalDropDownMenu" class="dropdown-menu" style="width: 100px !important;"   aria-labelledby="DateIntervalDropDownBtn">
-                    <a class="dropdown-item" href="#" > 0.0.0.0</a>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div id="TrendChart" style="width: 100%;height: 800px;"></div>
+</div>
 
-    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom" style="margin-top: 50px">
-        <div class="h2title">
-            <p class="h2title1"></p>
-            <h2 class="h2" >
-                <span>进程资源消耗</span>
-            </h2>
-        </div>
-    </div>
-    <table  class="table2" id="processInfo" style="table-layout: fixed;word-break: break-all;"
-           data-pagination="true" data-page-size="20" data-page-list="[10,20]"></table>
-    <div style="height: 500px;width: 100%"></div>
+<div class="row"  style="margin-bottom: 10px;">
+    <!--摘要Chart-->
+    <div id="MeterChart" style="width: 100%;height: 600px;"></div>
+</div>
+
 </body>
 
 <script>
+    var MeterChart = echarts.init(document.getElementById('MeterChart'));
     //摘要图表
     var TrendChart = echarts.init(document.getElementById("TrendChart"));
     //当前HostIndex
     var currentHostIndex = 0;
     //当前DateInterval
     var currentDateIntervalIndex = 0;
-    //MainInfot
+    //MainInfo
     var mainInfo = FGetMainInfo();
+    var selectIp=''
     //加载后执行
     window.onload=function (){
         //初始化-DropDown-IP
@@ -184,7 +186,7 @@
         FRefreshDataHostDetailTrend(mainInfo["hostIp"][currentHostIndex],function (trendChartData){
             refreshTrendChartData(trendChartData);
         });
-
+        MeterChart.setOption(getMeterChartOption(mainInfo["hostIp"][currentHostIndex]));
 
         //定时刷新
         setInterval(function (){
@@ -194,6 +196,9 @@
             }else{
                 currentHostIndex=0
             }
+            var ip=mainInfo["hostIp"][currentHostIndex]
+            console.log(ip)
+            MeterChart.setOption(getMeterChartOption(ip));
 
             FInitDropDown("HostIpDropDownMenu","HostIpDropDownBtn",mainInfo["hostIp"],"dropDownSelectHostIp",currentHostIndex);
 
@@ -208,8 +213,6 @@
                 refreshTrendChartData(trendChartData);
             });
         },20000);
-
-
 
     }
 

@@ -2,6 +2,7 @@ package com.hust.hostmonitor_data_collector.service;
 
 import com.alibaba.fastjson.JSONObject;
 import com.hust.hostmonitor_data_collector.dao.UserDao;
+import com.hust.hostmonitor_data_collector.dao.dmMapper.DMUserDao;
 import com.hust.hostmonitor_data_collector.dao.entity.SystemUser;
 import com.hust.hostmonitor_data_collector.utils.DispersedConfig;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,7 +19,7 @@ import java.util.List;
 public class UserService {
     //User数据库操作
     @Autowired
-    UserDao userDao;
+    DMUserDao userDao;
 
     //配置类
     private DispersedConfig dispersedConfig = DispersedConfig.getInstance();

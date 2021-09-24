@@ -42,6 +42,7 @@ public class DataSampler {
     private Map<Integer,OSProcess> processMapLastSample = new HashMap<>();
     private Map<String, Float> processFilter;
     private String diskDataPath;
+    private String queryCommand="tasklist";
     //静态硬件信息采样，不会周期性调用
     public DataSampler(){
         diskDataPath=System.getProperty("user.dir")+"/DiskPredict/client/sampleData/data.csv";
@@ -148,7 +149,7 @@ public class DataSampler {
             stringBuffer.append(original.charAt(i*2+1));
             stringBuffer.append(original.charAt(i*2));
         }
-        if(i*2==original.length()-1);
+        if(i*2==original.length()-1)
         stringBuffer.append(original.charAt(i*2));
         return stringBuffer.toString();
     }
@@ -246,7 +247,13 @@ public class DataSampler {
                 }
             }
             double usage=usable*1.0/total;
-            double usage2bits=FormatUtils.doubleTo2bits_double(usage);
+            double usage2bits=0.0;
+            try {
+                usage2bits = FormatUtils.doubleTo2bits_double(usage);
+            } catch (Exception e) {
+                //e.printStackTrace();
+                System.out.println("usage2bitsError");
+            }
             JSONArray singleArray=new JSONArray();
             double singleTotalSize=dataObject.getJSONArray("diskInfoList").getJSONObject(j).getDouble("diskCapacityTotalSize");
             singleArray.add(FormatUtils.doubleTo2bits_double((total-usable)*1.0/1024/1024/1024));
@@ -324,8 +331,13 @@ public class DataSampler {
     public void processInfoSample(int period,int processFrequency){
         processInfoList = new JSONArray();
         Map<Integer,OSProcess> tempProcessMap= new HashMap<>();
-        List<OSProcess> processesList=systemInfo.getOperatingSystem().getProcesses();
+        List<OSProcess> processesList=null;
+        processesList=systemInfo.getOperatingSystem().getProcesses();
         Long memory=systemInfo.getHardware().getMemory().getTotal();
+        if(processesList==null||processesList.size()==0){
+            processInfoSample_backend();
+            return;
+        }
         for(OSProcess osProcess:processesList){
             float cpuUsage = 0;
             float memoryUsage= 100 * osProcess.getResidentSetSize()*1f/memory;
@@ -360,6 +372,44 @@ public class DataSampler {
             }
         }
         processMapLastSample = tempProcessMap;
+    }
+    public void processInfoSample_backend(){
+        processInfoList=new JSONArray();
+        BufferedReader br;
+        Long memory=systemInfo.getHardware().getMemory().getTotal();
+        try {
+            Process queryProcess=Runtime.getRuntime().exec(queryCommand);
+            br=new BufferedReader(new InputStreamReader(queryProcess.getInputStream()));
+            String line=null;
+            line=br.readLine();
+            line=br.readLine();
+            line=br.readLine();
+            line=br.readLine();
+            while((line=br.readLine())!=null){
+                String[] tokens=line.split("\\s+");
+                String[] part=tokens[4].split(",");
+                StringBuilder sb=new StringBuilder();
+                for(String s:part){
+                    sb.append(s);
+                }
+                float memoryUsage= 100 * Long.parseLong(sb.toString())*1024*1f/memory;
+                memoryUsage = Math.round(memoryUsage*100f)/100f;
+                if(processFilter.get("memoryUsage")<= memoryUsage) {
+                    JSONObject newProcess = new JSONObject();
+                    newProcess.put("processId", Integer.parseInt(tokens[1]));
+                    newProcess.put("processName", tokens[0]);
+                    newProcess.put("memoryUsage", memoryUsage);
+                    newProcess.put("startTime","-");
+                    newProcess.put("cpuUsage","-");
+                    newProcess.put("diskReadSpeed","-");
+                    newProcess.put("diskWriteSpeed","-");
+                    processInfoList.add(newProcess);
+                    System.out.println(newProcess.toJSONString());
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
     private void firstSample(){
         GlobalMemory globalMemory = systemInfo.getHardware().getMemory();
@@ -402,7 +452,13 @@ public class DataSampler {
                 }
             }
             double usage=usable*1.0/total;
-            double usage2bits=FormatUtils.doubleTo2bits_double(usage);
+            double usage2bits=0.0;
+            try {
+                usage2bits = FormatUtils.doubleTo2bits_double(usage);
+            } catch (Exception e) {
+                //e.printStackTrace();
+                System.out.println("usage2bitsError");
+            }
             JSONArray singleArray=new JSONArray();
             double singleTotalSize=dataObject.getJSONArray("diskInfoList").getJSONObject(j).getDouble("diskCapacityTotalSize");
             singleArray.add(FormatUtils.doubleTo2bits_double((total-usable)*1.0/1024/1024/1024));

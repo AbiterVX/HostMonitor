@@ -198,25 +198,25 @@ const tableColumns = {
         {
             field: 'ip',
             title: 'IP',
-            width: 100,
+            width: 70,
             formatter : function (value, row, index) {
                 if(row["connected"] === true){
                     return value;
                 }
                 else{
-                    return '<span style="font-weight:bold;color:#ee6767">'+ value+' (Down)</span>';
+                    return '<span style="font-weight:bold;">'+ value+' (Down)</span>';
                 }
             }
         },
         {
             field: 'osName',
             title: '操作系统',
-            width: 100,
+            width: 150,
         },
         {
             field: 'cpuUsage',
             title: 'CPU使用率',
-            width: 70,
+            width: 60,
             formatter : function (value, row, index) {
                 return FTableColorFormatter(loadPartition["cpu"],customPartitionColor,value,FGetPercentageWithUnit(value));
             }
@@ -224,7 +224,7 @@ const tableColumns = {
         {
             field: 'memoryUsage',
             title: '内存使用率',
-            width: 100,
+            width: 90,
             formatter : function (value, row, index) {
                 return FTableColorFormatter(loadPartition["memory"],customPartitionColor,value[0]/value[1]*100,FGetMBWithUnit(value[0]) + " / " +FGetMBWithUnit(value[1]));
             }
@@ -232,7 +232,7 @@ const tableColumns = {
         {
             field: 'diskCapacityTotalUsage',
             title: '硬盘容量',
-            width: 100,
+            width: 120,
             formatter : function (value, row, index) {
                 return FTableColorFormatter(loadPartition["disk"],customPartitionColor,value[0]/value[1]*100,FGetGBWithUnit(value[0]) + " / " +FGetGBWithUnit(value[1]));
             }
@@ -240,7 +240,7 @@ const tableColumns = {
         {
             field: 'netReceiveSpeed',
             title: '网络接受',
-            width: 70,
+            width: 60,
             formatter : function (value, row, index) {
                 return FTableColorFormaterCustomColor(FGetKbWithUnit(value) +"/s");
             }
@@ -248,7 +248,7 @@ const tableColumns = {
         {
             field: 'netSendSpeed',
             title: '网络发送',
-            width: 70,
+            width: 60,
             formatter : function (value, row, index) {
                 return FTableColorFormaterCustomColor(FGetKbWithUnit(value)+"/s");
             }
@@ -445,7 +445,12 @@ const tableColumns = {
             width: 100,
             sortable: true,
             formatter : function (value, row, index) {
-                return FGetDateTime(value);
+               if(value=='-'){
+                   return '-'
+               }else{
+                   return FGetDateTime(value);
+               }
+
             }
         },
         {
@@ -486,7 +491,11 @@ const tableColumns = {
             width: 50,
             sortable: true,
             formatter : function (value, row, index) {
-                return FTableColorFormaterCustomColor(FGetKbWithUnit(value) +"/s");
+                if(value=="-"){
+                    return FTableColorFormaterCustomColor(value +"/s");
+                }else{
+                    return FTableColorFormaterCustomColor(FGetKbWithUnit(value) +"/s");
+                }
             }
         },
         {
@@ -495,7 +504,12 @@ const tableColumns = {
             width: 50,
             sortable: true,
             formatter : function (value, row, index) {
-                return FTableColorFormaterCustomColor(FGetKbWithUnit(value) +"/s");
+                if(value=="-"){
+                    return FTableColorFormaterCustomColor(value +"/s");
+                }else{
+                    return FTableColorFormaterCustomColor(FGetKbWithUnit(value) +"/s");
+                }
+                // return FTableColorFormaterCustomColor(FGetKbWithUnit(value) +"/s");
             }
         },
     ],
@@ -542,6 +556,7 @@ const tableColumns = {
             title: '硬盘Model',
             width: 100,
             sortable: true,
+            sortableColor:"#2FAFEB"
         },
 
         {
@@ -815,6 +830,7 @@ const tableColumns = {
         {
             field: 'field',
             title: '',
+            width:50,
             formatter : function (value, row, index) {
                 if(value === "predict"){
                     return "预测";
@@ -828,34 +844,42 @@ const tableColumns = {
         {
             field: 'FDR',
             title: 'FDR',
+            width:120,
         },
         {
             field: 'FAR',
             title: 'FAR',
+            width:150,
         },
         {
             field: 'AUC',
             title: 'AUC',
+            width:120,
         },
         {
             field: 'FNR',
             title: 'FNR',
+            width:120,
         },
         {
             field: 'Accuracy',
             title: 'Accuracy',
+            width:120,
         },
         {
             field: 'Precision',
             title: 'Precision',
+            width:120,
         },
         {
             field: 'Specificity',
             title: 'Specificity',
+            width:120,
         },
         {
             field: 'ErrorRate',
             title: 'ErrorRate',
+            width:120,
         },
     ]
 };
@@ -1118,6 +1142,117 @@ var DateIntervalText = ["最近1天","最近1小时"];
    磁盘负载统计-百分比+饼状图
    内存负载统计-百分比+饼状图
 */
+var meterChartOption={
+    title : {
+        text: '进程资源消耗',
+        left:"44%",
+        subtext: '',
+        textStyle:{
+            color:"#2FAFEB"
+        }
+    },
+    tooltip : {
+        trigger: 'axis'
+    },
+    legend: {
+        data:["磁盘读取速速"]
+    },
+    toolbox: {
+        show : true,
+        feature : {
+            mark : {show: true},
+            dataView : {show: true, readOnly: false},
+            magicType : {show: true, type: ['line', 'bar']},
+            restore : {show: true},
+            saveAsImage : {show: true}
+        }
+    },
+    calculable : true,
+    xAxis : [
+        {
+            type : 'category',
+            data : [],
+            name: '进程ID',
+            splitNumber: 5,
+            nameTextStyle:{ fontSize:20,color:"#2FAFEB"},
+            axisLine:{
+                lineStyle:{
+                    color:'#2FAFEB'
+                }
+            },
+        }
+    ],
+    axisLine:{
+        show:true,
+        lineStyle:{
+            color:'#6FC6F3',
+            width:5,
+        }
+    },
+    yAxis:[{
+        type : 'value',
+        interval:20,
+        axisLabel:{
+            show:true,
+            textStyle:{
+                color:'#2FAFEB',
+                fontSize:12
+            },
+        },
+        //用于设置y轴的那一条线
+        axisLine: {
+            show: true,
+            lineStyle: {
+                color: '#2FAFEB',
+                width: 1,
+            }
+        },
+        splitLine: {
+            show: true,
+            lineStyle:{
+                type:"dashed",
+                color:'#032460'
+            }
+        },
+    }],
+    series : [
+        {
+            name:"磁盘读取速度",
+            type:'bar',
+            data:[2.0, 4.9, 7.0, 23.2, 25.6, 76.7, 135.6, 162.2, 32.6, 20.0, 6.4, 3.3],
+            itemStyle: {
+                normal: {
+                    label: {
+                        show: true, //开启显示
+                        position: 'top', //在上方显示
+                        formatter: "{c}kb/s",
+                        textStyle: { //数值样式
+                            color: '#2FAFEB',
+                            fontSize: 12
+                        }
+                    }
+                }
+            }
+        },
+    ]
+}
+// 获取仪表显示柱图数据
+function getMeterChartOption(ip){
+    var option = JSON.parse(JSON.stringify(meterChartOption));
+    var data=JSON.parse(sessionStorage.getItem('hostInfo_'+ip))
+    console.log(data)
+    var arr1=[]
+    var arr2=[]
+    if(data.processInfoList.length>0){
+        for(var i=0;i<data.processInfoList.length;i++){
+            arr1.push(data.processInfoList[i]["processId"])
+            arr2.push(data.processInfoList[i]["diskReadSpeed"])
+        }
+    }
+    option.xAxis[0].data=arr1
+    option.series[0].data=arr2
+    return option;
+}
 var summaryChartOption = {
     gaugeOption:{
         type: 'gauge',
@@ -1161,20 +1296,20 @@ var summaryChartOption = {
                 value: 0,
                 name: '低',
                 title: {
-                    offsetCenter: ['0%', '-55%']
+                    offsetCenter: ['135%', '-70%']
                 },
                 detail: {
-                    offsetCenter: ['0%', '-40%']
+                    offsetCenter: ['135%', '-50%']
                 }
             },
             {
                 value: 0,
                 name: '中',
                 title: {
-                    offsetCenter: ['0%', '-15%']
+                    offsetCenter: ['135%', '-20%']
                 },
                 detail: {
-                    offsetCenter: ['0%', '0%']
+                    offsetCenter: ['135%', '0%']
                 }
             },
             {
@@ -1182,21 +1317,22 @@ var summaryChartOption = {
                 count:0,
                 name: '高',
                 title: {
-                    offsetCenter: ['0%', '22%']
+                    offsetCenter: ['135%', '30%']
                 },
                 detail: {
-                    offsetCenter: ['0%', '40%']
+                    offsetCenter: ['135%', '50%']
                 }
             }
         ],
         title: {
             fontWeight: 'bold',
-            fontSize: 20,
+            fontSize: 15,
+            color:"#2798CE",
         },
         detail: {
-            width: 60,
+            width: 35,
             height: 10,
-            fontSize: 16,
+            fontSize:12,
             color: 'auto',
             borderColor: 'auto',
             borderRadius: 5,
@@ -1231,49 +1367,62 @@ var summaryChartOption = {
         ]
     },
     centerOption:[
-        ['16%', '54%'],
-        ['50%', '54%'],
-        ['84%', '54%'],
+        ['12%', '55%'],
+        ['46%', '55%'],
+        ['80%', '55%'],
     ],
     option: {
         title: [
             {
                 text: "CPU负载统计",
-                left: '11%',
+                left: '6.5%',
                 top: '0px',
+                textStyle:{
+                    color:"#2798CE",
+                    fontSize:15,
+                }
             },
             {
                 text: "内存负载统计",
-                left: '45%',
+                left: '40.5%',
                 top: '0px',
+                textStyle:{
+                    color:"#2798CE",
+                    fontSize:15,
+                }
             },
             {
                 text: "磁盘负载统计",
-                left: '79%',
+                left: '74.5%',
                 top: '0px',
+                textStyle:{
+                    color:"#2798CE",
+                    fontSize:15,
+                }
             },
         ],
-        color: ['#92cc76','#fac859','#ee6767'],
+        color: ['#69C8C5','#FF9E3F','#d04040'],
         tooltip: {
             trigger: 'item',
         },
         series: []
     },
-};
 
-
+    };
 
 //获取ChartOption-SummaryChart
 function FGetSummaryChartOption(){
     var option = JSON.parse(JSON.stringify(summaryChartOption["option"]));
     for(var i=0;i<3;i++){
         var tempGaugeOption = JSON.parse(JSON.stringify(summaryChartOption["gaugeOption"]));
+        console.log(tempGaugeOption)
         var tempPieOption = JSON.parse(JSON.stringify(summaryChartOption["pieOption"]));
         tempGaugeOption["center"] = summaryChartOption["centerOption"][i];
         tempPieOption["center"] = summaryChartOption["centerOption"][i];
         option["series"].push(tempGaugeOption);
         option["series"].push(tempPieOption);
     }
+    console.log(option)
     return option;
 }
 //[更新Chart数据]SummaryChart
@@ -1329,21 +1478,33 @@ function FGetTrendChartOption(){
                 text: titleName[0],
                 left: '0%',
                 top: '0px',
+                textStyle:{
+                    color:'#2FAFEB'
+                }
             },
             {
                 text: titleName[1],
                 left: '50%',
                 top: '0px',
+                textStyle:{
+                    color:'#2FAFEB'
+                }
             },
             {
                 text: titleName[2],
                 left: '0%',
                 top: '360px',
+                textStyle:{
+                    color:'#2FAFEB'
+                }
             },
             {
                 text: titleName[3],
                 left: '50%',
                 top: '360px',
+                textStyle:{
+                    color:'#2FAFEB'
+                }
             },
         ],
         /*legend: {},*/
@@ -1387,8 +1548,20 @@ function FGetTrendChartOption(){
                 return returnTxt;
             }
         },
-        xAxis: [],
-        yAxis: [],
+        xAxis: [{
+            axisLine:{
+                lineStyle:{
+                    color:'#2FAFEB'
+                }
+            },
+        }],
+        yAxis: [{
+            axisLine:{
+                lineStyle:{
+                    color:'#2FAFEB'
+                }
+            },
+        }],
         series: [],
     };
 
@@ -1424,16 +1597,32 @@ function FGetTrendChartOption(){
                 }
             },
             gridIndex: i,
+            axisLine:{
+                lineStyle:{
+                    color:'#2FAFEB'
+                }
+            },
+
         });
         var tempYAxisOption = {
             type: 'value',
-            splitLine: {
-                show: true
-            },
             axisLabel: {
                 formatter: '{value}'+ unitLabel[i]
             },
             gridIndex: i,
+
+            axisLine:{
+                lineStyle:{
+                    color:'#2FAFEB'
+                }
+            },
+            splitLine: {
+                show: true,
+                lineStyle:{
+                    type:"dashed",
+                    color:'#032460'
+                }
+            },
         };
         if(unitLabel[i] === "%"){
             tempYAxisOption["max"] = 100;
@@ -1449,10 +1638,14 @@ function FGetDFPSummaryChartOption(){
     var option = JSON.parse(JSON.stringify(summaryChartOption["option"]));
     option["title"] = {
         text: "故障预测统计",
-        left:'33%',
+        left:'30%',
+        textStyle:{
+            color:'#2FAFEB'
+        }
     };
     var tempGaugeOption = JSON.parse(JSON.stringify(summaryChartOption["gaugeOption"]));
     var tempPieOption = JSON.parse(JSON.stringify(summaryChartOption["pieOption"]));
+
     tempGaugeOption["center"] = summaryChartOption["centerOption"][1];
     tempPieOption["center"] = summaryChartOption["centerOption"][1];
 
@@ -1488,6 +1681,11 @@ function FGetDFPTrendChartOption(){
             splitLine: {
                 show: false
             },
+            axisLine:{
+                lineStyle:{
+                    color:'#2FAFEB'
+                }
+            },
             axisLabel: {
                 formatter: {
                     year: '{yyyy}年',
@@ -1504,7 +1702,16 @@ function FGetDFPTrendChartOption(){
         yAxis: {
             type: 'value',
             splitLine: {
-                show: true
+                show: true,
+                lineStyle:{
+                    type:"dashed",
+                    color:'#032460'
+                }
+            },
+            axisLine:{
+                lineStyle:{
+                    color:'#2FAFEB'
+                }
             },
             axisLabel: {
                 formatter:function (value, index) {
@@ -1530,6 +1737,13 @@ function FGetDFPTrendChartOption(){
             showSymbol: false,
             hoverAnimation: false,
             data: [],
+            itemStyle:{
+                normal:{
+                    lineStyle:{
+                        color:"#2DA9E4"
+                    }
+                }
+            }
         },
     };
     return DFPTrendChartOption;
@@ -1547,6 +1761,9 @@ function FGetFailureTypeStatisticsChartOption(diskType,hddCount,ssdCount){
         title: {
             text: "故障类型统计",
             left: '48%',
+            textStyle:{
+                color:'#2FAFEB'
+            }
         },
         grid: {
             left: '0%',
@@ -1566,7 +1783,10 @@ function FGetFailureTypeStatisticsChartOption(diskType,hddCount,ssdCount){
         },
         tooltip: {},
         legend: {
-            left: '10%'
+            left: '10%',
+            textStyle:{
+                color:'#2FAFEB'
+            }
         },
         xAxis: {
             data: diskType,
@@ -1578,7 +1798,11 @@ function FGetFailureTypeStatisticsChartOption(diskType,hddCount,ssdCount){
         yAxis: {
             type: 'value',
             splitLine: {
-                show: true
+                show: true,
+                lineStyle:{
+                    type:"dashed",
+                    color:'#032460'
+                }
             },
         },
         series: [
@@ -1606,7 +1830,14 @@ function FGetFailureCountStatisticsChartOption(seriesData){
     var FailureCountStatisticsChartOption = {
         title: {
             text: "故障盘数量趋势",
-            left: '48%',
+            left: '44%',
+            top:"-10%",
+            textStyle:{
+                color:'#2FAFEB'
+            }
+        },
+        legend:{
+
         },
         grid: {
             left: '1%',
@@ -1631,6 +1862,11 @@ function FGetFailureCountStatisticsChartOption(seriesData){
             splitLine: {
                 show: false
             },
+            axisLine:{
+                lineStyle:{
+                    color:'#2FAFEB'
+                }
+            },
             axisLabel: {
                 formatter: {
                     year: '{yyyy}年',
@@ -1647,10 +1883,21 @@ function FGetFailureCountStatisticsChartOption(seriesData){
         yAxis: {
             type: 'value',
             splitLine: {
-                show: true
+                show: true,
+                lineStyle:{
+                    type:"dashed",
+                    color:'#032460'
+                }
             },
+            lineStyle:{
+
             axisLabel: {
                 formatter: '{value}'
+            },
+            axisLine:{
+                lineStyle:{
+                    color:'#2FAFEB'
+                }
             },
         },
         series: {
@@ -1660,6 +1907,14 @@ function FGetFailureCountStatisticsChartOption(seriesData){
             showSymbol: false,
             hoverAnimation: false,
             data: seriesData,
+            itemStyle:{
+                normal:{
+                    lineStyle:{
+                        color:'#2FAFEB'
+                    }
+                }
+            }
+        }
         },
     };
     return FailureCountStatisticsChartOption;

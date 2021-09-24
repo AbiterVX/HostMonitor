@@ -25,6 +25,35 @@
     <script src="../bootstrap-table/bootstrap-table.min.js"></script>
     <!-- Latest compiled and minified Locales -->
     <script src="../bootstrap-table/bootstrap-table-zh-CN.min.js"></script>
+    <style>
+        .border-bottom{
+            border-bottom:none !important;
+            display: flex;
+            align-items: center;
+        }
+        .border-bottom h2{
+            margin: 0 !important;
+        }
+        .h2title{
+            display: flex;
+            align-items: center;
+        }
+        .h2, h2{
+            font-size: 26px;
+        }
+        .h2title1{
+            width:12px;
+            height:12px;
+            background-color: #f56c1a;
+            margin:0 15px 0 0 !important;
+        }
+        .bootstrap-table .fixed-table-container .table thead th{
+            background-color: #a4d2f2 !important;
+        }
+        table tr:nth-child(even){
+            background: #e7f1f8 !important;
+        }
+    </style>
 </head>
 <style>
     .borderless td, .borderless th {
@@ -36,11 +65,61 @@
         width: 100px;
         font-size:1.25rem;
     }
+    body{
+        background-color: #021132;
+        padding:20px;
+    }
+    #UserManagementTable thead th{
+        height:40px;
+        line-height:40px;
+        border:1px solid #03225C !important;
+        text-align: center !important;
+        background-color: #031A46 !important;
+        color:#2FAFEB !important;
+
+    }
+    #UserManagementTable tbody td{
+        height:40px;
+        line-height:40px;
+        border:1px solid #03225C;
+        text-align: center;
+        color:#2FAFEB !important;
+    }
+    .h2{
+        color:#2FAFEB !important;
+    }
+    #UserManagementTable tbody tr:nth-child(2n){
+        background-color: #031A46 !important;
+        color:#2FAFEB !important;
+    }
+    .modal-content{
+        background-color: #021132 !important;
+        color:#2FAFEB !important;
+    }
+    .modal-content input,select{
+        background: #021132 !important;
+        border-color:#042767 !important;
+        color:#2DA9E4 !important;
+    }
+    .close{
+        color:#2DA9E4 !important;
+    }
+    .modal-header{
+        border-bottom:1px solid #2DA9E4 !important;
+    }
+    .modal-footer{
+        border-top:1px solid #2DA9E4 !important;
+    }
 </style>
 <body>
     <!--标题-->
     <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
-        <h2 class="h2">用户管理</h2>
+        <div class="h2title">
+            <p class="h2title1"></p>
+            <h2 class="h2">
+                <span>用户管理</span>
+            </h2>
+        </div>
         <!--<div class="btn-toolbar mb-2 mb-md-0" role="toolbar" style="margin-right: 5px;">
             <button  id="AddNewUserBtn"  onclick=""  type="button" class="btn btn-secondary" style="width: 120px;height: 40px;font-size: 18px;" >新增</button>
             <button hidden id="processCollapseBtn" data-toggle="collapse"  data-target="#DFPCollapse"></button>
@@ -189,7 +268,7 @@
     }
     //删除用户
     function deleteUser(row,index){
-        alert(index);
+        // alert(index);
     }
 
     //修改用户信息

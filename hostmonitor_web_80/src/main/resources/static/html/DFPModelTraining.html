@@ -25,12 +25,82 @@
     <script src="../bootstrap-table/bootstrap-table.min.js"></script>
     <!-- Latest compiled and minified Locales -->
     <script src="../bootstrap-table/bootstrap-table-zh-CN.min.js"></script>
+    <style>
+        .border-bottom{
+            border-bottom:none !important;
+            display: flex;
+            align-items: center;
+        }
+        .border-bottom h2{
+            margin: 0 !important;
+        }
+        .h2title{
+            display: flex;
+            align-items: center;
+        }
+        .h2, h2{
+            font-size: 26px;
+            color:#2FAFEB !important;
 
+        }
+        .h2title1{
+            width:12px;
+            height:12px;
+            background-color: #f56c1a;
+            margin:0 15px 0 0 !important;
+        }
+        #modelTrainingBtn{
+            background-color: #f56c1a !important;
+        }
+        .btn-secondary{
+            background-color: #5dbcfe !important;
+        }
+        body{
+            background-color: #021132 !important;
+            padding:20px;
+        }
+        #buildRecords thead th{
+            height:40px;
+            line-height:40px;
+            border:1px solid #03225C !important;
+            text-align: center !important;
+            background-color: #031A46 !important;
+            color:#2FAFEB !important;
+        }
+        #buildRecords tbody td{
+            height:40px;
+            line-height:40px;
+            border:1px solid #03225C;
+            text-align: center;
+            color:#2FAFEB !important;
+        }
+        #buildRecords tbody tr:nth-child(2n){
+            background-color: #031A46 !important;
+            color:#2FAFEB !important;
+        }
+        .pagination-info,.page-list{
+            color:#2FAFEB !important;
+        }
+        .input-group-text,input,select{
+            background: #021132 !important;
+            border-color:#042767 !important;
+            color:#2DA9E4 !important;
+        }
+        #modelTrainingBtn{
+            background-color: #EC6941 !important;
+        }
+
+    </style>
 </head>
 <body>
     <!--标题-->
     <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
-        <h2 class="h2">模型训练</h2>
+        <div class="h2title">
+            <p class="h2title1"></p>
+            <h2 class="h2">
+                <span>模型训练</span>
+            </h2>
+        </div>
         <div class="btn-toolbar mb-2 mb-md-0" role="toolbar" style="margin-right: 5px;">
             <button id="modelTrainingBtn"  onclick="modelTrainingBtnOnClick()"  type="button" class="btn btn-secondary" style="width: 120px;height: 40px;font-size: 18px;" >开始训练</button>
             <button hidden id="processCollapseBtn" data-toggle="collapse"  data-target="#DFPCollapse"></button>
@@ -102,7 +172,7 @@
         </div>
     </div>
     <!--参数-->
-    <div class="row"  style="margin-bottom: 10px;">
+    <div class="row"  style="margin-bottom: 10px;color:#2DA9E4 ">
         <div class="col-sm-12">
             <label >主要参数 （传入数组可使用“,”隔开）</label>
         </div>
@@ -133,11 +203,17 @@
     </div>
 
     <!--标题-->
-    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
-        <h2 class="h2">模型训练记录</h2>
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom" style="margin-top: 50px">
+        <div class="h2title">
+            <p class="h2title1"></p>
+            <h2 class="h2">
+                <span>模型训练记录</span>
+            </h2>
+        </div>
     </div>
 
     <table id="buildRecords"
+           class="table2"
            data-search="true"
            data-detail-view="true" data-pagination="true" data-page-size="25" data-page-list="[10,25]"></table>
 
