@@ -140,11 +140,18 @@
                     </thead>
                     <tbody >
 
+                    </tbody>
+                </table>
+            </div>
 
-    <div class="row"  style="margin-bottom: 10px;">
-        <!--摘要Chart-->
-        <div id="SummaryChart" style="width: 100%;height: 300px;"></div>
+            <div class="row"  style="margin: 30px 0;">
+                <!--摘要Chart-->
+                <div id="SummaryChart" style="width: 100%;height: 220px;margin-top: 0px;color: #2FAFEB;"></div>
+            </div>
+        </div>
 
+        <!--<div class="head3">-->
+        <!--</div>-->
     </div>
 
 
@@ -154,13 +161,16 @@
 
 
     <!--标题-->
-
-<!--    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">-->
-<!--        <h2 class="h2">节点状态</h2>-->
-<!--    </div>-->
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom" >
+        <div class="h2title">
+            <p class="h2title1"></p>
+            <h2 class="h2">
+                <span>节点状态</span>
+            </h2>
+        </div>
+    </div>
     <!--主机状态Table-->
-<!--    <table id="hostInfo1Table" style="table-layout: fixed;word-break: break-all"></table>-->
-    
+    <table id="hostInfo1Table" style="table-layout: fixed;word-break: break-all;"></table>
     <div style="height: 100px;width: 100%"></div>
 </body>
 
@@ -178,16 +188,19 @@
         SummaryChart.setOption(FGetSummaryChartOption());
         refreshSummary(true);
 
+
         //-----更新HostInfo数据.
         FRefreshDataHostInfoAll(function (){
-            //refreshHostInfoAndDiskInfoTable(true);
+            refreshHostInfoAndDiskInfoTable(true);
         })
+
+
         setInterval(function (){
             FRefreshDataSummary(function (){
                 refreshSummary(false);
             });
             FRefreshDataHostInfoAll(function (){
-                //refreshHostInfoAndDiskInfoTable(false);
+                refreshHostInfoAndDiskInfoTable(false);
             });
 
         },20000);
@@ -204,6 +217,7 @@
         setTimeout(function(){
             FRefreshSummaryChartData(SummaryChart,mainInfo["summaryChart"]);
         }, 1000);
+
     }
 
 
@@ -240,6 +254,7 @@
 
     //刷新Table-HostInfo-DiskInfo-All
     function refreshHostInfoAndDiskInfoTable(init){
+
         var dataList = [];
         for(var i=0;i<hostIpList.length;i++){
             var hostInfo = FGetHostInfo(hostIpList[i]);

@@ -167,13 +167,6 @@
     var mainInfo = FGetMainInfo();
     //加载后执行
     window.onload=function (){
-        //当前HostIndex
-        var currentHostIndex = window.sessionStorage.getItem("currentHostIndex");
-        if(currentHostIndex == null) {
-            currentHostIndex = 0;
-        }
-
-
         //初始化-DropDown-IP
         FInitDropDown("HostIpDropDownMenu","HostIpDropDownBtn",mainInfo["hostIp"],"dropDownSelectHostIp",currentHostIndex);
         //初始化-DropDown-TimeInterval
@@ -229,8 +222,6 @@
             document.getElementById("HostIpDropDownBtn").innerText = mainInfo["hostIp"][index];
             //设置
             currentHostIndex = index;
-            window.sessionStorage.setItem("currentHostIndex",currentHostIndex);
-
             FRefreshDataHostInfo(mainInfo["hostIp"][currentHostIndex],function (hostInfo){
                 //刷新HostDetailTable
                 refreshHostDetailTable(false,hostInfo);
