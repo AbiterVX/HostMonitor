@@ -1,19 +1,4 @@
 package com.hust.hostmonitor_client.utils;
-//
-//import org.slf4j.Logger;
-//import org.slf4j.LoggerFactory;
-//
-//import oshi.SystemInfo;
-//import oshi.hardware.*;
-//import oshi.hardware.CentralProcessor.TickType;
-//import oshi.software.os.*;
-//import oshi.software.os.OperatingSystem.ProcessSort;
-//import oshi.util.FormatUtil;
-//import oshi.util.Util;
-//
-//import java.util.Arrays;
-//import java.util.List;
-//
 
 import com.alibaba.fastjson.JSONObject;
 import com.vnetpublishing.java.suapp.SU;
@@ -21,6 +6,7 @@ import com.vnetpublishing.java.suapp.SuperUserApplication;
 import oshi.SystemInfo;
 import oshi.hardware.HWDiskStore;
 import oshi.software.os.OSProcess;
+import oshi.software.os.OperatingSystem;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -28,27 +14,88 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.*;
 
-public class Test  {
-    public static class TestDiskSampler extends SuperUserApplication{
-        String sampleFilePath = System.getProperty("user.dir") +"/DiskPredict/client/data_collector.py"; //E:/Code/HostMonitor
+
+
+class CmdExecutor{
+    public String cmd;
+    public List<String> cmdResult;
+    public CmdExecutor(String currentCmd){
+        cmd = currentCmd;
+        cmdResult = new ArrayList<>();
+        RunCmdUnderRoot runCmdUnderRoot = new RunCmdUnderRoot(this);
+        SU.setDaemon(true);
+        SU.run(runCmdUnderRoot);
+    }
+
+    private class RunCmdUnderRoot extends SuperUserApplication{
+        public CmdExecutor cmdExecutor;
+        public RunCmdUnderRoot(CmdExecutor cmdExecutor){
+            this.cmdExecutor = cmdExecutor;
+        }
         @Override
         public int run(String[] strings) {
-            System.out.println("RUN-AS-ADMIN");
+            Runtime runtime = Runtime.getRuntime();
             try {
-                Runtime rt = Runtime.getRuntime();
-                rt.exec("python " + sampleFilePath);
-                System.out.println(new Date());
-            } catch (IOException e) {
+                BufferedReader br = new BufferedReader(new InputStreamReader(runtime.exec(cmdExecutor.cmd).getInputStream(), "GB2312"));
+                String line;
+                while ((line = br.readLine()) != null) {
+                    cmdExecutor.cmdResult.add(line);
+                }
+            } catch (Exception e) {
                 e.printStackTrace();
             }
             return 0;
         }
     }
+}
 
+public class Test  {
     public static void main(String[] args) {
-        JSONObject tempObject=new JSONObject();
-        tempObject.put("hhh",new int[]{1,2,3});
-        System.out.println(tempObject);
-        System.out.println(tempObject.getJSONArray("hhh"));
+        //判断OS类型
+        SystemInfo systemInfo = new SystemInfo();
+        OperatingSystem os = systemInfo.getOperatingSystem();
+        String osName = os.toString();
+
+        //输入的指令
+        String speedTestCmd;
+        if(osName.contains("Microsoft Windows")){
+            speedTestCmd = "winsat disk";
+        }
+        else{
+            String cmdFilePath=System.getProperty("user.dir")+"/SpeedTest.sh";
+
+            speedTestCmd = cmdFilePath;
+
+                    //"(LANG=C dd if=/dev/zero of=benchtest_$$ bs=64k count=16k conv=fdatasync ) 2>&1 | awk -F, '{io=$NF} END { print io}' | sed 's/^[ \\t]*//;s/[ \\t]*$//'  && " +
+                    //"(LANG=C dd if=benchtest_$$ of=/dev/null bs=64k count=16k conv=fdatasync) 2>&1 | awk -F, '{io=$NF} END { print io}' | sed 's/^[ \\t]*//;s/[ \\t]*$//'   && " +
+                    //"rm -f benchtest_$$ ";
+        }
+        //输出
+        String readSpeed = "";
+        String writeSpeed = "";
+
+        //处理输出数据
+        List<String> cmdResult = new CmdExecutor(speedTestCmd).cmdResult;
+        if(cmdResult!=null){
+            if(osName.contains("Microsoft Windows")){
+                for(String currentOutput: cmdResult){
+                    String[] rawData = currentOutput.split("\\s+");
+                    if(currentOutput.contains("Disk  Sequential 64.0 Read")){
+                        readSpeed = rawData[5] +" "+ rawData[6];
+                    }
+                    else if(currentOutput.contains("Disk  Sequential 64.0 Write")){
+                        writeSpeed = rawData[5] +" "+ rawData[6];
+                    }
+                }
+            }
+            else{
+                writeSpeed = cmdResult.get(0);
+                readSpeed = cmdResult.get(1);
+            }
+        }
+
+        //结果
+        System.out.println(readSpeed);
+        System.out.println(writeSpeed);
     }
 }
