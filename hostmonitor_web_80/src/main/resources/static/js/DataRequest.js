@@ -578,42 +578,26 @@ function FRefreshDataDFPInfoAll(uiRefreshCallbackFunc){
     });
 }
 
-function FRefreshDataSpeedMeasurementInfoAll(uiRefreshCallbackFunc){
-    var speedMeasurementInfoList = FGetSpeedMeasurementInfoList();
-    var timestamp=new Date().getTime();
+/*function FRefreshDataSpeedMeasurementInfoAll(uiRefreshCallbackFunc){
+    //var speedMeasurementInfoList = FGetSpeedMeasurementInfoList();
 
-    speedMeasurementInfoList["speedMeasurementInfo"] = resultData = [
+    speedMeasurementInfoList["speedMeasurementInfo"] = [
         {
             ip: "127.0.0.1",
             ioTestLastTime: 1621865263000,
-            netSendSpeed: 200,
-            netDownloadSpeed: 100,
-            diskIOSpeed: 50,
+            readSpeed: 200,
+            writeSpeed: 100,
         },
         {
             ip: "127.0.0.2",
             ioTestLastTime: 1601865263000,
-            netSendSpeed: 100,
-            netDownloadSpeed: 50,
-            diskIOSpeed: 10,
+            readSpeed: 100,
+            writeSpeed: 50,
         },
     ];
-    FSetData("speedMeasurementInfoList",speedMeasurementInfoList);
+    //FSetData("speedMeasurementInfoList",speedMeasurementInfoList);
     uiRefreshCallbackFunc(speedMeasurementInfoList["speedMeasurementInfo"]);
-    /*
-    if(timestamp-speedMeasurementInfoList["lastUpdateTime"] >= requestCoolDownTime["RefreshDataSpeedMeasurementInfoAll"]) {
-
-
-        FSendGetRequest(false,"/Dispersed/getSpeedMeasurementInfo/All",function (resultData){
-            speedMeasurementInfoList["speedMeasurementInfo"] = resultData;
-            FSetData("speedMeasurementInfoList",speedMeasurementInfoList);
-            uiRefreshCallbackFunc(speedMeasurementInfoList["speedMeasurementInfo"]);
-        });
-    }
-    else{
-        uiRefreshCallbackFunc(speedMeasurementInfoList["speedMeasurementInfo"]);
-    }*/
-}
+}*/
 
 //-----故障预测
 

@@ -155,4 +155,11 @@ public class DispersedDataSampleController_Remote {
         return getRequestData(dataCollectorUrl + "/Dispersed/getDFPTrainRecord/List", 1000);
     }
 
+
+    @PostMapping(value="/diskSpeedTest",produces = "application/json;charset=UTF-8")
+    @ResponseBody
+    public String remoteTest(@RequestBody JSONObject jsonParam){
+        System.out.println("[测速]");
+        return restTemplate.postForObject(dataCollectorUrl + "/Dispersed/diskSpeedTest", jsonParam,String.class);
+    }
 }

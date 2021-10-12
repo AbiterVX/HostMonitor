@@ -14,7 +14,7 @@ function FGetNavItems(){
         document.getElementById("NavItem5"),
         document.getElementById("NavItem6"),
         document.getElementById("NavItem7"),
-        //document.getElementById("NavItem8"),
+        document.getElementById("NavItem8"),
     ];
 }
 
@@ -26,7 +26,7 @@ var minRequireUserType = [
     1,
     2,
     2,
-    //0,
+    0,
 ];
 
 var innerHTMLList = [
@@ -37,7 +37,7 @@ var innerHTMLList = [
     icon_empty + icon_file + '模型训练',
     icon_file + '系统设置',
     icon_file + '用户管理',
-    //icon_file + '测速',
+    icon_file + '测速',
 ];
 
 var signInSrc = "/Signin";
@@ -50,7 +50,7 @@ var srcHtml = [
     "DFPModelTraining.html",
     "Settings.html",
     "UserManagement.html",
-    //"SpeedMeasurement.html",
+    "SpeedMeasurement.html",
 ];
 
 
