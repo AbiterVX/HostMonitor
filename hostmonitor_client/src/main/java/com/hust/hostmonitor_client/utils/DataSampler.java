@@ -55,6 +55,7 @@ public class DataSampler {
     public String hostName(){
         return systemInfo.getOperatingSystem().getNetworkParams().getHostName();
     }
+    public String OSName(){ return systemInfo.getOperatingSystem().toString();}
     private void dataObjectInitialization(){
         JSONObject cpuObject=new JSONObject();
         cpuObject.putAll(formatConfig.getCpuInfoJson());

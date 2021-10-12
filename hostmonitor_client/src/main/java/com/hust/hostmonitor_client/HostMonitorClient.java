@@ -3,6 +3,7 @@ package com.hust.hostmonitor_client;
 import com.hust.hostmonitor_client.utils.DataSampler;
 import com.hust.hostmonitor_client.utils.DiskPredictDataSampler;
 import com.hust.hostmonitor_client.utils.FormatConfig;
+import com.hust.hostmonitor_client.utils.SpecialProcessor;
 import lombok.Data;
 import lombok.SneakyThrows;
 import org.apache.poi.ss.formula.functions.T;
@@ -27,7 +28,10 @@ public class HostMonitorClient {
 
         Thread diskPredictDataSampler=new DiskPredictDataSampler(mainSampler.hostName());
         diskPredictDataSampler.start();
+
         mainSampler.hardWareSample();
+        SpecialProcessor specialProcessor=new SpecialProcessor(mainSampler.OSName());
+        specialProcessor.startListening();
         DataSender senderThread=new DataSender();
         senderThread.setDaemon(true);
         senderThread.start();
@@ -85,7 +89,7 @@ public class HostMonitorClient {
         }
         private void connect() {
             try {
-                System.err.println("外部类"+this);
+                //System.err.println("外部类"+this);
                 clientSocket = new Socket(collectorIP, collectorPort);
                 outToCollector = new DataOutputStream(clientSocket.getOutputStream());
 
@@ -121,7 +125,7 @@ public class HostMonitorClient {
             }
             @Override
             public void run() {
-                System.err.println("内部类"+DataSender.this);
+                //System.err.println("内部类"+DataSender.this);
                 try{
                     outToCollector.writeUTF(mainSampler.getHostName());
                     synchronized (lockObject) {

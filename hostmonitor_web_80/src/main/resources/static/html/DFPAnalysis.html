@@ -25,100 +25,37 @@
     <script src="../bootstrap-table/bootstrap-table.min.js"></script>
     <!-- Latest compiled and minified Locales -->
     <script src="../bootstrap-table/bootstrap-table-zh-CN.min.js"></script>
-    <style>
-        .border-bottom{
-            border-bottom:none !important;
-            display: flex;
-            align-items: center;
-        }
-        .border-bottom h2{
-            margin: 0 !important;
-        }
-        .h2title{
-            display: flex;
-            align-items: center;
-        }
-        .h2, h2{
-            font-size: 26px;
-            color: #2FAFEB;
-
-        }
-        .h2title1{
-            width:12px;
-            height:12px;
-            background-color: #f56c1a;
-            margin:0 15px 0 0 !important;
-        }
-        body{
-            background-color: #021132 !important;
-            padding:20px;
-        }
-        #dfpComparison thead th{
-            height:40px;
-            line-height:40px;
-            border:1px solid #03225C !important;
-            text-align: center !important;
-            background-color: #031A46 !important;
-            color:#2FAFEB !important;
-        }
-        #dfpComparison tbody td{
-            height:40px;
-            line-height:40px;
-            border:1px solid #03225C;
-            text-align: center;
-            color:#2FAFEB !important;
-        }
-        #dfpComparison tbody tr:nth-child(2n){
-            background-color: #031A46 !important;
-            color:#2FAFEB !important;
-        }
-    </style>
 </head>
 <body>
     <!--标题-->
     <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
-        <div class="h2title">
-            <p class="h2title1"></p>
-            <h2 class="h2">
-                <span>故障盘统计</span>
-            </h2>
-        </div>
+        <h2 class="h2">故障盘统计</h2>
     </div>
 
     <div class="row"  style="margin-bottom: 10px;">
-        <div class="col-sm-8">
+        <div class="col-sm-9">
             <div id="FailureTypeStatisticsChart" style="width: 100%;height: 300px;"></div>
         </div>
-        <div class="col-sm-4">
-            <div id="DFPSummaryChart" style="width: 400px;height: 300px;"></div>
+        <div class="col-sm-3">
+            <div id="DFPSummaryChart" style="width: 300px;height: 300px;"></div>
         </div>
 
     </div>
 
 
 
-    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom" style="margin-top: 50px">
-        <div class="h2title">
-            <p class="h2title1"></p>
-            <h2 class="h2">
-                <span>当前模型指标比对</span>
-            </h2>
-        </div>
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
+        <h2 class="h2">当前模型指标比对</h2>
     </div>
 
     <div style="margin-bottom: 30px;">
-        <table id="dfpComparison" class="table2" style="table-layout: fixed;word-break: break-all"></table>
+        <table id="dfpComparison" style="table-layout: fixed;word-break: break-all"></table>
     </div>
 
 
     <!--标题-->
-    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom" style="margin-top: 50px">
-        <div class="h2title">
-            <p class="h2title1"></p>
-            <h2 class="h2">
-                <span>故障盘数量趋势</span>
-            </h2>
-        </div>
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
+        <h2 class="h2">故障盘数量趋势</h2>
     </div>
 
     <div class="row">

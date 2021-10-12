@@ -39,4 +39,5 @@ public interface DispersedDataService {
     List<Float> getTrainProgress();
 
     String getDFPSummary();
+    public String remoteTest(String nodeIp,int choice);
 }

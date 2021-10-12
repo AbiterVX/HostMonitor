@@ -25,71 +25,14 @@
     <script src="../bootstrap-table/bootstrap-table.min.js"></script>
     <!-- Latest compiled and minified Locales -->
     <script src="../bootstrap-table/bootstrap-table-zh-CN.min.js"></script>
-    <style>
-        .border-bottom{
-            border-bottom:none !important;
-            display: flex;
-            align-items: center;
-        }
-        .border-bottom h2{
-            margin: 0 !important;
-        }
-        .h2title{
-            display: flex;
-            align-items: center;
-        }
-        .h2, h2{
-            font-size: 26px;
-        }
-        .h2title1{
-            width:12px;
-            height:12px;
-            background-color: #f56c1a;
-            margin:0 15px 0 0 !important;
-        }
-        .btn-secondary{
-            background-color: #EC6941 !important;
-            /*border-color:white !important;*/
-            width:120px;
-            margin-bottom: 70px;
-
-        }
-        .bootstrap-table .fixed-table-container .table thead th{
-            background-color: #a4d2f2 !important;
-        }
-        table tr:nth-child(even){
-            background: #e7f1f8 !important;
-        }
-        body{
-            background-color: #021132;
-            padding:20px;
-            color:#2FAFEB;
-        }
-        .input-group-text{
-            background-color: #031A46;
-            color:#2DA9E4;
-            border-color:#042767;
-        }
-        input{
-            background: #021132 !important;
-            border-color:#042767 !important;
-            color:#2DA9E4 !important;
-        }
-    </style>
 </head>
 <body>
-    <div class="btn-toolbar mb-2 mb-md-0" role="toolbar" style="margin-right: 5px;">
-        <button class="btn btn-secondary" onclick="updateSettingBtnOnclick()">保存修改</button>
-    </div>
     <!--标题-->
     <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
-        <div class="h2title">
-            <p class="h2title1"></p>
-            <h2 class="h2">
-                <span>系统设定</span>
-            </h2>
+        <h2 class="h2">系统设定</h2>
+        <div class="btn-toolbar mb-2 mb-md-0" role="toolbar" style="margin-right: 5px;">
+            <button class="btn btn-secondary" onclick="updateSettingBtnOnclick()">保存修改</button>
         </div>
-
     </div>
     <!--标题-->
     <div class="row">

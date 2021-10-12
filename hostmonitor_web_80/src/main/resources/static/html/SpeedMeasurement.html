@@ -25,79 +25,11 @@
     <script src="../bootstrap-table/bootstrap-table.min.js"></script>
     <!-- Latest compiled and minified Locales -->
     <script src="../bootstrap-table/bootstrap-table-zh-CN.min.js"></script>
-    <style>
-        .border-bottom{
-            border-bottom:none !important;
-            display: flex;
-            align-items: center;
-        }
-        .border-bottom h2{
-            margin: 0 !important;
-        }
-        .h2title{
-            display: flex;
-            align-items: center;
-        }
-        .h2, h2{
-            font-size: 26px;
-        }
-        .h2title1{
-            width:12px;
-            height:12px;
-            background-color: #f56c1a;
-            margin:0 15px 0 0 !important;
-        }
-        .btn-secondary{
-            /*border-color:white !important;*/
-            background-color: #EC6941 !important;
-            width:120px;
-
-
-        }
-        .bootstrap-table .fixed-table-container .table thead th{
-            background-color: #a4d2f2 !important;
-        }
-        table tr:nth-child(even){
-            background: #e7f1f8 !important;
-        }
-        body{
-            background-color: #021132;
-            padding:20px;
-        }
-        #speedMeasurement thead th{
-            height:40px;
-            line-height:40px;
-            border:1px solid #03225C !important;
-            text-align: center !important;
-            background-color: #031A46 !important;
-            color:#2FAFEB !important;
-        }
-        #speedMeasurement tbody td{
-            height:40px;
-            line-height:40px;
-            border:1px solid #03225C;
-            text-align: center;
-            color:#2FAFEB !important;
-        }
-        .h2{
-            color:#2FAFEB !important;
-        }
-        #speedMeasurement tbody tr:nth-child(2n){
-            background-color: #031A46 !important;
-            color:#2FAFEB !important;
-        }
-
-    </style>
 </head>
 <body>
     <!--标题-->
     <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
-        <div class="h2title">
-            <p class="h2title1"></p>
-            <h2 class="h2">
-                <span>测速</span>
-            </h2>
-        </div>
+        <h2 class="h2">测速</h2>
         <div class="btn-toolbar mb-2 mb-md-0" role="toolbar" style="margin-right: 5px;">
             <button id="measureBtn" onclick="measureBtnOnclick()" type="button" class="btn btn-secondary" style="width: 120px;height: 40px;font-size: 18px;" >开始测试</button>
         </div>

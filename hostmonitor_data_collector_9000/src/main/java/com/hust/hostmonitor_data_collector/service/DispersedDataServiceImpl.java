@@ -12,6 +12,7 @@ import com.hust.hostmonitor_data_collector.utils.DiskPredict.DiskPredict;
 import com.hust.hostmonitor_data_collector.utils.DiskPredict.DiskPredictProgress;
 import com.hust.hostmonitor_data_collector.utils.DiskPredict.QueryResources;
 import com.hust.hostmonitor_data_collector.utils.DispersedHostMonitor;
+import com.hust.hostmonitor_data_collector.utils.TestInitiator;
 import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -749,5 +750,12 @@ public class DispersedDataServiceImpl implements DispersedDataService{
         }
         result.put("trend",Trend);
         return result.toJSONString();
+    }
+    public String remoteTest(String nodeIp,int choice){
+        TestInitiator testInitiator=new TestInitiator(nodeIp);
+        testInitiator.socketInitialization();
+        String result=testInitiator.executeTest(choice);
+        testInitiator.closeTestSocket();
+        return result;
     }
 }

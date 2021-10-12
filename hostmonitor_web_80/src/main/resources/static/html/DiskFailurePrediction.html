@@ -25,93 +25,11 @@
     <script src="../bootstrap-table/bootstrap-table.min.js"></script>
     <!-- Latest compiled and minified Locales -->
     <script src="../bootstrap-table/bootstrap-table-zh-CN.min.js"></script>
-    <style>
-        .border-bottom{
-            border-bottom:none !important;
-            display: flex;
-            align-items: center;
-        }
-        .border-bottom1{
-            position: relative;
-        }
-        .bootstrap4{
-            position: absolute;
-            left:0;
-            top:0;
-        }
-        .border-bottom h2{
-            margin: 0 !important;
-        }
-        .h2title{
-            display: flex;
-            align-items: center;
-        }
-        .h2, h2{
-            font-size: 26px;
-            color:#2FAFEB !important;
-        }
-        .h2title1{
-            width:12px;
-            height:12px;
-            background-color: #f56c1a;
-            margin:0 15px 0 0 !important;
-        }
-        body{
-              background-color: #021132 !important;
-              padding:20px;
-          }
-        #diskFailurePredictInfo thead th{
-            height:40px;
-            line-height:40px;
-            border:1px solid #03225C !important;
-            text-align: center !important;
-            background-color: #031A46 !important;
-            color:#2FAFEB !important;
-        }
-        #diskFailurePredictInfo tbody td{
-            height:40px;
-            line-height:40px;
-            border:1px solid #03225C;
-            text-align: center;
-            color:#2FAFEB !important;
-        }
-        #diskFailurePredictInfo tbody tr:nth-child(2n){
-            background-color: #031A46 !important;
-            color:#2FAFEB !important;
-        }
-        .pagination-info,.page-list{
-            color:#2FAFEB !important;
-        }
-        #HostIpDropDownMenu,.btn-outline-secondary{
-            color:#2FAFEB !important;
-            border:1px solid #2FAFEB !important
-        }
-        .dropdown-item{
-            color:#2FAFEB !important;
-        }
-        #HostIpDropDownBtn,#HostIpDropDownMenu,#HostIpDropDownBtn{
-            border:1px solid #2FAFEB !important;
-        }
-        .form-control{
-            background: #021132 !important;
-            border-color:#042767 !important;
-            color:#2DA9E4 !important;
-        }
-        .btn-secondary{
-            background-color: #5dbcfe !important;
-        }
-
-    </style>
 </head>
 <body>
     <!--标题-->
     <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
-        <div class="h2title">
-            <p class="h2title1"></p>
-            <h2 class="h2">
-                <span>硬盘故障趋势</span>
-            </h2>
-        </div>
+        <h2 class="h2">硬盘故障趋势</h2>
         <div class="btn-toolbar mb-2 mb-md-0" role="toolbar" style="margin-right: 5px;">
             <!-- HostIp -DropDown-->
             <div style="margin-right: 15px;">
@@ -142,19 +60,13 @@
     </div>
 
     <!--标题-->
-    <div class="pb-2 mb-3 border-bottom1" style="margin-top: 50px">
-        <div class="h2title">
-            <p class="h2title1"></p>
-            <h2 class="h2">
-                <span>预测结果</span>
-            </h2>
-        </div>
-        <table id="diskFailurePredictInfo" style="table-layout: fixed;word-break: break-all;"
-               data-search="true"
-               data-pagination="true" data-page-size="20" data-page-list="[10,20]"></table>
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
+        <h2 class="h2">预测结果</h2>
     </div>
 
-
+    <table id="diskFailurePredictInfo" style="table-layout: fixed;word-break: break-all;"
+           data-search="true"
+           data-pagination="true" data-page-size="20" data-page-list="[10,20]"></table>
     <div style="height: 100px;width: 100%"></div>
 </body>
 

@@ -370,5 +370,12 @@ public class DispersedDataSampleController {
 
     }
 
+    @PostMapping(value="/diskSpeedTest",produces = "application/json;charset=UTF-8")
+    @ResponseBody
+    public String remoteTest(@RequestBody JSONObject jsonParam){
+        String nodeIp=jsonParam.getString("IP");
+        String result=dispersedDataService.remoteTest(nodeIp,1);
+        return result;
+    }
 
 }
