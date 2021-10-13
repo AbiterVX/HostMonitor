@@ -3,6 +3,7 @@ package com.hust.hostmonitor_client.utils;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.hust.hostmonitor_client.utils.KylinEntity.KylinGPU;
 import oshi.SystemInfo;
 import oshi.hardware.*;
 import oshi.software.os.OSFileStore;
@@ -374,6 +375,7 @@ public class DataSampler {
         }
         processMapLastSample = tempProcessMap;
     }
+
     public void processInfoSample_backend(){
         processInfoList=new JSONArray();
         BufferedReader br;
@@ -510,6 +512,6 @@ public class DataSampler {
     }
     public static void main(String[] args) {
         DataSampler dataSampler = new DataSampler();
-        dataSampler.processInfoSample(10,1);
+        //dataSampler.processInfoSample(10,1);
     }
 }
