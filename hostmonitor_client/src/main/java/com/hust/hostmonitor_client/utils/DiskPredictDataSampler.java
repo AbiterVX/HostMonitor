@@ -6,8 +6,10 @@ import lombok.SneakyThrows;
 
 import java.io.*;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 
 public class DiskPredictDataSampler extends Thread {
     private String sampleFilePath = "";
@@ -26,7 +28,7 @@ public class DiskPredictDataSampler extends Thread {
         collectorIp= formatConfig.getCollectorIP();
         collectorPort= formatConfig.getPort(2);
         this.hostName=name;
-        sampleFilePath = System.getProperty("user.dir") +"/DiskPredict/client/data_collector.exe";
+        sampleFilePath = System.getProperty("user.dir") +"/DiskPredict/client/data_collector.py";
         dataFilePath=System.getProperty("user.dir") +"/DiskPredict/client/sampleData/data.csv";
     }
     //修改成定时任务最好
@@ -38,7 +40,7 @@ public class DiskPredictDataSampler extends Thread {
                 while(sender.isAlive());
                 System.out.println("Sender exits");
             }
-            SU.run(new DiskSampler());
+            SU.run(new CommandSampler());
             flag=false;
             sender=new SenderThread();
             sender.start();
@@ -75,17 +77,18 @@ public class DiskPredictDataSampler extends Thread {
         dos.close();
 
     }
-    private class DiskSampler extends SuperUserApplication{
+    public class CommandSampler extends SuperUserApplication{
         @Override
         public int run(String[] strings) {
             try {
                 Runtime rt = Runtime.getRuntime();
-                rt.exec(sampleFilePath);
+                rt.exec("python3 " +sampleFilePath);
             } catch (IOException e) {
                 e.printStackTrace();
             }
             return 0;
         }
+
     }
     private class SenderThread extends Thread{
         volatile private boolean keepLooping=true;

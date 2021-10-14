@@ -5,6 +5,9 @@ import oshi.util.ParseUtil;
 import oshi.util.tuples.Pair;
 
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -15,7 +18,7 @@ public class DeeperInOSHI {
     private static final Pattern LSPCI_MEMORY_SIZE = Pattern.compile(".+\\s\\[size=(\\d+)([kKMGT])\\]");
     public static List<KylinGPU> getGraphicsCardsFromLspci() {
         List<KylinGPU> cardList = new ArrayList();
-        List<String> lspci = ExecutingCommand.runNative("lspci -vnnm");
+        List<String> lspci = runCommand("lspci -vnnm");
         String name = "unknown";
         String deviceId = "unknown";
         String vendor = "unknown";
@@ -69,7 +72,7 @@ public class DeeperInOSHI {
     }
     private static long queryLspciMemorySize(String lookupDevice) {
         long vram = 0L;
-        List<String> lspciMem = ExecutingCommand.runNative("lspci -v -s " + lookupDevice);
+        List<String> lspciMem = runCommand("lspci -v -s " + lookupDevice);
         Iterator var4 = lspciMem.iterator();
 
         while(var4.hasNext()) {
@@ -148,5 +151,21 @@ public class DeeperInOSHI {
     public static Pair<String, String> parseLspciMachineReadable(String line) {
         Matcher matcher = LSPCI_MACHINE_READABLE.matcher(line);
         return matcher.matches() ? new Pair(matcher.group(1), matcher.group(2)) : null;
+    }
+    public static List<String> runCommand(String string){
+        try {
+            Runtime rt = Runtime.getRuntime();
+            Process process=rt.exec(string);
+            BufferedReader in =new BufferedReader(new InputStreamReader(process.getInputStream()));
+            ArrayList<String> result=new ArrayList<>();
+            String tempStr;
+            while((tempStr=in.readLine())!=null){
+                result.add(tempStr);
+            }
+            return  result;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }

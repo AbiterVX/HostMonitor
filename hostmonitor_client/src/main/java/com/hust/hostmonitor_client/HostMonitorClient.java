@@ -1,9 +1,6 @@
 package com.hust.hostmonitor_client;
 
-import com.hust.hostmonitor_client.utils.DataSampler;
-import com.hust.hostmonitor_client.utils.DiskPredictDataSampler;
-import com.hust.hostmonitor_client.utils.FormatConfig;
-import com.hust.hostmonitor_client.utils.SpecialProcessor;
+import com.hust.hostmonitor_client.utils.*;
 import lombok.Data;
 import lombok.SneakyThrows;
 import org.apache.poi.ss.formula.functions.T;
@@ -19,7 +16,7 @@ public class HostMonitorClient {
     public static int SamplePeriod=20000;
     public static int sampleIndex=0;
     private static int processFrequency=1;
-    private static DataSampler mainSampler=new DataSampler();
+    private static Sampler mainSampler=new KySampler();
     private static int WRITE_READ_UTF_MAX_LENGTH=65535;
     private static int SEGMENT_LENGTH=60000;
     @SneakyThrows
@@ -127,7 +124,7 @@ public class HostMonitorClient {
             public void run() {
                 //System.err.println("内部类"+DataSender.this);
                 try{
-                    outToCollector.writeUTF(mainSampler.getHostName());
+                    outToCollector.writeUTF(mainSampler.hostName());
                     synchronized (lockObject) {
                         while (true) {
                             if (contextToBeSent.length() > WRITE_READ_UTF_MAX_LENGTH) {

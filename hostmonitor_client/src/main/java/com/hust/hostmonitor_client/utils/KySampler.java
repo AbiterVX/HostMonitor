@@ -126,6 +126,12 @@ public class KySampler implements Sampler{
             dataObject.getJSONArray("netInterfaceList").getJSONObject(i).put("netInterfaceName",tempNetworkIF.getDisplayName());
         }
     }
+
+    @Override
+    public void periodSample(int period, boolean isTheFirstTimeToSample) {
+
+    }
+
     private HashMap<String,SmartInfo> readDiskSmartInfo(){
         HashMap<String,SmartInfo> types=new HashMap<>();
         File file=new File(diskDataPath);
@@ -191,5 +197,17 @@ public class KySampler implements Sampler{
     @Override
     public String OSName() {
         return dataObject.getString("osName");
+    }
+    public String stringReorder(String original){
+        StringBuffer stringBuffer=new StringBuffer();
+        int groupNumber=original.length()/2;
+        int i=0;
+        for(i=0;i<groupNumber;i++){
+            stringBuffer.append(original.charAt(i*2+1));
+            stringBuffer.append(original.charAt(i*2));
+        }
+        if(i*2==original.length()-1)
+            stringBuffer.append(original.charAt(i*2));
+        return stringBuffer.toString();
     }
 }

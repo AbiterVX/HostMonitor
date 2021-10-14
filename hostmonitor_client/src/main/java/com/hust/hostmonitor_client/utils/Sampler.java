@@ -40,7 +40,7 @@ public interface Sampler {
         public String hostName();
         public String OSName();
         public void hardWareSample();
-
+        public void periodSample(int period,boolean isTheFirstTimeToSample);
 
         public void processInfoSample(int period,int processFrequency);
 
