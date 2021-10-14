@@ -9,7 +9,7 @@ import java.util.Date;
 public class TestInitiator {
     private Socket testSocket;
     private String testNodeIp="";
-    private int testPort=8000;
+    private int testPort=7050;
     private boolean flag=true;
     private int reconnectInterval=3000;
     private DataOutputStream outToNode=null;

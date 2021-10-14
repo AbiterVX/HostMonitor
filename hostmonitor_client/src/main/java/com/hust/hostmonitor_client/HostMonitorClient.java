@@ -1,15 +1,11 @@
 package com.hust.hostmonitor_client;
 
 import com.hust.hostmonitor_client.utils.*;
-import lombok.Data;
 import lombok.SneakyThrows;
-import org.apache.poi.ss.formula.functions.T;
-import oshi.util.Util;
-
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
-import java.net.UnknownHostException;
+
 
 public class HostMonitorClient {
     public static Object lockObject=new Object();
@@ -35,7 +31,7 @@ public class HostMonitorClient {
 
         synchronized (lockObject){
             while(true){
-                Util.sleep(SamplePeriod);
+                Thread.sleep(SamplePeriod);
                 if(!isTheFirstTimeToSample){
                     mainSampler.periodSample(SamplePeriod/1000,false);
                 }
@@ -69,6 +65,7 @@ public class HostMonitorClient {
         private int reconnectInterval=3000;
         private String checkString;
         public void setContextToBeSent(String contextToBeSent) {
+            System.out.println(contextToBeSent);
             this.contextToBeSent = contextToBeSent;
         }
         @Override
@@ -86,10 +83,8 @@ public class HostMonitorClient {
         }
         private void connect() {
             try {
-                //System.err.println("外部类"+this);
                 clientSocket = new Socket(collectorIP, collectorPort);
                 outToCollector = new DataOutputStream(clientSocket.getOutputStream());
-
                 Thread thread = new Thread(new Client_send(clientSocket, outToCollector));
                 thread.start();
                 connection_state = true;

@@ -1,14 +1,11 @@
 package com.hust.hostmonitor_client.utils;
 
 
-import oshi.SystemInfo;
-import oshi.software.os.OperatingSystem;
 
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
+
 import java.util.List;
 import java.util.StringTokenizer;
 
@@ -18,7 +15,7 @@ public class SpecialProcessor {
     private String OSName;
     public SpecialProcessor(String OSName){
         try {
-            this.server=new ServerSocket(8000);
+            this.server=new ServerSocket(7050);
         } catch (IOException e) {
             e.printStackTrace();
         }

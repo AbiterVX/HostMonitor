@@ -20,25 +20,13 @@
 
     <dependencies><!-- https://mvnrepository.com/artifact/org.hyperic/sigar -->
         <!-- https://mvnrepository.com/artifact/com.github.oshi/oshi-core -->
-        <dependency>
-            <groupId>com.github.oshi</groupId>
-            <artifactId>oshi-core</artifactId>
-            <version>5.7.2</version>
-        </dependency>
+
 
         <!-- https://mvnrepository.com/artifact/net.java.dev.jna/jna -->
-        <dependency>
-            <groupId>net.java.dev.jna</groupId>
-            <artifactId>jna</artifactId>
-            <version>5.8.0</version>
-        </dependency>
+
 
         <!-- https://mvnrepository.com/artifact/net.java.dev.jna/jna-platform -->
-        <dependency>
-            <groupId>net.java.dev.jna</groupId>
-            <artifactId>jna-platform</artifactId>
-            <version>5.8.0</version>
-        </dependency>
+
         <!--Json解析 -->
         <dependency>
             <groupId>com.alibaba</groupId>
