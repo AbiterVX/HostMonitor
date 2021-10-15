@@ -51,11 +51,10 @@ public interface DMDiskFailureMapper {
 //                         @Param("Accuracy")double Accuracy,@Param("Precision")double precision,@Param("Specificity")double Specificity,
 //                         @Param("ErrorRate")double ErrorRate,@Param("Parameters")String Parameters,@Param("UserId")String UserId);
 
-    @Insert("set @date=now();\n" +
-            "insert into storagedevicemonitor.trainInfo values (@date,#{PredictModel},#{DiskModel}, " +
+    @Insert("insert into storagedevicemonitor.trainInfo values (#{Timestamp},#{PredictModel},#{DiskModel}, " +
             "#{FDR}, #{FAR}, #{AUC}, #{FNR}, #{Accuracy}, #{Precision},  #{Specificity}, #{ErrorRate}," +
             " #{Parameters},#{OperatorID});")
-    void insertTrainInfo(@Param("PredictModel")int PredictModel, @Param("DiskModel")String DiskModel,
+    void insertTrainInfo(@Param("Timestamp")Timestamp timestamp,@Param("PredictModel")int PredictModel, @Param("DiskModel")String DiskModel,
                          @Param("FDR")float FDR, @Param("FAR")float FAR, @Param("AUC")float AUC, @Param("FNR")float FNR,
                          @Param("Accuracy")float Accuracy,@Param("Precision")float Precision,@Param("Specificity")float Specificity,
                          @Param("ErrorRate")float ErrorRate,@Param("Parameters")String Parameters,@Param("OperatorID")String OperatorID);

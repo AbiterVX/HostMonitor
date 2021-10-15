@@ -178,8 +178,10 @@ public class KySampler implements Sampler{
         dataObject.put("diskCapacityTotalUsage",diskUsage);
         //网络速率计算
 
-        dataObject.put("netReceiveSpeed",FormatUtils.doubleTo2bits_double(record.getNetReceive()/1024/1024));
-        dataObject.put("netSendSpeed",FormatUtils.doubleTo2bits_double(record.getNetSend())/1024/1024);
+        dataObject.put("netReceiveSpeed",FormatUtils.doubleTo2bits_double(record.getNetReceive()*1.0f/1024/1024));
+        System.out.println(record.getNetReceive());
+        dataObject.put("netSendSpeed",FormatUtils.doubleTo2bits_double(record.getNetSend())*1.0f/1024/1024);
+        System.out.println(record.getNetSend());
         lastSample=record;
     }
     private int findDiskIndex(String diskName){

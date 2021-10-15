@@ -2,12 +2,46 @@
 
 
 #[net io]
-# remove color and header space
-netIO=$(dstat --nocolor -n 1 2 | sed -n 4p | sed "s,\x1B\[[0-9;]*[a-zA-Z],,g" | awk '$1=$1')
-netReceive=$(echo "$netIO" |  awk '{print $1}')
-netSend=$(echo "$netIO" |  awk '{print $2}')
-echo "NetReceive:""$netReceive"
-echo "NetSend:""$netSend"
+timeInterval=0.2
+netIO_1=$(ifconfig -s | sed -e "1d" | awk '{print $1,$3,$7}')
+sleep $timeInterval
+netIO_2=$(ifconfig -s | sed -e "1d" | awk '{print $1,$3,$7}')
+
+receiveBytes_1=0
+sendBytes_1=0
+IFS=$'\n'
+arrIN=($netIO_1)
+unset IFS
+for i in "${arrIN[@]}"; do
+        data=($(echo "$i"))
+        let receiveBytes_1+=${data[1]}
+        let sendBytes_1+=${data[2]}
+done
+
+receiveBytes_2=0
+sendBytes_2=0
+IFS=$'\n'
+arrIN=($netIO_2)
+unset IFS
+for i in "${arrIN[@]}"; do
+        data=($(echo "$i"))
+        let receiveBytes_2+=${data[1]}
+        let sendBytes_2+=${data[2]}
+done
+unset IFS
+
+netReceiveSpeed=$(echo "($receiveBytes_2- $receiveBytes_1)/$timeInterval"|bc)
+netSendSpeed=$(echo "($sendBytes_2- $sendBytes_1)/$timeInterval"|bc)
+
+echo "NetReceive:""$netReceiveSpeed"
+echo "NetSend:""$netSendSpeed"
+
+
+#netIO=$(dstat --nocolor -n 1 2 | sed -n 4p | sed "s,\x1B\[[0-9;]*[a-zA-Z],,g" | awk '$1=$1')
+#netReceive=$(echo "$netIO" |  awk '{print $1}')
+#netSend=$(echo "$netIO" |  awk '{print $2}')
+#echo "NetReceive:""$netReceive"
+#echo "NetSend:""$netSend"
 
 #[memory]
 memoryCommand=$(head -n 5 /proc/meminfo)

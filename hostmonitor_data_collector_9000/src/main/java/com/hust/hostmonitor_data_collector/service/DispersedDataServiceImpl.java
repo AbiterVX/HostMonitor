@@ -474,7 +474,7 @@ public class DispersedDataServiceImpl implements DispersedDataService{
                     }
                     for(int i=0;i<trainProgress.size();i++){
                         JSONObject trainResult = DiskPredictProgress.parsingTrainResultData(trainProgress.get(i).getResultData());
-                        diskFailureMapper.insertTrainInfo(
+                        diskFailureMapper.insertTrainInfo(new Timestamp(new Date().getTime()),
                                 modelType,
                                 trainResult.getString("modelName"),
                                 trainResult.getFloat("FDR"),

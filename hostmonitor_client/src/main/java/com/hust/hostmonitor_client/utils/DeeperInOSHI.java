@@ -281,10 +281,10 @@ public class DeeperInOSHI {
                 record.setMemAvailable(Long.parseLong(tokens[1]));
             }
             else if(tokens[0].equals("NetSend")){
-                record.setNetSend(0l);
+                record.setNetSend(Long.parseLong(tokens[1]));
             }
             else if(tokens[0].equals("NetReceive")){
-                record.setNetReceive(0l);
+                record.setNetReceive(Long.parseLong(tokens[1]));
             }
             else if(tokens[0].equals("Power")){
                 record.setCPUTemperature(40.0);
