@@ -11,7 +11,7 @@ public class HostMonitorClient {
     public static Object lockObject=new Object();
     public static int SamplePeriod=20000;
     public static int sampleIndex=0;
-    private static int processFrequency=1;
+    private static int processFrequency=5;
     private static Sampler mainSampler=new KySampler();
     private static int WRITE_READ_UTF_MAX_LENGTH=65535;
     private static int SEGMENT_LENGTH=60000;
@@ -28,7 +28,25 @@ public class HostMonitorClient {
         DataSender senderThread=new DataSender();
         senderThread.setDaemon(true);
         senderThread.start();
-
+//        while(true){
+//            Thread.sleep(SamplePeriod);
+//            if(!isTheFirstTimeToSample){
+//                mainSampler.periodSample(SamplePeriod/1000,false);
+//            }
+//            else{
+//                mainSampler.periodSample(SamplePeriod/1000,true);
+//                isTheFirstTimeToSample=false;
+//            }
+//            boolean judgeResult=false;
+//                if(sampleIndex%processFrequency==0){
+//                    mainSampler.processInfoSample(SamplePeriod/1000,processFrequency);
+//                    sampleIndex=1;
+//                    judgeResult=true;
+//                }else{
+//                    sampleIndex++;
+//                }
+//            System.out.println(mainSampler.outputSampleData(judgeResult));
+//        }
         synchronized (lockObject){
             while(true){
                 Thread.sleep(SamplePeriod);

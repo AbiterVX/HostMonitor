@@ -202,14 +202,16 @@ public class DeeperInOSHI {
         List<String> ProcessInfo = runCommand("top -b -n 1 ");
         boolean reachProcesses=false;
         for(String string:ProcessInfo){
-            if(!reachProcesses){
-                continue;
-            }
             if(string.contains("PID")){
                 reachProcesses=true;
                 continue;
             }
-            String[] tokens=string.split("\\s+");
+            if(!reachProcesses){
+                continue;
+            }
+            //System.out.println("process +1");
+            String[] tokens=string.trim().split("\\s+");
+            //System.out.println(tokens[0]);
             int PID=Integer.parseInt(tokens[0]);
             String Name=tokens[11];
             if(Name.equals("top")){
@@ -218,9 +220,12 @@ public class DeeperInOSHI {
             double cpuUsage=Double.parseDouble(tokens[8]);
             double memoryUsage=Double.parseDouble(tokens[9]);
             //时间算法有问题，以后再debug
-            String[] times=tokens[10].split(":.");
+            String[] times=tokens[10].split(":");
             long time=new Date().getTime();
-            long useTime=Integer.parseInt(times[0])*60*1000+Integer.parseInt(times[1])*1000+Integer.parseInt(times[2])*10;
+            //System.out.println(tokens[10]);
+            //System.out.println(tokens[0]);
+            //System.out.println(tokens[1]);
+            long useTime=new Double(Integer.parseInt(times[0])*60*1000+Double.parseDouble(times[1])*1000).longValue();
             KylinProcess kylinProcess=new KylinProcess(PID,Name,time-useTime,cpuUsage,memoryUsage,0.0f,0.0f);
             result.add(kylinProcess);
         }

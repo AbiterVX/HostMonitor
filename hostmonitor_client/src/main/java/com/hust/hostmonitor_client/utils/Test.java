@@ -64,6 +64,8 @@ public class Test  {
             }
         }
 
+        System.out.println("OSName:"+osName);
+
         //获取硬盘smart数据
         JSONObject diskData = new JSONObject();
         {
@@ -84,14 +86,18 @@ public class Test  {
                 else{
                     getDiskListCmd = "lsblk -bnd";
                     List<String> cmdResult = new CmdExecutor(getDiskListCmd).cmdResult;
+
                     for(String currentStr:cmdResult) {
-                        if(currentStr.startsWith("Disk")){
+
                             String[] rawData = currentStr.split("\\s+");
-                            diskList.add(rawData[1].substring(0, rawData[1].length()-1));
-                        }
+                            System.out.println(rawData.length);
+                            diskList.add("/dev/"+rawData[0]);
+                            System.out.println("/dev/"+rawData[0]);
+
                     }
                 }
             }
+
 
             //以Json格式存数据
             String smartDiskInfoCmd = "smartctl -i ";

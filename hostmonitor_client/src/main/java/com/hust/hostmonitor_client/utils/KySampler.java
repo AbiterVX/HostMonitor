@@ -67,7 +67,7 @@ public class KySampler implements Sampler{
         dataObject.getJSONArray("cpuInfoList").getJSONObject(0).put("cpuName",DeeperInOSHI.getCPUName());
         //磁盘
         List<KylinDiskStore> hwDiskStoreList=DeeperInOSHI.getDiskStores();
-        //HashMap<String,SmartInfo> types=readDiskSmartInfo();
+        HashMap<String,SmartInfo> types=readDiskSmartInfo();
         int i=0;
         long totalsize=0;
         for(i=0;i<hwDiskStoreList.size();i++){
@@ -77,28 +77,26 @@ public class KySampler implements Sampler{
             dataObject.getJSONArray("diskInfoList").getJSONObject(i).put("diskCapacityTotalSize",FormatUtils.doubleTo2bits_double((tempDiskStore.getSize()*1.0/1024/1024/1024)));
             dataObject.getJSONArray("diskInfoList").getJSONObject(i).put("lastUpdateTime",timestamp);
             String serial=tempDiskStore.getSerial().trim();
-//            for(String string:types.keySet()){
-//                if(string.toLowerCase().contains(serial.toLowerCase())||stringReorder(string.toLowerCase()).contains(serial.toLowerCase())){
-//                    dataObject.getJSONArray("diskInfoList").getJSONObject(i).put("type",types.get(string).isSsd);
-//                    dataObject.getJSONArray("diskInfoList").getJSONObject(i).put("diskName",string);
-//                    break;
-//                }else{
-//                    for(String backsn:types.get(string).backup){
-//                        if(backsn.toLowerCase().contains(serial.toLowerCase())){
-//                            String[] tokens=backsn.split(":");
-//                            dataObject.getJSONArray("diskInfoList").getJSONObject(i).put("diskName",tokens[1]);
-//                            dataObject.getJSONArray("diskInfoList").getJSONObject(i).put("type",types.get(string).isSsd);
-//                            break;
-//                        }
-//                    }
-//                }
-//            }
+            for(String string:types.keySet()){
+                if(string.toLowerCase().contains(serial.toLowerCase())||stringReorder(string.toLowerCase()).contains(serial.toLowerCase())){
+                    dataObject.getJSONArray("diskInfoList").getJSONObject(i).put("type",types.get(string).isSsd);
+                    dataObject.getJSONArray("diskInfoList").getJSONObject(i).put("diskName",string);
+                    break;
+                }else{
+                    for(String backsn:types.get(string).backup){
+                        if(backsn.toLowerCase().contains(serial.toLowerCase())){
+                            String[] tokens=backsn.split(":");
+                            dataObject.getJSONArray("diskInfoList").getJSONObject(i).put("diskName",tokens[1]);
+                            dataObject.getJSONArray("diskInfoList").getJSONObject(i).put("type",types.get(string).isSsd);
+                            break;
+                        }
+                    }
+                }
+            }
             totalsize+=tempDiskStore.getSize();
 
         }
-
         dataObject.put("diskCapacityTotalSizeSum",FormatUtils.doubleTo2bits_double(totalsize*1.0/1024/1024/1024));
-
         //GPU
         List<KylinGPU> graphicsCards = DeeperInOSHI.getGraphicsCardsFromLspci();
         for (i=0;i<graphicsCards.size();i++){
@@ -183,7 +181,6 @@ public class KySampler implements Sampler{
         dataObject.put("netReceiveSpeed",FormatUtils.doubleTo2bits_double(record.getNetReceive()/1024/1024));
         dataObject.put("netSendSpeed",FormatUtils.doubleTo2bits_double(record.getNetSend())/1024/1024);
         lastSample=record;
-        System.out.println(outputSampleData(true));
     }
     private int findDiskIndex(String diskName){
         for(int i=0;i<dataObject.getJSONArray("diskInfoList").size();i++){
@@ -237,6 +234,7 @@ public class KySampler implements Sampler{
         processInfoList = new JSONArray();
         List<KylinProcess> processesList=null;
         processesList=DeeperInOSHI.getProcesses();
+        System.out.println("进程个数"+processesList.size());
         for(KylinProcess osProcess:processesList){
 
             //进程过滤

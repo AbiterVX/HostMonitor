@@ -78,6 +78,7 @@
                 <configuration>
                     <archive>
                         <manifest>
+<!--                            <mainClass>com.hust.hostmonitor_client.HostMonitorClient</mainClass>-->
                             <mainClass>com.hust.hostmonitor_client.HostMonitorClient</mainClass>
                         </manifest>
                     </archive>
