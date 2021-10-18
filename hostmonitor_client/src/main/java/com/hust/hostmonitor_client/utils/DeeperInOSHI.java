@@ -6,10 +6,7 @@ import com.hust.hostmonitor_client.utils.KylinEntity.*;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -249,6 +246,19 @@ public class DeeperInOSHI {
         KylinPeriodRecord record=new KylinPeriodRecord();
         //CPU
         List<String> CPUInfo = runCommand("cat /proc/stat | grep cpu");
+        List<String> mountUsageInfo = runCommand("df"); //查询结果使用量为KB
+        HashMap<String,Pair<Long,Long>> mountUsage=new HashMap<>();
+        for (int i=0;i<mountUsageInfo.size();i++
+             ) {
+            if(i==0){
+                continue;
+            }
+            String[] parts=mountUsageInfo.get(i).trim().split("\\s+");
+            Long used=Long.parseLong(parts[2]);
+            Long usable=Long.parseLong(parts[3]);
+            mountUsage.put(parts[5],new Pair<>(used,usable));
+        }
+        mountUsageInfo=null;//释放
         for(String string:CPUInfo){
             String[] tokens=string.split("\\s+");
             if(tokens[0].equals("cpu")){
@@ -289,7 +299,7 @@ public class DeeperInOSHI {
             else if(tokens[0].equals("Power")){
                 record.setCPUTemperature(40.0);
             }
-            //TODO 磁盘使用量计算方法修改 disk_util
+            //TODO 磁盘使用量计算方法修改 disk_util,修改为通过挂载点计算
             else if(tokens[0].contains("Disk_Iops")){
                 DiskInfo tempDiskInfo=new DiskInfo();
                 String diskName=tokens[0].split("_")[2];
@@ -300,10 +310,31 @@ public class DeeperInOSHI {
                 currentString= itr.next();
                 double writeSpeed=Double.parseDouble(currentString.split(":")[1]);
                 currentString= itr.next();
-                double util=Double.parseDouble(currentString.split(":")[1]);
+                double utilRadio=Double.parseDouble(currentString.split(":")[1]);
                 tempDiskInfo.diskReadSpeed=readSpeed;
                 tempDiskInfo.diskWriteSpeed=writeSpeed;
-                tempDiskInfo.diskUsed=util;
+                tempDiskInfo.diskUsedRadio=utilRadio;
+                ArrayList<String> mountPoints=new ArrayList<>();
+                List<String> devMountInfo = runCommand("lsblk /dev/"+diskName);
+                for(String mountString:devMountInfo){
+                    if(mountString.contains("NAME")){
+                        continue;
+                    }
+                    String[] parts=mountString.trim().split("\\s+");
+                    if(parts.length==6){
+                        continue;
+                    }
+                    else {
+                        mountPoints.add(parts[6]);
+                    }
+                }
+                long diskUsedAmount=0;
+                for(String mountPoint:mountPoints){
+                    if(mountUsage.containsKey(mountPoint)){
+                        diskUsedAmount+=mountUsage.get(mountPoint).a;
+                    }
+                }
+                tempDiskInfo.diskFSUsageAmount=diskUsedAmount;
                 record.getDisks().add(tempDiskInfo);
             }
         }

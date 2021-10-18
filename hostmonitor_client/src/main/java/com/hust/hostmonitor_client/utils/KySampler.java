@@ -150,13 +150,13 @@ public class KySampler implements Sampler{
             int i=findDiskIndex(tempDiskInfo.diskName);
             double usage2bits=0.0;
             try {
-                usage2bits = FormatUtils.doubleTo2bits_double(tempDiskInfo.diskUsed);
+                usage2bits = FormatUtils.doubleTo2bits_double(tempDiskInfo.diskUsedRadio);
             } catch (Exception e) {
                 System.out.println("usage2bitsError");
             }
             JSONArray singleArray=new JSONArray();
             double singleTotalSize=dataObject.getJSONArray("diskInfoList").getJSONObject(i).getDouble("diskCapacityTotalSize");
-            double singleUsedSize=singleTotalSize* tempDiskInfo.diskUsed;
+            double singleUsedSize=tempDiskInfo.diskFSUsageAmount*1.0f/1024/1024;
             singleArray.add(FormatUtils.doubleTo2bits_double(singleUsedSize));
             singleArray.add(singleTotalSize);
             totalUsedSize+=singleUsedSize;
