@@ -80,8 +80,11 @@ function FInitNav(){
         UserBtn.innerText = "登录";
     }
 
+
     //导航项
     var NavItems = FGetNavItems();
+    var mainInfo = FGetMainInfo();
+    var hostIpList = mainInfo["hostIp"];
 
     for(var i=0;i<NavItems.length;i++){
         NavItems[i].innerHTML = innerHTMLList[i];
@@ -97,10 +100,12 @@ function FInitNav(){
                         FSetCurrentNavItem(index);
                     }
                     else{
-
                         $('#UserTypeWarningModal').modal('show');
                     }
                 }
+            }
+            else if(index === 1){
+                //FSelectHost(hostIpList.length,0);
             }
             else{
                 FSetCurrentNavItem(index);
@@ -108,11 +113,49 @@ function FInitNav(){
         }
     }
 
+    //Host列表
+
+    var hostList = document.getElementById("hostList");
+    hostList.innerHTML = "";
+    for(var i=0;i< hostIpList.length;i++){
+        hostList.innerHTML +=
+            '<li class="nav-item">\n' +
+            '    <a id="HostItem'+i+'" class="nav-link" href="#" onclick="FSelectHost('+ hostIpList.length + ","+ i + ')">'+icon_empty +icon_file +hostIpList[i] +'</a>\n' +
+            '</li>';
+    }
+
+
+}
+
+function FSelectHost(count, index){
+    window.sessionStorage.setItem("currentHostIndex",index);
+    for(var i=0;i< count;i++){
+        var currentItem = document.getElementById("HostItem"+i);
+        if(index !== i){
+            currentItem.style.color = '';
+            currentItem.style.fontWeight = '';
+        }
+        else{
+            currentItem.style.color ="black";
+            currentItem.style.fontWeight = "bold";
+        }
+    }
+    FSetCurrentNavItem(1);
 }
 
 //[左侧导航栏]设置当前选中的导航项
 function FSetCurrentNavItem(leftNavItemIndex){
-    if(currentIndex !== leftNavItemIndex){
+    if(leftNavItemIndex !== 1){
+        var mainInfo = FGetMainInfo();
+        var hostIpList = mainInfo["hostIp"];
+        for(var i=0;i< hostIpList.length;i++){
+            var currentItem = document.getElementById("HostItem"+i);
+            currentItem.style.color = '';
+            currentItem.style.fontWeight = '';
+        }
+    }
+
+    if( (leftNavItemIndex !== 1 && currentIndex !== leftNavItemIndex) || leftNavItemIndex === 1){
         currentIndex = leftNavItemIndex;
         var NavItems = FGetNavItems();
         for(var i=0;i<NavItems.length;i++){
@@ -129,13 +172,10 @@ function FSetCurrentNavItem(leftNavItemIndex){
         var MainPart = document.getElementById("MainPart");
         MainPart.src = parentPath + srcHtml[leftNavItemIndex];
     }
-
 }
-
 
 //[下拉菜单]-init
 function FInitDropDown(dropDownMenuId,dropDownBtnId,dropDownItems,selectBtnCallback,index){
-
     var dropDownMenu = document.getElementById(dropDownMenuId);
     var dropDownMenuHtml = "";
     //下拉菜单-设置选项

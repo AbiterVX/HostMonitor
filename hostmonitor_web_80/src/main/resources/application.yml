@@ -1,15 +1,8 @@
 server:
   port: 80
-
-
 spring:
   application:
     name: hostmonitor-web
-  cloud:
-    nacos:
-      discovery:
-        server-addr: localhost:8848 #配置Nacos地址
-
 management:
   endpoints:
     web:
@@ -17,8 +10,5 @@ management:
         include: '*'
 
 service-url:
-  #不使用Nacos，需改为：http://localhost:9000
-  #使用Nacos，需改为： http://hostmonitor-data-collector
-  #若不使用Nacos需关闭ApplicationContextBean.RestTemplate.LoadBalanced，反之要打开。
-  data_collector_service: http://localhost:9000
+  data_collector_service: http://localhost:9001
   web_service: http://hostmonitor-web

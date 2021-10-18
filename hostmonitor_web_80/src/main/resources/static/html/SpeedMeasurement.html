@@ -40,14 +40,21 @@
 <script>
     //table选中项
     var selectedItems = new Set();
-    //MainInfo
-    var mainInfo = FGetMainInfo();
+    var smInfoList = [];
 
 
     window.onload=function (){
-        FRefreshDataSpeedMeasurementInfoAll(function (speedMeasurementInfoList){
-            refreshSpeedMeasurementTable(true,speedMeasurementInfoList);
-        });
+        //Host IP
+        var hostIpList = FGetMainInfo()["hostIp"];
+        for(var i=0;i<hostIpList.length;i++){
+            smInfoList.push({
+                ip: hostIpList[i],
+                ioTestLastTime: "-",
+                readSpeed: "-",
+                writeSpeed: "-",
+            })
+        }
+        refreshSpeedMeasurementTable(true,smInfoList);
     }
 
     //更新Table-SpeedMeasurement
@@ -80,24 +87,54 @@
         }
     }
 
+    //点击测速按钮
     function measureBtnOnclick(){
         var hostIpList = Array.from(selectedItems);
-        var smInfoList = FGetSpeedMeasurementInfoList()["speedMeasurementInfo"];
-        for(var i=0;i<smInfoList.length;i++){
-            for(var j=0;j<hostIpList.length;j++){
-                if(smInfoList[i]["ip"] === hostIpList[j]){
-                    smInfoList[i]["netSendSpeed"] = -1;
-                    smInfoList[i]["netDownloadSpeed"] = -1;
-                    smInfoList[i]["diskIOSpeed"] = -1;
-                    break;
+        if(hostIpList.length !==0){
+            for(var i=0;i<smInfoList.length;i++){
+                for(var j=0;j<hostIpList.length;j++){
+                    if(smInfoList[i]["ip"] === hostIpList[j]){
+                        smInfoList[i]["readSpeed"] = -1;
+                        smInfoList[i]["writeSpeed"] = -1;
+                        break;
+                    }
                 }
             }
+            refreshSpeedMeasurementTable(false,smInfoList);
+            $('#measureBtn').prop('disabled', true);
+            //selectedItems.clear();
+            for(var i=0;i<hostIpList.length;i++){
+                speedMeasurement(hostIpList[i]);
+            }
         }
-        selectedItems.clear();
-        refreshSpeedMeasurementTable(false,smInfoList);
-        $('#measureBtn').prop('disabled', true);
+        else{
+            alert("Empty");
+        }
     }
 
+    function speedMeasurement(current_ip){
+        var parameterData = {
+            IP: current_ip,
+        };
+        FSendPostRequest(true,"/Dispersed/diskSpeedTest",JSON.stringify(parameterData),function (resultData){
+            resultData = JSON.parse(resultData);
+            if(resultData != null && resultData !== "") {
+                for (var i = 0; i < smInfoList.length; i++) {
+                    if (smInfoList[i]["ip"] === current_ip) {
+                        //smInfoList[i]["ioTestLastTime"] = "-";
+                        smInfoList[i]["readSpeed"] = resultData["readSpeed"];
+                        smInfoList[i]["writeSpeed"] = resultData["writeSpeed"];
+                        refreshSpeedMeasurementTable(false,smInfoList);
+                        selectedItems.delete(current_ip);
+                        if(selectedItems.size === 0){
+                            $('#measureBtn').prop('disabled', false);
+                        }
+                        break;
+                    }
+                }
+            }
+        });
+    }
 </script>
 </html>
 

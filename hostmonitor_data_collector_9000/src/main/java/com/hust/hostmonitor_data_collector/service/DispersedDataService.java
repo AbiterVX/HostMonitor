@@ -24,7 +24,7 @@ public interface DispersedDataService {
 
     String getDFPInfoAll();
 
-   void train(int modelType, float positiveDataProportion, float negativeDataProportion, float verifyProportion,
+    void train(int modelType, float positiveDataProportion, float negativeDataProportion, float verifyProportion,
                                     JSONObject extraParams,String operatorID);
 
     //1 admin,2 superAdmin

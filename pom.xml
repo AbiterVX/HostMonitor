@@ -11,10 +11,9 @@
     <modules>
         <module>hostmonitor_web_80</module>
         <module>hostmonitor_data_collector_9000</module>
-        <module>hostmonitor_commons</module>
         <module>hostmonitor_client</module>
-        <module>oshiTest</module>
         <module>hostmonitor_data_escape</module>
+        <module>hostmonitor_data_collector_9001</module>
     </modules>
 
     <properties>

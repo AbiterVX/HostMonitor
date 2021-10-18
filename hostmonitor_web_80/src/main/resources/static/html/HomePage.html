@@ -68,7 +68,9 @@
                             <a id="NavItem1" class="nav-link" href="#"></a>
                         </li>
                         <li class="nav-item">
-                            <a id="NavItem2" class="nav-link" href="#"></a>
+                            <a id="NavItem2" href="#hostList" data-toggle="collapse" class="dropdown-toggle nav-link"></a>
+                            <ul id="hostList" class="collapse list-unstyled show">
+                            </ul>
                         </li>
 
                         <li class="nav-item">
@@ -147,6 +149,10 @@
             //设置初始界面
             FSetCurrentNavItem(0);
         });
+    }
+
+    function hostDetail(index){
+        window.location.href = signInSrc;
     }
 
     function pageResize(){

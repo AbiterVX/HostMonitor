@@ -582,7 +582,7 @@ const tableColumns = {
             valign: 'middle',
             width: 15,
             formatter: function(value, row, index) {
-                if(row.diskIOSpeed === -1){
+                if(row.readSpeed === -1){
                     return { disabled : true,}
                 }else{
                     return { disabled : false,}
@@ -600,12 +600,17 @@ const tableColumns = {
             width: 100,
             sortable: true,
             formatter : function (value, row, index) {
-                return FGetDateTime(value);
+                if(value !== "-"){
+                    return FGetDateTime(value);
+                }
+                else{
+                    return value;
+                }
             }
         },
         {
-            field: 'netSendSpeed',
-            title: '网络发送速度',
+            field: 'readSpeed',
+            title: '读速度',
             width: 50,
             sortable: true,
             formatter : function (value, row, index) {
@@ -613,13 +618,13 @@ const tableColumns = {
                     return FGetLoadingImg();
                 }
                 else{
-                    return FGetKbWithUnit(value)+"/s";
+                    return value;
                 }
             }
         },
         {
-            field: 'netDownloadSpeed',
-            title: '网络下载速度',
+            field: 'writeSpeed',
+            title: '写速度',
             width: 50,
             sortable: true,
             formatter : function (value, row, index) {
@@ -627,21 +632,7 @@ const tableColumns = {
                     return FGetLoadingImg();
                 }
                 else{
-                    return FGetKbWithUnit(value)+"/s";
-                }
-            }
-        },
-        {
-            field: 'diskIOSpeed',
-            title: '平均硬盘IO速度',
-            width: 50,
-            sortable: true,
-            formatter : function (value, row, index) {
-                if(value === -1){
-                    return FGetLoadingImg();
-                }
-                else{
-                    return FGetKbWithUnit(value)+"/s";
+                    return value;
                 }
             }
         },
@@ -1066,8 +1057,9 @@ function FGetDFPInfoTrend(hostName,diskName){
         return JSON.parse(dfpInfoTrend);
     }
 }
+/*
 function FGetSpeedMeasurementInfoList(){
-    var speedMeasurementInfoList = window.sessionStorage.getItem("speedMeasurementInfoList");
+    var refreshSpeedMeasurementTable(true,speedMeasurementInfoList); = window.sessionStorage.getItem("speedMeasurementInfoList");
     if(speedMeasurementInfoList == null){
         var speedMeasurementInfoListFormat = FGetFormat("speedMeasurementInfoList");
         window.sessionStorage.setItem("speedMeasurementInfoList",JSON.stringify(speedMeasurementInfoListFormat));
@@ -1076,7 +1068,8 @@ function FGetSpeedMeasurementInfoList(){
     else{
         return JSON.parse(speedMeasurementInfoList);
     }
-}
+}*/
+
 //----------Set数据
 function FSetData(key,newJsonData){
     //mainInfo
@@ -1159,7 +1152,7 @@ var summaryChartOption = {
         data: [
             {
                 value: 0,
-                name: '低',
+                name: '低负载',
                 title: {
                     offsetCenter: ['0%', '-55%']
                 },
@@ -1169,7 +1162,7 @@ var summaryChartOption = {
             },
             {
                 value: 0,
-                name: '中',
+                name: '中负载',
                 title: {
                     offsetCenter: ['0%', '-15%']
                 },
@@ -1180,7 +1173,7 @@ var summaryChartOption = {
             {
                 value: 0,
                 count:0,
-                name: '高',
+                name: '高负载',
                 title: {
                     offsetCenter: ['0%', '22%']
                 },
@@ -1191,7 +1184,7 @@ var summaryChartOption = {
         ],
         title: {
             fontWeight: 'bold',
-            fontSize: 20,
+            fontSize: 18,
         },
         detail: {
             width: 60,
@@ -1205,7 +1198,7 @@ var summaryChartOption = {
         }
     },
     pieOption: {
-        name: '数量',
+        name: '节点数量:',
         type: 'pie',
         center: ['16%', '54%'],
         radius: ['64%', '90%'],
@@ -1218,15 +1211,15 @@ var summaryChartOption = {
         data: [
             {
                 value: 0,
-                name: 'Low'
+                name: '低负载'
             },
             {
                 value: 0,
-                name: 'Medium'
+                name: '中负载'
             },
             {
                 value: 0,
-                name: 'High'
+                name: '高负载'
             },
         ]
     },
