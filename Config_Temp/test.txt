@@ -1,0 +1,57 @@
+
+ @echo off
+set /A index=0
+for /f "skip=1 tokens=1-3 delims= " %%a  in ('wmic logicaldisk get size^, freespace^, caption  ')  do ( 
+	echo Disk_%index%:%%a %%b %%c
+ )
+
+
+#获取Disk 大小
+wmic logicaldisk get size,freespace,caption  
+
+#获取Disk序列号
+wmic diskdrive get Name,SerialNumber,Size,Model
+
+#获取Disk IO : 每秒读速度：DiskReadBytesPersec，每秒写速度：DiskWriteBytesPersec，Disk空闲率：PercentIdleTime，IOPS：DiskTransfersPersec
+powershell -command "Get-WmiObject -query { SELECT * FROM Win32_PerfFormattedData_PerfDisk_LogicalDisk  WHERE Name = '_Total' }"
+
+# 进程详情   Name，Name。CreatingProcessID。ElapsedTime。内存使用：workingset，cpu使用率：percentProcessorTime，需除cpu个数。 IO读写：ioReadBytesPersec,ioWriteBytesPersec
+# IOPS: IODataOperationsPersec
+powershell -command "Get-WmiObject -query { SELECT * FROM Win32_PerfFormattedData_PerfProc_Process  }"
+
+
+
+#Disk是否为SSD
+powershell -command "&{Get-PhysicalDisk | Where-Object -Property MediaType -eq 'SSD'}"
+
+#获取CPU名称
+powershell -command "Get-WmiObject Win32_Processor"
+
+#GPU 名称，可用内存
+wmic PATH Win32_VideoController GET Name,Adapterram
+
+#网络IO
+chcp 437 && netstat -e && chcp 936
+
+
+
+
+# cpu 利用率
+wmic cpu get loadpercentage
+
+# cpu 温度
+# https://stackoverflow.com/questions/45736193/how-can-we-get-a-cpu-temperature-through-wmi
+wmic /namespace:\\root\wmi PATH MSAcpi_ThermalZoneTemperature get CriticalTripPoint, CurrentTemperature
+
+
+@echo off
+for /f "skip=1 tokens=2 delims==" %%A in ('wmic /namespace:\\root\wmi PATH MSAcpi_ThermalZoneTemperature get CurrentTemperature /value') do set /a "HunDegCel=(%%~A*10)-27315"
+echo %HunDegCel:~0,-2%.%HunDegCel:~-2% Degrees Celsius
+
+
+
+
+
+
+powershell -command "Get-WmiObject -query { SELECT * FROM Win32_PerfFormattedData_PerfDisk_LogicalDisk  WHERE Name = '_Total' }"
+

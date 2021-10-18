@@ -1,0 +1,57 @@
+
+:: %1 mshta vbscript:CreateObject("Shell.Application").ShellExecute("cmd.exe","/c %~s0 ::","","runas",1)(window.close)
+
+:: wmic.exe process list io
+:: wmic diskdrive get Name,SerialNumber,Size,Model
+:: wmic logicaldisk get size,freespace,caption
+
+
+:: 【CPU温度】
+@echo off
+for /f "skip=1 tokens=2 delims==" %%A in ('wmic /namespace:\\root\wmi PATH MSAcpi_ThermalZoneTemperature get CurrentTemperature /value') do set /a "HunDegCel=(%%~A*10)-27315"
+echo Temperature_0:%HunDegCel:~0,-2%.%HunDegCel:~-2%
+
+:: 【CPU利用率】
+rem @for /f "skip=1" %%p in ('wmic cpu get loadpercentage /VALUE') do (
+rem   for /F "tokens=2 delims==" %%J in ("%%p") do echo cpuUsage=%%J
+rem )
+
+
+::【CPU利用率，内存利用率】
+set "CpuUsage=0"
+set "Processors=0"
+%SystemRoot%\System32\wbem\wmic.exe CPU GET LoadPercentage >"%TEMP%\cpu_usage.tmp"
+for /F "skip=1" %%P in ('type "%TEMP%\cpu_usage.tmp"') do (
+    set /A CpuUsage+=%%P
+    set /A Processors+=1
+)
+del "%TEMP%\cpu_usage.tmp"
+
+set /A CpuUsage/=Processors
+goto GetTotalMemory
+
+:GetTotalMemory
+for /F "skip=1" %%M in ('%SystemRoot%\System32\wbem\wmic.exe ComputerSystem GET TotalPhysicalMemory') do set "TotalMemory=%%M" & goto GetAvailableMemory
+:GetAvailableMemory
+for /F "skip=1" %%M in ('%SystemRoot%\System32\wbem\wmic.exe OS GET FreePhysicalMemory') do set "AvailableMemory=%%M" & goto ProcessValues
+
+:ProcessValues
+set "TotalMemory=%TotalMemory:~0,-6%"
+set /A TotalMemory+=50
+set /A TotalMemory/=1073
+set /A TotalMemory*=1024
+set /A AvailableMemory/=1024
+set /A UsedMemory=TotalMemory - AvailableMemory
+set /A UsedPercent=(UsedMemory * 100) / TotalMemory
+
+if "%Processors%" == "1" (
+    set "ProcessorInfo="
+) else (
+    set "ProcessorInfo= of %Processors% processors"
+)
+echo CpuPercentage:%CpuUsage% %%%ProcessorInfo%
+echo MemFree%AvailableMemory% MB
+echo MemTotal:%TotalMemory% MB
+echo MemUsed:%UsedMemory% MB
+echo MemUsage:%UsedPercent% %%
+
