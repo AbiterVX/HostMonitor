@@ -289,6 +289,7 @@ public class DeeperInOSHI {
             else if(tokens[0].equals("Power")){
                 record.setCPUTemperature(40.0);
             }
+            //TODO 磁盘使用量计算方法修改 disk_util
             else if(tokens[0].contains("Disk_Iops")){
                 DiskInfo tempDiskInfo=new DiskInfo();
                 String diskName=tokens[0].split("_")[2];

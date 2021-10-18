@@ -112,6 +112,9 @@ public class DiskPredictDataSampler extends Thread {
                         cmdResult.remove(cmdResult.size() - 1);
                         for(String currentOutput: cmdResult){
                             String[] rawData = currentOutput.split(":\\s+");
+                            if(rawData.length<=1){
+                                continue;
+                            }
                             currentDiskData.put(rawData[0],rawData[1]);
                         }
                     }
@@ -129,6 +132,9 @@ public class DiskPredictDataSampler extends Thread {
                                 if(!currentOutput.equals("")){
                                     currentOutput = currentOutput.trim();
                                     String[] rawData = currentOutput.split("\\s+");
+                                    if(rawData.length<=1){
+                                        continue;
+                                    }
                                     JSONObject currentSmart = new JSONObject();
                                     currentSmart.put("ATTRIBUTE_NAME",rawData[1]);
                                     currentSmart.put("VALUE",rawData[3]);
