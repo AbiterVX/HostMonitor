@@ -206,17 +206,6 @@ public class DispersedDataServiceImpl implements DispersedDataService{
     public String getHostInfoDashboardAll() {
         JSONObject resultObject=new JSONObject();
         for(Map.Entry<String, JSONObject> entry: dispersedHostMonitor.hostInfoMap.entrySet()){
-//            JSONObject tempObject=new JSONObject();
-//            tempObject.put("hostName",entry.getValue().get("hostName"));
-//            tempObject.put("cpuUsage",entry.getValue().get("cpuUsage"));
-//            tempObject.put("diskCapacityTotalUsage",entry.getValue().get("diskCapacityTotalUsage"));
-//            tempObject.put("ip",entry.getValue().get("ip"));
-//            tempObject.put("netReceivedSpeed",entry.getValue().get("netReceivedSpeed"));
-//            tempObject.put("netSendSpeed",entry.getValue().get("netSendSpeed"));
-//            tempObject.put("osName",entry.getValue().get("osName"));
-//            tempObject.put("connected",entry.getValue().get("connected"));
-//            tempObject.put("cpuInfoList",entry.getValue().get("cpuInfoList"));
-//            tempObject.put("gpuInfoList",entry.getValue().get("gpuInfoList"));
             resultObject.put(entry.getKey(),entry.getValue());
             double iops=0,diskWriteSpeed=0,diskReadSpeed=0;
             JSONArray diskArray=entry.getValue().getJSONArray("diskInfoList");
@@ -232,50 +221,21 @@ public class DispersedDataServiceImpl implements DispersedDataService{
         return resultObject.toJSONString();
     }
 
-    /**
-     * 获取信息-HostDetail-HostInfo-某个Host
-     * 参数：Ip
-     * 格式：{"hostInfo":{},"cpuInfoList":[],"gpuInfoList":{},"processInfoList":{}}
-     */
     @Override
     public String getHostInfoDetail(String Ip) {
         String result=dispersedHostMonitor.hostInfoMap.get(Ip).toJSONString();
         return result;
     }
-//    private JSONObject selectMainProcess(double cpuThreshold,JSONObject jsonObject){
-//        JSONObject resultObject=new JSONObject();
-//        resultObject.putAll(jsonObject);
-//        Iterator iterator=resultObject.getJSONArray("processInfoList").iterator();
-//        while(iterator.hasNext()){
-//            JSONObject tempObject=(JSONObject) iterator.next();
-//            if(tempObject.getDouble("cpuUsage")<cpuThreshold){
-//                iterator.remove();
-//            }
-//            else{
-//                tempObject.put("cpuUsage",doubleTo2bits_double(tempObject.getDouble("cpuUsage")*100));
-//                tempObject.put("memUsage",doubleTo2bits_double(tempObject.getDouble("memoryUsage")*100));
-//            }
-//        }
-//        return resultObject;
-//    }
+
     private double doubleTo2bits_double(double original){
         BigDecimal b=new BigDecimal(original);
         return b.setScale(2,BigDecimal.ROUND_HALF_UP).doubleValue();
     }
 
-    /**
-     * 获取信息-Dashboard-DiskInfo-全部Host
-     * 格式：{"Ip1":[{},{}], }
-     */
     public String getDiskInfoAll() {
         return null;
     }
 
-    /**
-     * 获取信息-HostDetail-DiskInfo-某个Host
-     * 参数：Ip
-     * 格式：{}
-     */
     public String getDiskInfo(String Ip) {
         return null;
     }

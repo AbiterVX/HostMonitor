@@ -1,6 +1,5 @@
-package com.hust.hostmonitor_data_collector.utils.CentralizedMonitor;
+package com.hust.hostmonitor_data_collector.utils.SSHConnect;
 
-import com.hust.hostmonitor_data_collector.utils.CentralizedMonitor.SSHManager;
 import com.jcraft.jsch.*;
 
 import java.io.BufferedReader;
@@ -27,7 +26,7 @@ public class JschSSHManager implements SSHManager {
     }
 
     //获得Session
-    private Session getJSCHSession(HostConfigInfo hostConfigInfo){
+    private Session getJSCHSession(HostConfigData hostConfigInfo){
         boolean sessionExist = sessionMap.containsKey(hostConfigInfo.ip);
         Session currentSession = null;
         try {
@@ -36,17 +35,15 @@ public class JschSSHManager implements SSHManager {
             }
             else{
                 //创建session并且打开连接，因为创建session之后要主动打开连接
-                currentSession = mainJSCH.getSession(hostConfigInfo.username, hostConfigInfo.ip, 22);
+                currentSession = mainJSCH.getSession(hostConfigInfo.userName, hostConfigInfo.ip, 22);
                 currentSession.setPassword(hostConfigInfo.password);
                 java.util.Properties config = new java.util.Properties();
                 config.put("StrictHostKeyChecking", "no");
                 currentSession.setConfig(config);
 
-
-
                 //设置代理
-                if(hostConfigInfo.proxy){
-                    ProxyHTTP proxyHTTP = new ProxyHTTP(hostConfigInfo.proxyIp,hostConfigInfo.proxyPort);
+                if(hostConfigInfo.hasProxy()){
+                    ProxyHTTP proxyHTTP = new ProxyHTTP(hostConfigInfo.proxyConfigData.proxyIp,hostConfigInfo.proxyConfigData.proxyPort);
                     currentSession.setProxy(proxyHTTP);
                 }
 
@@ -63,7 +60,7 @@ public class JschSSHManager implements SSHManager {
 
     //执行JSCH指令
     @Override
-    public List<String> runCommand(String command, HostConfigInfo hostConfigInfo){
+    public List<String> runCommand(String command, HostConfigData hostConfigInfo){
         List<String> result = new ArrayList<String>();
         int returnCode = 0;
         Session session = getJSCHSession(hostConfigInfo);

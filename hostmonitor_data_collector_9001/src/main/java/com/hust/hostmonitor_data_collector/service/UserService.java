@@ -3,7 +3,7 @@ package com.hust.hostmonitor_data_collector.service;
 import com.alibaba.fastjson.JSONObject;
 import com.hust.hostmonitor_data_collector.dao.UserDao;
 import com.hust.hostmonitor_data_collector.dao.entity.SystemUser;
-import com.hust.hostmonitor_data_collector.utils.DispersedConfig;
+import com.hust.hostmonitor_data_collector.utils.ConfigDataManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
@@ -15,14 +15,14 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.List;
 
+//用户相关的服务类
 public class UserService {
     //User数据库操作
     @Autowired
     UserDao userDao;
 
     //配置类
-    private DispersedConfig dispersedConfig = DispersedConfig.getInstance();
-    private JSONObject systemSetting;
+    private ConfigDataManager configDataManager = ConfigDataManager.getInstance();
 
     //RestTemplate
     @Resource
@@ -42,12 +42,8 @@ public class UserService {
     private JavaMailSender mailSender;
 
     //Init
-    public UserService(){
-        systemSetting = dispersedConfig.getSystemSetting();
-    }
+    public UserService(){}
 
-
-    //----------对外接口
 
     //-----用户
     //注册
@@ -73,18 +69,14 @@ public class UserService {
                         int phoneValidState,int emailValidState, String userID){
         SystemUser operateUser = userDao.signIn(operateUserID,operateUserPassword);
         if(operateUser!=null){
-            //System.out.println("[updateUserInfo:]" + operateUser.isSuperAdmin());
-
             if(operateUserID.equals(userID)){
                 //无法修改自己用户类型
                 int originValidState = operateUser.isValidState()?1:0;
-                userDao.updateUserInfo(userName,operateUser.getUserType(),originValidState,userPhone,userEmail,
-                        phoneValidState,emailValidState,userID);
+                userDao.updateUserInfo(userName,operateUser.getUserType(),originValidState,userPhone,userEmail, phoneValidState,emailValidState,userID);
             }
             else{
                 if(operateUser.isSuperAdmin()){
-                    userDao.updateUserInfo(userName,userType,validState,userPhone,userEmail,
-                            phoneValidState,emailValidState,userID);
+                    userDao.updateUserInfo(userName,userType,validState,userPhone,userEmail, phoneValidState,emailValidState,userID);
                 }
             }
         }
@@ -108,25 +100,21 @@ public class UserService {
     //发送邮件
     public void sendEmail(String emailAddress){
         SimpleMailMessage message = new SimpleMailMessage();
-        message.setFrom(userName);//发送方
-        message.setTo(emailAddress);//接收方
-        message.setSubject("主题：简单邮件");//标题
-        message.setText("测试邮件内容");//内容
+        //发送方,接收方,标题,内容
+        message.setFrom(userName);
+        message.setTo(emailAddress);
+        message.setSubject("主题：简单邮件");
+        message.setText("测试邮件内容");
         mailSender.send(message);
     }
-
 
     //-----系统设置
     //获取系统设置
     public String getSystemSetting(){
-        return systemSetting.toJSONString();
+        return configDataManager.getSystemSetting().toJSONString();
     }
     //更新系统设置
-    public void setSystemSetting(JSONObject _systemSetting){
-        systemSetting = dispersedConfig.updateSystemSetting(_systemSetting);
+    public void setSystemSetting(JSONObject currentSystemSetting){
+        configDataManager.updateSystemSetting(currentSystemSetting);
     }
-
-
-
-
 }

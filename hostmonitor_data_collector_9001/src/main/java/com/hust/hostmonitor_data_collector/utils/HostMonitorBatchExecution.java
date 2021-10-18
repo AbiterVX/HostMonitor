@@ -1,9 +1,10 @@
-package com.hust.hostmonitor_data_collector.utils.CentralizedMonitor;
+package com.hust.hostmonitor_data_collector.utils;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.hust.hostmonitor_data_collector.utils.CentralizedConfig;
-import com.hust.hostmonitor_data_collector.utils.DataReceiver;
+import com.hust.hostmonitor_data_collector.utils.SSHConnect.HostConfigData;
+import com.hust.hostmonitor_data_collector.utils.SSHConnect.JschSSHManager;
+import com.hust.hostmonitor_data_collector.utils.SSHConnect.SSHManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,11 +13,16 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class HostMonitorBatchExecution {
+
+}
+
+/*
+public class HostMonitorBatchExecution {
     //---------- 配置信息
     //Config配置信息
-    private CentralizedConfig centralizedConfigInfo = CentralizedConfig.getInstance();
+    //private CentralizedConfig centralizedConfigInfo = CentralizedConfig.getInstance();
     //Host 配置信息
-    List<HostConfigInfo> hostConfigInfoList;
+    List<HostConfigData> hostConfigInfoList;
 
     //---------- 采样
     //ssh连接管理
@@ -192,11 +198,6 @@ public class HostMonitorBatchExecution {
 
                 HostProcessSampleData hostProcessSampleData = new HostProcessSampleData(uid,pid,readKbps,writeKbps,command);
                 processSampleDataList.add(hostProcessSampleData);
-                /*System.out.println("uid:"+uid);
-                System.out.println("pid:"+pid);
-                System.out.println("readKbps:"+readKbps);
-                System.out.println("writeKbps:"+writeKbps);
-                System.out.println("command:"+command);*/
             }
             hostProcessSampleDataList.set(index,processSampleDataList);
         }
@@ -242,7 +243,7 @@ public class HostMonitorBatchExecution {
     //获取Host IP
     public List<String> getHostIp(){
         List<String> arrayList=new ArrayList<>();
-        for(HostConfigInfo hostConfigInfo: hostConfigInfoList){
+        for(HostConfigData hostConfigInfo: hostConfigInfoList){
             arrayList.add(hostConfigInfo.ip);
         }
         return arrayList;
@@ -269,9 +270,7 @@ public class HostMonitorBatchExecution {
         }
         return arrayList;
     }
-
     //----------初始化----------
-
     //初始化Host环境-仅安装一次
     public void initEnvironment(){
         //对所有Host异步采样
@@ -287,8 +286,6 @@ public class HostMonitorBatchExecution {
         //采样返回结果
         List<String> commandResult = sshManager.runCommand(centralizedConfigInfo.getInitEnvironmentCommand(), hostConfigInfoList.get(index));
     }
-
-
     public static void main(String[] args) {
         HostMonitorBatchExecution hostMonitorBatchExecution = HostMonitorBatchExecution.getInstance();
 
@@ -298,4 +295,4 @@ public class HostMonitorBatchExecution {
         hostMonitorBatchExecution.sample();
         System.out.println(hostMonitorBatchExecution.getHostSampleInfo());
     }
-}
+}*/

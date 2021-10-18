@@ -1,4 +1,4 @@
-package com.hust.hostmonitor_data_collector.utils.CentralizedMonitor;
+package com.hust.hostmonitor_data_collector.utils.SSHConnect;
 
 import java.util.List;
 
@@ -8,5 +8,5 @@ import java.util.List;
  */
 public interface SSHManager {
     //执行指令
-    public List<String> runCommand(String command, HostConfigInfo hostConfigInfo);
+    public List<String> runCommand(String command, HostConfigData hostConfigInfo);
 }
