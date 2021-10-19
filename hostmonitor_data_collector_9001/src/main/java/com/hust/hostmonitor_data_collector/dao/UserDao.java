@@ -17,6 +17,7 @@ public interface UserDao {
             "select @new_id; ")
     String signUp(@Param("user_name") String user_name, @Param("user_password") String Password);
 
+
     @Select("select * " +
             "from UserTable " +
             "where UserID=#{user_id} and Password=#{user_password}; ")

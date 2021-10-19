@@ -149,13 +149,31 @@ public class ConfigDataManager {
                 String password = currentHost.getString("password");
                 int proxyId = currentHost.getInteger("proxyId");
                 ProxyConfigData proxyConfigData = null;
+                //@Todo
+                OSType osType = OSType.NONE;
+                {
+                    String osName = currentHost.getString("OSType");
+                    if(!osName.equals("")){
+                        try {
+                            osType = OSType.valueOf(osName.toUpperCase());
+                        }
+                        catch (IllegalArgumentException exception){
+                            System.out.println("Illegal OSType");
+                        }
+                    }
+                };
                 if(proxyMap.containsKey(proxyId)){
                     proxyConfigData = proxyMap.get(proxyId);
                 }
-                hostConfigDataList.add(new HostConfigData(ip,username,password,proxyConfigData));
+                hostConfigDataList.add(new HostConfigData(ip,username,password,proxyConfigData,osType));
             }
         }
         return hostConfigDataList;
+    }
+
+    //获取采样格式
+    public JSONObject getSampleFormat(String key){
+        return JSONObject.parseObject(configJson.getJSONObject("SampleFormat").getJSONObject(key).toJSONString());
     }
 
     public static void main(String[] args) {

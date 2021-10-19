@@ -35,9 +35,7 @@ public class DispersedConfig {
         }
         return dispersedConfig;
     }
-    private DispersedConfig(){
-    }
-
+    private DispersedConfig(){}
 
     //读文件
     public String readFile(String filePath){

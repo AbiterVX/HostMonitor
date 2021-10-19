@@ -1,6 +1,8 @@
 package com.hust.hostmonitor_data_collector.utils.SSHConnect;
 
 
+import com.hust.hostmonitor_data_collector.utils.OSType;
+
 public class HostConfigData {
     //IP
     public String ip;
@@ -10,19 +12,23 @@ public class HostConfigData {
     public String password;
     //代理
     public ProxyConfigData proxyConfigData;
+    //操作系统类型
+    public OSType osType;
 
     public HostConfigData(){
         ip = "";
         userName = "";
         password = "";
         proxyConfigData = null;
+        osType = OSType.NONE;
     }
 
-    public HostConfigData(String ip, String username, String password, ProxyConfigData proxyConfigData) {
+    public HostConfigData(String ip, String username, String password, ProxyConfigData proxyConfigData,OSType osType) {
         this.ip = ip;
         this.userName = username;
         this.password = password;
         this.proxyConfigData = proxyConfigData;
+        this.osType = osType;
     }
 
     public void setProxy(ProxyConfigData proxyConfig){
@@ -34,6 +40,6 @@ public class HostConfigData {
     }
     @Override
     public String toString(){
-        return "["+ ip +"," + userName+","+ password+","+ proxyConfigData +"]";
+        return "["+ ip +"," + userName+","+ password+","+ proxyConfigData +","+osType+"]";
     }
 }

@@ -2,6 +2,7 @@ package com.hust.hostmonitor_data_collector.config;
 
 import com.hust.hostmonitor_data_collector.service.DataCollectorService;
 import com.hust.hostmonitor_data_collector.service.CSModeDataCollectorService;
+import com.hust.hostmonitor_data_collector.service.HybridDataCollectorService;
 import com.hust.hostmonitor_data_collector.service.UserService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -17,7 +18,7 @@ public class ApplicationContextBean {
 
     @Bean
     public DataCollectorService getDispersedDataService(){
-        return new CSModeDataCollectorService();
+        return new HybridDataCollectorService();
     }
 
     @Bean
