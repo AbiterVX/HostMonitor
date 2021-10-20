@@ -19,7 +19,8 @@
       "netReceiveSpeed": 0,
       "netSendSpeed": 0,
       "cpuUsage": 0,
-      "diskCapacityTotalUsage": [0,0],
+      "allDiskTotalSize": 0,
+      "allDiskTotalFreeSize": 0,
       "lastUpdateTime": 0,
       "diskInfoList": [],
       "cpuInfoList": [],
@@ -32,9 +33,19 @@
       "diskIOPS": 0,
       "diskReadSpeed": 0,
       "diskWriteSpeed": 0,
-      "diskCapacitySize": [0,0],
+      "diskTotalSize": 0,
+      "diskTotalFreeSize": 0,
       "diskModel":"",
-      "type": 0
+      "type": 0,
+      "diskPartitionList": []
+    },
+    "diskPartition": {
+      "driveLetter": "",
+      "size": 0,
+      "freeSize": 0,
+      "IOPS": 0,
+      "readSpeed": 0,
+      "writeSpeed": 0
     },
     "cpuInfo": {
       "cpuName": "",

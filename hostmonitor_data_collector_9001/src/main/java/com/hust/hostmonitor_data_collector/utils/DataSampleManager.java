@@ -5,12 +5,25 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.csvreader.CsvWriter;
 import com.hust.hostmonitor_data_collector.utils.SSHConnect.HostConfigData;
+
 import com.hust.hostmonitor_data_collector.utils.linuxsample.Entity.DiskInfo;
 import com.hust.hostmonitor_data_collector.utils.linuxsample.Entity.LinuxProcess;
 import com.hust.hostmonitor_data_collector.utils.linuxsample.Entity.LinuxPeriodRecord;
 import com.hust.hostmonitor_data_collector.utils.linuxsample.Entity.Pair;
 import com.hust.hostmonitor_data_collector.utils.linuxsample.LinuxDataProcess;
 import com.hust.hostmonitor_data_collector.utils.linuxsample.LinuxGPU;
+
+import com.hust.hostmonitor_data_collector.utils.SSHConnect.JschSSHManager;
+import com.hust.hostmonitor_data_collector.utils.SSHConnect.SSHManager;
+
+import java.sql.Timestamp;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 
 import java.nio.charset.Charset;
 import java.sql.Timestamp;
@@ -45,7 +58,7 @@ public class DataSampleManager {
         hostList = configDataManager.getSSHConfigHostList();
         localOSType = OSType.NONE;
     }
-
+    //获取OS类型
     private OSType getOSType(HostConfigData hostConfigData){
         if(hostConfigData!=null){
             return hostConfigData.osType;
@@ -55,10 +68,12 @@ public class DataSampleManager {
         }
     }
 
+    //设置本地OS类型
     public void setLocalOSType( OSType localOSType){
         this.localOSType = localOSType;
     }
 
+    //硬件信息采样
     public JSONObject sampleHostHardwareData(HostConfigData hostConfigData){
         JSONObject sampleData = configDataManager.getSampleFormat("hostInfo");
         OSType osType = getOSType(hostConfigData);
@@ -195,7 +210,8 @@ public class DataSampleManager {
         else if(osType.equals(OSType.WINDOWS)){
             //hostName
             {
-
+                List<String> cmdResult = cmdExecutor.runCommand("hostname",hostConfigData);
+                sampleData.put("hostName",cmdResult.get(0));
             }
             //osName
             {
@@ -206,24 +222,92 @@ public class DataSampleManager {
             }
             //diskInfo
             {
-                //diskName
-                //diskCapacitySize
-                //diskModel
-
-                /*List<String> cmdResult = cmdExecutor.runCommand("wmic diskdrive get Name,SerialNumber,Size,Model",hostConfigData);
-                cmdResult.remove(0);
-                for (String rowData:cmdResult){
-                    if(!rowData.equals("")){
-                        String[] diskData = rowData.split("\\s+");
-                        JSONObject newDiskInfo = configDataManager.getSampleFormat("diskInfo");
-                        {
-                            newDiskInfo.put("diskName",diskData[2]);
-                            newDiskInfo.put("diskModel",diskData[0]);
-                            newDiskInfo.put("diskCapacitySize",diskData[2]);
+                Map<String,JSONObject> diskInfoMap = new HashMap<>();
+                Map<String,String> logicalDiskMap = new HashMap<>();
+                //物理盘信息：序列号，Model，获取逻辑分区与物理盘的映射
+                {
+                    List<String> cmdResult = cmdExecutor.runCommand("powershell -command \"Get-Partition | % {New-Object PSObject -Property @{'PartitionNumber'=$_.PartitionNumber; 'DiskNumber'=$_.DiskNumber; 'SerialNumber'=(Get-Disk $_.DiskNumber).SerialNumber; 'DiskModel'=(Get-Disk $_.DiskNumber).Model;'PartitionSize'=$_.Size; 'DriveLetter'=$_.DriveLetter;}}\"",hostConfigData);
+                    JSONArray diskInfoList = sampleData.getJSONArray("diskInfoList");
+                    String serialNumber = "";
+                    long partitionSize =0;
+                    int partitionNumber =0;
+                    String diskModel = "";
+                    String driveLetter ="";
+                    for(String rowData:cmdResult){
+                        if(!rowData.equals("")){
+                            String[] diskData = rowData.split(":");
+                            String columnName = diskData[0].trim();
+                            String columnValue = diskData[1].trim();
+                            if(columnName.equals("SerialNumber")){
+                                serialNumber =columnValue;
+                            }
+                            else if(columnName.equals("PartitionSize")){
+                                partitionSize =Long.parseLong(columnValue);
+                            }
+                            else if(columnName.equals("PartitionNumber")){
+                                partitionNumber =Integer.parseInt(columnValue);
+                            }
+                            else if(columnName.equals("DiskModel")){
+                                diskModel =columnValue;
+                            }
+                            else if(columnName.equals("DriveLetter")){
+                                driveLetter =columnValue;
+                                if(!diskInfoMap.containsKey(serialNumber)){
+                                    JSONObject diskInfo = configDataManager.getSampleFormat("diskInfo");
+                                    diskInfo.put("diskName",serialNumber);
+                                    diskInfo.put("diskModel",diskModel);
+                                    diskInfoMap.put(serialNumber,diskInfo);
+                                }
+                                //存放逻辑盘-物理盘的映射
+                                if(!driveLetter.equals("")){
+                                    logicalDiskMap.put(driveLetter+":",serialNumber);
+                                }
+                            }
                         }
-                        sampleData.getJSONArray("diskInfoList").add(newDiskInfo);
+
                     }
-                }*/
+                }
+                //分区信息：大小，空闲大小
+                long allDiskTotalSize=0;
+                long allDiskTotalFreeSize =0;
+                {
+                    List<String> cmdResult = cmdExecutor.runCommand("wmic logicaldisk get size,freespace,caption",hostConfigData);
+                    cmdResult.remove(0);
+                    for(String rowData:cmdResult){
+                        if(!rowData.equals("")){
+                            String[] logicalDiskData = rowData.split("\\s+");
+                            String caption = logicalDiskData[0];
+                            long freeSpace = Long.parseLong(logicalDiskData[1]);
+                            long size = Long.parseLong(logicalDiskData[2]);
+                            //分区信息
+                            JSONObject diskPartition = configDataManager.getSampleFormat("diskPartition");
+                            diskPartition.put("driveLetter",caption);
+                            diskPartition.put("size",size);
+                            diskPartition.put("freeSize",freeSpace);
+
+                            JSONObject diskInfo = diskInfoMap.get(logicalDiskMap.get(caption));
+                            JSONArray diskPartitionList = diskInfo.getJSONArray("diskPartitionList");
+                            diskPartitionList.add(diskPartition);
+                            //计算当前disk的总容量，总空闲容量
+                            long diskTotalSize = diskInfo.getLong("diskTotalSize");
+                            long diskTotalFreeSize = diskInfo.getLong("diskTotalFreeSize");
+                            diskTotalSize += size;
+                            diskTotalFreeSize += freeSpace;
+                            diskInfo.put("diskTotalSize",diskTotalSize);
+                            diskInfo.put("diskTotalFreeSize",diskTotalFreeSize);
+
+                            allDiskTotalSize += size;
+                            allDiskTotalFreeSize +=freeSpace;
+                        }
+                    }
+                }
+                //放置
+                Set<String> serialNumberList = diskInfoMap.keySet();
+                for(String currentSerialNumber: serialNumberList){
+                    sampleData.getJSONArray("diskInfoList").add(diskInfoMap.get(currentSerialNumber));
+                }
+                sampleData.put("allDiskTotalSize",allDiskTotalSize);
+                sampleData.put("allDiskTotalFreeSize",allDiskTotalFreeSize);
             }
             //cpuInfoList
             {
@@ -256,10 +340,18 @@ public class DataSampleManager {
                 }
             }
         }
+
+
+        if(hostConfigData!=null){
+            sampleData.put("ip",hostConfigData.ip);
+        }
+        sampleData.put("lastUpdateTime",new Timestamp(System.currentTimeMillis()));
+        sampleData.put("connected",true);
+        sampleData.put("hasPersistent",false);
         return sampleData;
     }
-    private long lastCPUUsed=0;
-    private long lastCPUTotal=0;
+
+    //节点性能采样
     public void sampleHostData(HostConfigData hostConfigData,JSONObject sampleData){
         OSType osType = getOSType(hostConfigData);
         if(osType.equals(OSType.LINUX)){
@@ -420,20 +512,37 @@ public class DataSampleManager {
         else if(osType.equals(OSType.WINDOWS)){
             //CPU
             {
-                //Cpu Usage
-                List<String> cmdResult = cmdExecutor.runCommand("wmic cpu get loadpercentage",hostConfigData);
-                cmdResult.remove(0);
-                int currentIndex = 0;
-                for(String rowData:cmdResult){
-                    if(!rowData.equals("")){
-                        JSONObject cpuInfo = sampleData.getJSONArray("cpuInfoList").getJSONObject(currentIndex);
-                        cpuInfo.put("cpuUsage",Float.valueOf(cmdResult.get(1)));
-                        currentIndex +=1;
+                {
+                    //Cpu Usage
+                    List<String> cmdResult = cmdExecutor.runCommand("wmic cpu get loadpercentage", hostConfigData);
+                    cmdResult.remove(0);
+                    int currentIndex = 0;
+                    float averageCpuUsage = 0;
+                    for (String rowData : cmdResult) {
+                        if (!rowData.equals("")) {
+                            JSONObject cpuInfo = sampleData.getJSONArray("cpuInfoList").getJSONObject(currentIndex);
+                            float currentCpuUsage = Float.parseFloat(rowData.trim());
+                            cpuInfo.put("cpuUsage", currentCpuUsage);
+                            currentIndex += 1;
+                            averageCpuUsage +=currentCpuUsage;
+                        }
                     }
+                    sampleData.put("cpuUsage",averageCpuUsage/currentIndex);
                 }
                 //Cpu Temperature
                 {
-
+                    List<String> cmdResult = cmdExecutor.runCommand("wmic /namespace:\\\\root\\wmi PATH MSAcpi_ThermalZoneTemperature get CriticalTripPoint, CurrentTemperature",hostConfigData);
+                    cmdResult.remove(0);
+                    int currentIndex = 0;
+                    float averageCpuTemperature = 0;
+                    for(String rowData:cmdResult){
+                        if(!rowData.equals("")){
+                            JSONObject cpuInfo = sampleData.getJSONArray("cpuInfoList").getJSONObject(currentIndex);
+                            float currentCpuTemperature = Float.parseFloat(rowData.trim());
+                            cpuInfo.put("cpuTemperature", currentCpuTemperature);
+                            currentIndex += 1;
+                        }
+                    }
                 }
             }
             //Net IO
@@ -475,46 +584,114 @@ public class DataSampleManager {
                 sampleData.put("netSendSpeed",sendSpeed);
                 sampleData.put("netReceiveSpeed",receiveSpeed);
             }
-
             //Disk
             {
-                List<String> cmdResult = cmdExecutor.runCommand("powershell -command \"Get-WmiObject -query { SELECT * FROM Win32_PerfFormattedData_PerfDisk_LogicalDisk}\"",hostConfigData);
-                for(int i=0;i<2;i++){
-                    cmdResult.remove(0);
-                }
-
-                for(String rowData:cmdResult){
-                    if(rowData.equals("")){
-
+                //分区的IO详情
+                Map<String,JSONObject> partitionInfoMap = new HashMap<>();
+                {
+                    List<String> cmdResult = cmdExecutor.runCommand("powershell -command \"Get-WmiObject -query { SELECT * FROM Win32_PerfFormattedData_PerfDisk_LogicalDisk}\"",hostConfigData);
+                    for(int i=0;i<2;i++){
+                        cmdResult.remove(0);
                     }
-                    else{
+
+                    String partitionName = "";
+                    float diskReadBytesPersec = 0;
+                    float diskWriteBytesPersec = 0;
+                    float percentIdleTime = 0;
+                    float diskTransfersPersec = 0;
+                    for(String rowData:cmdResult){
                         if(rowData.startsWith("Name")){
-                            //IOPS
+                            String[] diskData = rowData.split(":");
+                            partitionName = diskData[1].trim();
                         }
                         else if(rowData.startsWith("DiskReadBytesPersec")){
                             //读速度
-
+                            String[] diskData = rowData.split(":");
+                            diskReadBytesPersec = Float.parseFloat(diskData[1].trim());
                         }
                         else if(rowData.startsWith("DiskWriteBytesPersec")){
                             //写速度
+                            String[] diskData = rowData.split(":");
+                            diskWriteBytesPersec = Float.parseFloat(diskData[1].trim());
                         }
                         else if(rowData.startsWith("PercentIdleTime")){
                             //空闲率
+                            String[] diskData = rowData.split(":");
+                            percentIdleTime = Float.parseFloat(diskData[1].trim());
                         }
                         else if(rowData.startsWith("DiskTransfersPersec")){
                             //IOPS
+                            String[] diskData = rowData.split(":");
+                            diskTransfersPersec = Float.parseFloat(diskData[1].trim());
                         }
-
+                        else if(rowData.startsWith("PSComputerName")){
+                            //结束
+                            JSONObject newPartitionInfo = new JSONObject();
+                            newPartitionInfo.put("readSpeed",diskReadBytesPersec);
+                            newPartitionInfo.put("writeSpeed",diskWriteBytesPersec);
+                            newPartitionInfo.put("percentIdleTime",percentIdleTime);
+                            newPartitionInfo.put("IOPS",diskTransfersPersec);
+                            partitionInfoMap.put(partitionName,newPartitionInfo);
+                        }
                     }
                 }
+                //设置Disk IO
+                JSONArray diskInfoList = sampleData.getJSONArray("diskInfoList");
+                for(int i=0;i<diskInfoList.size();i++){
+                    JSONObject diskInfo = diskInfoList.getJSONObject(i);
+                    JSONArray diskPartitionList = diskInfo.getJSONArray("diskPartitionList");
+                    //set每个分区
+                    float diskIOPS = 0;
+                    float diskReadSpeed = 0;
+                    float diskWriteSpeed = 0;
+                    for(int j=0;j<diskPartitionList.size();j++){
+                        JSONObject diskPartition = diskPartitionList.getJSONObject(j);
+                        String driveLetter = diskPartition.getString("driveLetter");
+                        if(partitionInfoMap.containsKey(driveLetter)){
+                            JSONObject partitionInfo = partitionInfoMap.get(driveLetter);
+                            float IOPS = partitionInfo.getFloat("IOPS");
+                            float readSpeed = partitionInfo.getFloat("readSpeed");
+                            float writeSpeed = partitionInfo.getFloat("writeSpeed");
+                            diskPartition.put("IOPS",IOPS);
+                            diskPartition.put("readSpeed",readSpeed);
+                            diskPartition.put("writeSpeed",writeSpeed);
+                            diskIOPS += IOPS;
+                            diskReadSpeed += readSpeed;
+                            diskWriteSpeed += writeSpeed;
+                        }
+                    }
+                    //统计每个硬盘
+                    diskInfo.put("diskIOPS",diskIOPS);
+                    diskInfo.put("diskReadSpeed",diskReadSpeed);
+                    diskInfo.put("diskWriteSpeed",diskWriteSpeed);
+                }
             }
-            //
+            //Memory
             {
-
+                long totalMemory = 0;
+                long freeMemory = 0;
+                List<String> cmdResult = cmdExecutor.runCommand("wmic OS GET FreePhysicalMemory /value && wmic ComputerSystem GET TotalPhysicalMemory  /value",hostConfigData);
+                for(String rowData:cmdResult){
+                    if(!rowData.equals("")){
+                        String[] memoryData = rowData.split("=");
+                        String key = memoryData[0];
+                        long value = Long.parseLong(memoryData[1]);
+                        if(key.equals("FreePhysicalMemory")){
+                            freeMemory = value;
+                        }
+                        else if(key.equals("TotalPhysicalMemory")){
+                            totalMemory = value;
+                        }
+                    }
+                }
+                JSONArray memoryUsage = sampleData.getJSONArray("memoryUsage");
+                memoryUsage.set(0,totalMemory-freeMemory);
+                memoryUsage.set(0,totalMemory);
             }
-
-
         }
+        sampleData.put("lastUpdateTime",new Timestamp(System.currentTimeMillis()));
+        sampleData.put("connected",true);
+        sampleData.put("hasPersistent",false);
     }
     private int findDiskIndex(String diskName,JSONObject dataObject){
         for(int i=0;i<dataObject.getJSONArray("diskInfoList").size();i++){
@@ -525,6 +702,7 @@ public class DataSampleManager {
         return 0;
     }
 
+    //节点进程采样
     public void sampleHostProcess(HostConfigData hostConfigData,JSONObject sampleData){
         OSType osType = getOSType(hostConfigData);
         if(osType.equals(OSType.LINUX)){
@@ -569,12 +747,65 @@ public class DataSampleManager {
 
         }
         else if(osType.equals(OSType.WINDOWS)){
+            JSONArray processInfoList = new JSONArray();
+            List<String> cmdResult = cmdExecutor.runCommand("powershell -command \"Get-WmiObject -query { SELECT CreatingProcessID,Name,ElapsedTime,workingset,percentProcessorTime,ioReadBytesPersec,ioWriteBytesPersec  FROM Win32_PerfFormattedData_PerfProc_Process  }\"",hostConfigData);
+            int creatingProcessID = 0;
+            String name = "";
+            long elapsedTime = 0;
+            long workingset = 0;
+            float percentProcessorTime = 0;
+            float ioReadBytesPersec = 0;
+            float ioWriteBytesPersec = 0;
 
-            List<String> cmdResult = cmdExecutor.runCommand("powershell -command \"Get-WmiObject -query { SELECT CreatingProcessID,Name,ElapsedTime,workingset,percentProcessorTime,ioReadBytesPersec,ioWriteBytesPersec  FROM Win32_PerfFormattedData_PerfProc_Process  }\""
-                    ,hostConfigData);
-
-
+            for(String rowData:cmdResult){
+                if(!rowData.equals("")){
+                    String[] processData = rowData.split(":");
+                    String value = processData[1].trim();
+                    if(rowData.startsWith("CreatingProcessID")){
+                        //进程ID
+                        creatingProcessID = Integer.parseInt(value);
+                    }
+                    else if(rowData.startsWith("ElapsedTime")){
+                        //时间
+                        elapsedTime = Long.parseLong(value);
+                    }
+                    else if(rowData.startsWith("IOReadBytesPersec")){
+                        //IO读速度
+                        ioReadBytesPersec = Float.parseFloat(value);
+                    }
+                    else if(rowData.startsWith("IOWriteBytesPersec")){
+                        //IO写速度
+                        ioWriteBytesPersec = Float.parseFloat(value);
+                    }
+                    else if(rowData.startsWith("Name")){
+                        //进程名称
+                        name = value;
+                    }
+                    else if(rowData.startsWith("PercentProcessorTime")){
+                        //CPU利用率
+                        percentProcessorTime = Float.parseFloat(value);
+                    }
+                    else if(rowData.startsWith("WorkingSet")){
+                        //内存
+                        workingset = Long.parseLong(value);
+                    }
+                    else if(rowData.startsWith("PSComputerName")){
+                        //保存
+                        JSONObject processInfo = configDataManager.getSampleFormat("processInfo");
+                        processInfo.put("processId",creatingProcessID);
+                        processInfo.put("processName",name);
+                        processInfo.put("startTime",elapsedTime);
+                        processInfo.put("cpuUsage",percentProcessorTime);
+                        processInfo.put("memoryUsage",workingset);
+                        processInfo.put("diskReadSpeed",ioReadBytesPersec);
+                        processInfo.put("diskWriteSpeed",ioWriteBytesPersec);
+                        processInfoList.add(processInfo);
+                    }
+                }
+            }
+            sampleData.put("processInfoList",processInfoList);
         }
+        sampleData.put("connected",true);
     }
     public void sampleHostSmart(HostConfigData hostConfigData){
         OSType osType = getOSType(hostConfigData);
@@ -732,41 +963,29 @@ public class DataSampleManager {
 
     }
 
+    //IO测试
     public JSONObject ioTest(HostConfigData hostConfigData){
+        JSONObject ioTestData = new JSONObject();
         OSType osType = getOSType(hostConfigData);
-        String speedTestCmd="winsat disk";
-        String readSpeed=null;
-        String writeSpeed=null;
-        if(osType.equals(OSType.WINDOWS)){
-            speedTestCmd = "winsat disk";
-        }
-        else if(osType.equals(OSType.LINUX)){
-            //TODO
+        if(osType.equals(OSType.LINUX)){
             String cmdFilePath=System.getProperty("user.dir")+"/SpeedTest.sh";
-            speedTestCmd = cmdFilePath;
+            List<String> cmdResult = cmdExecutor.runCommand(cmdFilePath,hostConfigData);
+            ioTestData.put("writeSpeed",cmdResult.get(0));
+            ioTestData.put("readSpeed",cmdResult.get(1));
         }
-        List<String> cmdResult = cmdExecutor.runCommand(speedTestCmd,hostConfigData);
-        if(cmdResult!=null){
-            if(osType.equals(OSType.WINDOWS)){
-                for(String currentOutput: cmdResult){
-                    String[] rawData = currentOutput.split("\\s+");
-                    if(currentOutput.contains("Disk  Sequential 64.0 Read")){
-                        readSpeed = rawData[5] +" "+ rawData[6];
-                    }
-                    else if(currentOutput.contains("Disk  Sequential 64.0 Write")){
-                        writeSpeed = rawData[5] +" "+ rawData[6];
-                    }
+        else if(osType.equals(OSType.WINDOWS)){
+            List<String> cmdResult = cmdExecutor.runCommand("winsat disk",hostConfigData);
+            for(String currentOutput: cmdResult){
+                String[] rawData = currentOutput.split("\\s+");
+                if(currentOutput.contains("Disk  Sequential 64.0 Read")){
+                    ioTestData.put("readSpeed",rawData[5] +" "+ rawData[6]);
+                }
+                else if(currentOutput.contains("Disk  Sequential 64.0 Write")){
+                    ioTestData.put("writeSpeed",rawData[5] +" "+ rawData[6]);
                 }
             }
-            else{
-                writeSpeed = cmdResult.get(0);
-                readSpeed = cmdResult.get(1);
-            }
-            JSONObject result=new JSONObject();
-            result.put("writeSpeed",writeSpeed);
-            result.put("readSpeed",readSpeed);
         }
-        return null;
+        return ioTestData;
     }
 
     public static void main(String[] args) {
@@ -775,6 +994,11 @@ public class DataSampleManager {
         JSONObject sampleData = dataSampleManager.sampleHostHardwareData(null);
         //System.out.println(sampleData);
         dataSampleManager.sampleHostData(null,sampleData);
+        //dataSampleManager.sampleHostProcess(null,sampleData);
         System.out.println(sampleData);
+
+
+        JSONObject ioTestData = dataSampleManager.ioTest(null);
+        System.out.println(ioTestData);
     }
 }
