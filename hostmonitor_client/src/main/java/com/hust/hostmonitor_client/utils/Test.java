@@ -15,6 +15,7 @@ package com.hust.hostmonitor_client.utils;
 //import java.util.List;
 //
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.vnetpublishing.java.suapp.SU;
 import com.vnetpublishing.java.suapp.SuperUserApplication;
@@ -46,9 +47,10 @@ public class Test  {
     }
 
     public static void main(String[] args) {
-        JSONObject tempObject=new JSONObject();
-        tempObject.put("hhh",new int[]{1,2,3});
-        System.out.println(tempObject);
-        System.out.println(tempObject.getJSONArray("hhh"));
+        JSONObject object=new JSONObject();
+        object.put("a","bbb");
+        System.out.println(object);
+        object.put("a","ccc");
+        System.out.println(object);
     }
 }

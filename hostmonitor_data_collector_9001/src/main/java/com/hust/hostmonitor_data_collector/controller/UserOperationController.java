@@ -221,6 +221,11 @@ public class UserOperationController {
         return "Complete";
     }
 
+    @GetMapping(value = "/test")
+    @ResponseBody
+    public String test(){
+        return userService.signUp("zhangziyuetest","hust");
+    }
 
 
 

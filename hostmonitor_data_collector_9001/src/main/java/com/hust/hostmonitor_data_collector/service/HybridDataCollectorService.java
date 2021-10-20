@@ -2,11 +2,16 @@ package com.hust.hostmonitor_data_collector.service;
 
 
 import com.alibaba.fastjson.JSONObject;
+import com.hust.hostmonitor_data_collector.dao.UserDao;
+import org.springframework.beans.factory.annotation.Autowired;
 
+import java.sql.Timestamp;
 import java.util.List;
 
 public class HybridDataCollectorService implements DataCollectorService{
 
+    @Autowired
+    UserDao userDao;
 
     @Override
     public String getDashboardSummary() {
@@ -76,5 +81,10 @@ public class HybridDataCollectorService implements DataCollectorService{
     @Override
     public String getDFPSummary() {
         return null;
+    }
+
+
+    public String providerTest(String userName, String password, Timestamp timestamp){
+        return userDao.signUp(userName,password,timestamp);
     }
 }

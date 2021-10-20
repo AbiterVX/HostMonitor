@@ -13,6 +13,8 @@ import org.springframework.web.client.RestTemplate;
 import javax.annotation.Resource;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.sql.Timestamp;
+import java.util.Date;
 import java.util.List;
 
 //用户相关的服务类
@@ -50,7 +52,8 @@ public class UserService {
     public String signUp(String userName,String password){
         //System.out.println(userName);
         //System.out.println(password);
-        return userDao.signUp(userName,password);
+        Timestamp timestamp=new Timestamp(new Date().getTime());
+        return userDao.signUp(userName,password,timestamp);
     }
     //登录
     public SystemUser signIn(String userID,String password){
