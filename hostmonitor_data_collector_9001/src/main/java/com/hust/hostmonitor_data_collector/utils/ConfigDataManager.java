@@ -175,12 +175,38 @@ public class ConfigDataManager {
     public JSONObject getSampleFormat(String key){
         return JSONObject.parseObject(configJson.getJSONObject("SampleFormat").getJSONObject(key).toJSONString());
     }
-
+    //获取总结页面格式
+    public JSONObject getSummaryFormat(){
+        return JSONObject.parseObject(configJson.getJSONObject("summary").toJSONString());
+    }
+    private JSONObject getConfigJsonObject(String key){
+        return JSONObject.parseObject(configJson.getJSONObject(key).toJSONString());
+    }
     public static void main(String[] args) {
         ConfigDataManager configDataManager = ConfigDataManager.getInstance();
         List<HostConfigData> hostConfigDataList = configDataManager.getSSHConfigHostList();
         for (HostConfigData hostConfigData:hostConfigDataList){
             System.out.println(hostConfigData.toString());
         }
+    }
+
+    public float[][] getLoadPartitionFormat() {
+        float[][] loadCount = new float[][]{{0,0,0},{0,0,0},{0,0,0}};
+        List<List<Float>> partition = new ArrayList<>();
+        List<JSONArray> loadPartition = new ArrayList<>();
+
+        JSONObject loadPartitionJson = getConfigJsonObject("loadPartition");
+        loadPartition.add(loadPartitionJson.getJSONArray("cpuLoad"));
+        loadPartition.add(loadPartitionJson.getJSONArray("memoryLoad"));
+        loadPartition.add(loadPartitionJson.getJSONArray("diskLoad"));
+
+        for(int i=0;i<loadPartition.size();i++){
+            JSONArray currentLoadPartition = loadPartition.get(i);
+            for(int j=0;j<currentLoadPartition.size();j++){
+                loadCount[i][j] = currentLoadPartition.getFloat(j);
+            }
+        }
+
+        return loadCount;
     }
 }

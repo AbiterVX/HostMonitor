@@ -8,6 +8,21 @@
     "memoryLoad": [30.0,70.0,100.0],
     "diskLoad": [30.0,70.0,100.0]
   },
+  "summary": {
+    "hostIp":[],
+    "connectedCount": 0,
+    "sumCapacity": 0,
+    "windowsHostCount": 0,
+    "linuxHostCount": 0,
+    "hddCount": 0,
+    "ssdCount": 0,
+    "lastUpdateTime": 0,
+    "load": [
+      [0,0,0],
+      [0,0,0],
+      [0,0,0]
+    ]
+  },
   "SampleFormat": {
     "hostInfo": {
       "hostName": "",

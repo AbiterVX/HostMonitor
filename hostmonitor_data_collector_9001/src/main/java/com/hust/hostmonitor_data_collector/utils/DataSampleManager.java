@@ -12,6 +12,7 @@ import com.hust.hostmonitor_data_collector.utils.linuxsample.Entity.LinuxPeriodR
 import com.hust.hostmonitor_data_collector.utils.linuxsample.Entity.Pair;
 import com.hust.hostmonitor_data_collector.utils.linuxsample.LinuxDataProcess;
 import com.hust.hostmonitor_data_collector.utils.linuxsample.LinuxGPU;
+import org.python.modules._hashlib;
 
 import com.hust.hostmonitor_data_collector.utils.SSHConnect.JschSSHManager;
 import com.hust.hostmonitor_data_collector.utils.SSHConnect.SSHManager;
@@ -38,6 +39,11 @@ public class DataSampleManager {
     private OSType localOSType;
     //Host 配置信息
     List<HostConfigData> hostList;
+    //Host采样数据
+    public HashMap<String,JSONObject> hostSampleData=new HashMap<>();
+    //整体JSON信息
+    public JSONObject summaryInfo;
+    public float[][] loadPartition;
 
     //单例
     private volatile static DataSampleManager dataSampleManager;
@@ -57,6 +63,8 @@ public class DataSampleManager {
         //使用SSH监控的节点列表
         hostList = configDataManager.getSSHConfigHostList();
         localOSType = OSType.NONE;
+        summaryInfo=configDataManager.getSummaryFormat();
+        loadPartition=configDataManager.getLoadPartitionFormat();
     }
     //获取OS类型
     private OSType getOSType(HostConfigData hostConfigData){
@@ -986,6 +994,122 @@ public class DataSampleManager {
             }
         }
         return ioTestData;
+    }
+    public void hostsHardwareDataInit(){
+        for(HostConfigData hostConfigData:hostList){
+            JSONObject initObject=sampleHostHardwareData(hostConfigData);
+            hostSampleData.put(hostConfigData.ip,initObject);
+        }
+    }
+    public void hostsDataSample(){
+        for(HostConfigData hostConfigData:hostList){
+            if(hostSampleData.containsKey(hostConfigData.ip)){
+                sampleHostData(hostConfigData,hostSampleData.get(hostConfigData.ip));
+            }
+            else{
+                JSONObject initObject=sampleHostHardwareData(hostConfigData);
+                hostSampleData.put(hostConfigData.ip,initObject);
+                sampleHostData(hostConfigData,initObject);
+            }
+            System.out.println("[DSManager]"+hostConfigData.ip+" Sample Finish");
+        }
+    }
+    public void hostsProcessSample(){
+        for(HostConfigData hostConfigData:hostList){
+            if(hostSampleData.containsKey(hostConfigData.ip)){
+                sampleHostProcess(hostConfigData,hostSampleData.get(hostConfigData.ip));
+            }
+            else{
+                JSONObject initObject=sampleHostHardwareData(hostConfigData);
+                hostSampleData.put(hostConfigData.ip,initObject);
+                sampleHostProcess(hostConfigData,initObject);
+            }
+        }
+    }
+    public void UpdateSummaryInfo(){
+        double totalSumCapacity=0;
+        int windowsCount=0,linuxCount=0,HDDCount=0,SSDCount=0,connectedCount=0;
+        float[][] loadCount = new float[][]{{0,0,0},{0,0,0},{0,0,0}};
+        JSONArray hostIp=new JSONArray();
+        for(Map.Entry<String,JSONObject> hostInfo: hostSampleData.entrySet()){
+            JSONObject hostInfoJson = hostInfo.getValue();
+            hostIp.add(hostInfo.getKey());
+            totalSumCapacity+=hostInfoJson.getJSONArray("diskCapacityTotalUsage").getDouble(1);
+            if(hostInfoJson.getString("osName").toLowerCase().contains(("windows").toLowerCase())){
+                windowsCount++;
+            }
+            else{
+                linuxCount++;
+            }
+            if(hostInfoJson.getBoolean("connected")){
+                connectedCount++;
+            }
+            //HDD SSD统计
+            for(int i=0;i<hostInfoJson.getJSONArray("diskInfoList").size();i++){
+                if(hostInfoJson.getJSONArray("diskInfoList").getJSONObject(i).getIntValue("type")==1){
+                    SSDCount++;
+                }
+                else{
+                    HDDCount++;
+                }
+            }
+
+
+            //-----负载统计
+            //cpu负载统计
+            JSONArray cpuInfoList = hostInfoJson.getJSONArray("cpuInfoList");
+            for(int i=0;i<cpuInfoList.size();i++){
+                float cpuUsage = cpuInfoList.getJSONObject(i).getFloat("cpuUsage");
+                for(int j=0;j<loadPartition[0].length;j++){
+                    if(cpuUsage <= loadPartition[0][j]){
+                        loadCount[0][j] += 1;
+                        break;
+                    }
+                }
+            }
+            //内存负载统计
+            JSONArray memoryUsageJson =  hostInfoJson.getJSONArray("memoryUsage");
+            float memoryUsage = (memoryUsageJson.getFloat(0) / memoryUsageJson.getFloat(1))*100;
+            for(int j=0;j<loadPartition[1].length;j++){
+                if(memoryUsage <= loadPartition[1][j]){
+                    loadCount[1][j] += 1;
+                    break;
+                }
+            }
+            //硬盘负载统计
+            JSONArray diskInfoList = hostInfoJson.getJSONArray("diskInfoList");
+            for(int i=0;i<diskInfoList.size();i++){
+                JSONArray diskCapacitySize =  diskInfoList.getJSONObject(i).getJSONArray("diskCapacitySize");
+                float diskUsage = (diskCapacitySize.getFloat(0) / diskCapacitySize.getFloat(1))*100;
+                for(int j=0;j<loadPartition[2].length;j++){
+                    if(diskUsage <= loadPartition[2][j]){
+                        loadCount[2][j] += 1;
+                        break;
+                    }
+                }
+            }
+
+        }
+
+        summaryInfo.put("hostIp",hostIp);
+        summaryInfo.put("sumCapacity",totalSumCapacity);
+        summaryInfo.put("windowsHostCount",windowsCount);
+        summaryInfo.put("linuxHostCount",linuxCount);
+        summaryInfo.put("hddCount",HDDCount);
+        summaryInfo.put("ssdCount",SSDCount);
+        summaryInfo.put("connectedCount",connectedCount);
+        summaryInfo.put("lastUpdateTime",new Timestamp(System.currentTimeMillis()));
+
+
+        JSONArray load = summaryInfo.getJSONArray("load");
+        for(int i=0;i<load.size();i++){
+            JSONArray currentLoad = load.getJSONArray(i);
+            for(int j=0;j<currentLoad.size();j++){
+                currentLoad.set(j,loadCount[i][j]);
+            }
+        }
+
+
     }
 
     public static void main(String[] args) {

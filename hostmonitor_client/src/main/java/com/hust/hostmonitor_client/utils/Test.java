@@ -47,10 +47,12 @@ public class Test  {
     }
 
     public static void main(String[] args) {
-        JSONObject object=new JSONObject();
-        object.put("a","bbb");
-        System.out.println(object);
-        object.put("a","ccc");
-        System.out.println(object);
+        HashMap<String,JSONObject> test=new HashMap<>();
+        JSONObject initObject=new JSONObject();
+        initObject.put("test","aaa");
+        test.put("object1",initObject);
+        System.out.println(test.get("object1"));
+        initObject.put("test2","bbb");
+        System.out.println(test.get("object1"));
     }
 }
