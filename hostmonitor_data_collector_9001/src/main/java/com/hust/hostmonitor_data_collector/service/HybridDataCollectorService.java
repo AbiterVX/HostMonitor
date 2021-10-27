@@ -53,49 +53,8 @@ public class HybridDataCollectorService implements DataCollectorService{
     private final int sampleStoreDelayMS=500;
     private final int offset=1000;
     private final long predictInterval=24*3600*1000;
-    public HybridDataCollectorService(int mode){
-        dataPath=System.getProperty("user.dir")+"/DiskPredict/";
-        System.out.println("Choose sample Mode:[1]SSH Commands [2]OSHI/选择采样模式:[1]SSH远程执行指令[2]OSHI");
-        System.out.println("Default:SSH Commands/默认使用SSH远程执行指令");
-        Scanner in=new Scanner(System.in);
-        int select=1;
-        if(in.hasNextInt())
-            select=in.nextInt();
-        if(select==1){
-            cmdSampleManager.hostsHardwareDataInit();
-            mainTimer.schedule(sampleAndPersistantTask,sampleInterval/2,sampleInterval);
-        }
-        else if(select==2){
-            //TODO 植入OSHI实现
-            mainTimer.schedule(dataPersistanceTask,sampleInterval/2,sampleInterval-offset);
-        }
-        hostsSampleData= cmdSampleManager.hostSampleData;
 
-
-        Calendar calendar=Calendar.getInstance();
-        calendar.set(Calendar.HOUR_OF_DAY, 1);
-        calendar.set(Calendar.MINUTE,0);
-        calendar.set(Calendar.SECOND,0);
-        Date date=calendar.getTime();
-        if(date.before(new Date())){
-            date=addDay(date,1);
-        }
-        mainTimer.schedule(diskPredictTask,date,predictInterval);
-    }
-    private Date addDay(Date date,int num){
-        Calendar calendar=Calendar.getInstance();
-        calendar.setTime(date);
-        calendar.add(Calendar.DAY_OF_MONTH,num);
-        return  calendar.getTime();
-    }
     //定时器采样任务
-    private final TimerTask sampleAndPersistantTask = new TimerTask() {
-        @Override
-        public void run() {
-            cmdSampleManager.hostsDataSample();
-                storeSampleData();
-        }
-    };
     private final TimerTask diskPredictTask= new TimerTask() {
         @Override
         public void run() {
@@ -176,9 +135,39 @@ public class HybridDataCollectorService implements DataCollectorService{
     //定时器
     private Timer mainTimer = new Timer();
     //定时任务(Host性能采样)
-    private TimerTask performanceSampleTask;
+    private TimerTask performanceSampleTask= new TimerTask() {
+        @Override
+        public void run() {
+            for(HostConfigData hostConfigData:dataSampleManager.hostList){
+                if(sshSampleData.containsKey(hostConfigData.ip)){
+                    dataSampleManager.sampleHostData(hostConfigData,sshSampleData.get(hostConfigData.ip));
+                }
+                else{
+                    JSONObject initObject=dataSampleManager.sampleHostHardwareData(hostConfigData);
+                    sshSampleData.put(hostConfigData.ip,initObject);
+                    dataSampleManager.sampleHostData(hostConfigData,initObject);
+                }
+                System.out.println("[DSManager]"+hostConfigData.ip+" Sample Finish");
+            }
+            storeSampleData();
+        }
+    };;
     //定时任务(Host进程采样)
-    private TimerTask procesSampleTask;
+    private TimerTask processSampleTask=new TimerTask() {
+        @Override
+        public void run() {
+            for(HostConfigData hostConfigData:dataSampleManager.hostList){
+                if(sshSampleData.containsKey(hostConfigData.ip)){
+                    dataSampleManager.sampleHostProcess(hostConfigData,sshSampleData.get(hostConfigData.ip));
+                }
+                else{
+                    JSONObject initObject=dataSampleManager.sampleHostHardwareData(hostConfigData);
+                    sshSampleData.put(hostConfigData.ip,initObject);
+                    dataSampleManager.sampleHostProcess(hostConfigData,initObject);
+                }
+            }
+        }
+    };
 
 
     //----- 数据 -----
@@ -199,24 +188,53 @@ public class HybridDataCollectorService implements DataCollectorService{
         sshHostList = configDataManager.getSSHConfigHostList();
         //线程池大小设为Host个数*2
         executorService= Executors.newFixedThreadPool(sshHostList.size()*2);
+        dataPath=System.getProperty("user.dir")+"/DiskPredict/";
+        System.out.println("Choose sample Mode:[1]SSH Commands [2]OSHI/选择采样模式:[1]SSH远程执行指令[2]OSHI");
+        System.out.println("Default:SSH Commands/默认使用SSH远程执行指令");
+        Scanner in=new Scanner(System.in);
+        int select=1;
+        if(in.hasNextInt())
+            select=in.nextInt();
+        if(select==1){
+            for(HostConfigData hostConfigData:dataSampleManager.hostList){
+                JSONObject initObject=dataSampleManager.sampleHostHardwareData(hostConfigData);
+                sshSampleData.put(hostConfigData.ip,initObject);
+            }
+            //mainTimer.schedule(sampleAndPersistantTask,sampleInterval/2,sampleInterval);
+            //定时作业
+            mainTimer.schedule(performanceSampleTask,7*1000,sampleInterval);
+            mainTimer.schedule(processSampleTask,13*1000,sampleInterval);
 
-
+        }
+        else if(select==2){
+            //TODO 植入OSHI实现
+            mainTimer.schedule(dataPersistanceTask,sampleInterval/2,sampleInterval-offset);
+        }
+        summaryInfo=configDataManager.getSummaryFormat();
+        loadPartition=configDataManager.getLoadPartitionFormat();
         //SSH 采样
         {
             for(int i=0;i<sshHostList.size();i++){
                 sshHostList.get(i);
-
             }
-
-            //定时作业
-            mainTimer.schedule(performanceSampleTask,7*1000,20* 1000);
-            mainTimer.schedule(procesSampleTask,13*1000,20* 1000);
         }
-
-
+        Calendar calendar=Calendar.getInstance();
+        calendar.set(Calendar.HOUR_OF_DAY, 1);
+        calendar.set(Calendar.MINUTE,0);
+        calendar.set(Calendar.SECOND,0);
+        Date date=calendar.getTime();
+        if(date.before(new Date())){
+            date=addDay(date,1);
+        }
+        mainTimer.schedule(diskPredictTask,date,predictInterval);
 
     }
-
+    private Date addDay(Date date,int num){
+        Calendar calendar=Calendar.getInstance();
+        calendar.setTime(date);
+        calendar.add(Calendar.DAY_OF_MONTH,num);
+        return  calendar.getTime();
+    }
 
 
 
@@ -225,10 +243,94 @@ public class HybridDataCollectorService implements DataCollectorService{
 
     @Override
     public String getDashboardSummary() {
-        cmdSampleManager.UpdateSummaryInfo();
-        return cmdSampleManager.summaryInfo.toJSONString();
+        UpdateSummaryInfo();
+        return summaryInfo.toJSONString();
     }
+    public void UpdateSummaryInfo(){
+        double totalSumCapacity=0;
+        int windowsCount=0,linuxCount=0,HDDCount=0,SSDCount=0,connectedCount=0;
+        float[][] loadCount = new float[][]{{0,0,0},{0,0,0},{0,0,0}};
+        JSONArray hostIp=new JSONArray();
+        for(Map.Entry<String,JSONObject> hostInfo: sshSampleData.entrySet()){
+            JSONObject hostInfoJson = hostInfo.getValue();
+            hostIp.add(hostInfo.getKey());
+            totalSumCapacity+=hostInfoJson.getJSONArray("diskCapacityTotalUsage").getDouble(1);
+            if(hostInfoJson.getString("osName").toLowerCase().contains(("windows").toLowerCase())){
+                windowsCount++;
+            }
+            else{
+                linuxCount++;
+            }
+            if(hostInfoJson.getBoolean("connected")){
+                connectedCount++;
+            }
+            //HDD SSD统计
+            for(int i=0;i<hostInfoJson.getJSONArray("diskInfoList").size();i++){
+                if(hostInfoJson.getJSONArray("diskInfoList").getJSONObject(i).getIntValue("type")==1){
+                    SSDCount++;
+                }
+                else{
+                    HDDCount++;
+                }
+            }
 
+
+            //-----负载统计
+            //cpu负载统计
+            JSONArray cpuInfoList = hostInfoJson.getJSONArray("cpuInfoList");
+            for(int i=0;i<cpuInfoList.size();i++){
+                float cpuUsage = cpuInfoList.getJSONObject(i).getFloat("cpuUsage");
+                for(int j=0;j<loadPartition[0].length;j++){
+                    if(cpuUsage <= loadPartition[0][j]){
+                        loadCount[0][j] += 1;
+                        break;
+                    }
+                }
+            }
+            //内存负载统计
+            JSONArray memoryUsageJson =  hostInfoJson.getJSONArray("memoryUsage");
+            float memoryUsage = (memoryUsageJson.getFloat(0) / memoryUsageJson.getFloat(1))*100;
+            for(int j=0;j<loadPartition[1].length;j++){
+                if(memoryUsage <= loadPartition[1][j]){
+                    loadCount[1][j] += 1;
+                    break;
+                }
+            }
+            //硬盘负载统计
+            JSONArray diskInfoList = hostInfoJson.getJSONArray("diskInfoList");
+            for(int i=0;i<diskInfoList.size();i++){
+                JSONArray diskCapacitySize =  diskInfoList.getJSONObject(i).getJSONArray("diskCapacitySize");
+                float diskUsage = (diskCapacitySize.getFloat(0) / diskCapacitySize.getFloat(1))*100;
+                for(int j=0;j<loadPartition[2].length;j++){
+                    if(diskUsage <= loadPartition[2][j]){
+                        loadCount[2][j] += 1;
+                        break;
+                    }
+                }
+            }
+
+        }
+
+        summaryInfo.put("hostIp",hostIp);
+        summaryInfo.put("sumCapacity",totalSumCapacity);
+        summaryInfo.put("windowsHostCount",windowsCount);
+        summaryInfo.put("linuxHostCount",linuxCount);
+        summaryInfo.put("hddCount",HDDCount);
+        summaryInfo.put("ssdCount",SSDCount);
+        summaryInfo.put("connectedCount",connectedCount);
+        summaryInfo.put("lastUpdateTime",new Timestamp(System.currentTimeMillis()));
+
+
+        JSONArray load = summaryInfo.getJSONArray("load");
+        for(int i=0;i<load.size();i++){
+            JSONArray currentLoad = load.getJSONArray(i);
+            for(int j=0;j<currentLoad.size();j++){
+                currentLoad.set(j,loadCount[i][j]);
+            }
+        }
+
+
+    }
     @Override
     public String getHostInfoDashboardAll() {
         JSONObject resultObject=new JSONObject();
