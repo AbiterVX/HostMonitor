@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <!-- JQuery -->
+    <script type="text/javascript" src="../JQuery/jquery-3.3.1.min.js"></script>
+    <!-- popper 用于下拉框 -->
+    <script type="text/javascript" src="../popper/popper.min.js"></script>
+    <!-- BootStrap -->
+    <link rel="stylesheet" href= "../bootstrap-4.3.1-dist/css/bootstrap.min.css" >
+    <script type="text/javascript" src="../bootstrap-4.3.1-dist/js/bootstrap.js"></script>
+
+    <!-- ECharts -->
+    <script type="text/javascript" src="../echarts/echarts.min.js"></script>
+    <!-- functionLibrary -->
+    <script type="text/javascript" src="../js/DataRequest.js"></script>
+    <script type="text/javascript" src="../js/WidgetDisplay.js"></script>
+    <script type="text/javascript" src="../js/TableAndChart.js"></script>
+
+    <!-- Bootstrap-table -->
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="../bootstrap-table/bootstrap-table.min.css">
+
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="../bootstrap-table/bootstrap-table.min.js"></script>
+    <!-- Latest compiled and minified Locales -->
+    <script src="../bootstrap-table/bootstrap-table-zh-CN.min.js"></script>
+
+    <!--拓扑    -->
+    <script src="http://demo.qunee.com/lib/qunee-min.js"></script>
+</head>
+<body>
+    <div id="SummaryChart" style="width: 100%;min-height: 800px;"></div>
+    <div id="TestStr"></div>
+</body>
+
+
+<script>
+    var icon_router = "image://../images/icon_router.png";
+    var icon_server = "image://../images/icon_server.png";
+    var icon_computer = "image://../images/icon_computer.png";
+    var hostSampleData = {
+        "0.0.0.1":{
+            cpuUsage:1.5,
+            memoryUsage:2,
+            diskIOPS:3,
+        },
+        "0.0.0.2":{
+            cpuUsage:2,
+            memoryUsage:50,
+            diskIOPS:2,
+        },
+        "3.0.0.1":{
+            cpuUsage:11,
+            memoryUsage:7,
+            diskIOPS:5,
+        }
+    };
+    var graphConfig ={
+        //图表大小
+        symbolSize: [70, 70],
+        //路由偏移
+        routerXoffset: 100,
+        routerYoffset:200,
+        //主机偏移
+        hostXoffset: 50,
+        hostYoffset: 50,
+    };
+    var hostConfigData = [
+        {ip:"0.0.0.1", router:"127.0.0.1",},
+        {ip:"0.0.0.2", router:"127.0.0.1",},
+        {ip:"0.0.0.3", router:"127.0.0.1",},
+        {ip:"0.0.0.4", router:"127.0.0.1",},
+        {ip:"0.0.0.5", router:"127.0.0.1",},
+        {ip:"0.0.0.6", router:"127.0.0.1",},
+        {ip:"0.0.0.7", router:"127.0.0.1",},
+        {ip:"0.0.0.8", router:"127.0.0.1",},
+        {ip:"0.0.0.9", router:"127.0.0.1",},
+
+        {ip:"1.0.0.1", router:"127.0.0.2",},
+        {ip:"1.0.0.2", router:"127.0.0.2",},
+        {ip:"1.0.0.3", router:"127.0.0.2",},
+        {ip:"1.0.0.4", router:"127.0.0.2",},
+
+        {ip:"2.0.0.1", router:"127.0.0.3",},
+        {ip:"2.0.0.2", router:"127.0.0.3",},
+        {ip:"2.0.0.3", router:"127.0.0.3",},
+        {ip:"2.0.0.4", router:"127.0.0.3",},
+        {ip:"2.0.0.5", router:"127.0.0.3",},
+        {ip:"2.0.0.6", router:"127.0.0.3",},
+
+        {ip:"3.0.0.1", router:"127.0.0.4",},
+        {ip:"3.0.0.2", router:"127.0.0.4",},
+        {ip:"3.0.0.3", router:"127.0.0.4",},
+        {ip:"3.0.0.4", router:"127.0.0.4",},
+        {ip:"3.0.0.5", router:"127.0.0.4",},
+
+        {ip:"4.0.0.1", router:"127.0.0.5",},
+        {ip:"4.0.0.2", router:"127.0.0.5",},
+        {ip:"4.0.0.3", router:"127.0.0.5",},
+
+        {ip:"5.0.0.1", router:"127.0.0.6",},
+
+        {ip:"6.0.0.1", router:"127.0.0.7",},
+
+        {ip:"7.0.0.1", router:"127.0.0.8",},
+    ];
+
+    var threshold = {
+        cpuUsage:1,
+        memoryUsage:1,
+        diskIOPS:1,
+    };
+    //获取带颜色的文字
+    function getColoredTxt(displayValue,threshold){
+        if(displayValue>=threshold){
+            return '<span style="font-weight:bold;color:#ee6767">'+displayValue+'</span>';
+        }
+        else{
+            return displayValue;
+        }
+    }
+    //判断是否高负载
+    function getColorByCurrentLoad(cpuUsage,memoryUsage,diskIOPS){
+        if(cpuUsage>=threshold["cpuUsage"] || memoryUsage>=threshold["memoryUsage"] || diskIOPS>=threshold["diskIOPS"]){
+            return "#FF0000";
+        }
+        return "#000000";
+    }
+    //悬浮提示文字
+    function getToolTip(nodeData){
+        var result = "";
+        result+= "CPU利用率: " + getColoredTxt(nodeData["cpuUsage"],threshold["cpuUsage"])+"%</br>" +
+                 "内存利用率: " + getColoredTxt(nodeData["memoryUsage"],threshold["memoryUsage"])+"%</br>" +
+                 "IOPS:     " + getColoredTxt(nodeData["diskIOPS"],threshold["diskIOPS"])+"</br>" ;
+        return result;
+    }
+
+
+    function initConfigData(){
+        //拓扑图数据
+        var graphData = {
+            nodes:[],
+            links:[],
+            lines:[],
+            graphWidth:0,
+            graphHeight:0,
+        };
+
+        //处理原始数据-init初始结构
+        var nodeData = {};
+        for(var i=0;i<hostConfigData.length;i++){
+            var ip = hostConfigData[i]["ip"];
+            var router = hostConfigData[i]["router"];
+            if(!nodeData.hasOwnProperty(router)){
+                nodeData[router] = {
+                    routerName: router,
+                    x:0,
+                    y:0,
+                    hosts:[],
+                    hostNameList:[],
+                };
+            }
+            //主机
+            nodeData[router]["hosts"].push({
+                hostName: ip,
+                localX: 0,
+                localY: 0,
+                labelPosition:'bottom',
+                lines:[],
+            });
+            nodeData[router]["hostNameList"].push(ip);
+        }
+
+        //每列路由的X坐标
+        var routerColumnX = [-1*graphConfig["routerXoffset"],graphConfig["routerXoffset"]];
+        //路由列个数
+        var columnCount = routerColumnX.length;
+
+        //路由索引
+        var routerIndex = 0;
+        for(var router in nodeData){
+            //列号
+            var columnIndex = routerIndex%columnCount;
+
+            //路由坐标
+            var currentRouter = nodeData[router];
+            currentRouter["x"] = routerColumnX[columnIndex];
+            currentRouter["y"] = graphConfig["routerYoffset"]*Math.floor(routerIndex/2);
+
+            //主机索引
+            var hostIndex =0;
+            for(var host in currentRouter["hosts"]){
+                var currentHost = currentRouter["hosts"][host];
+                //相对位置
+                currentHost["localX"] = graphConfig["hostXoffset"] * (Math.floor(hostIndex/2) + 1)* Math.pow(-1,(columnIndex + 1));
+                currentHost["localY"] = graphConfig["hostYoffset"] * Math.pow(-1,(hostIndex%2 + 1));
+                if(hostIndex%2 === 0){
+                    currentHost["labelPosition"] = 'top';
+                }
+                //折线
+                currentHost["lines"].push([currentRouter["x"] + currentHost["localX"],currentRouter["y"] + currentHost["localY"]]);
+                currentHost["lines"].push([currentRouter["x"] + currentHost["localX"],currentRouter["y"]]);
+                currentHost["lines"].push([currentRouter["x"],currentRouter["y"]]);
+                hostIndex +=1;
+            }
+            routerIndex +=1;
+        }
+        graphData["graphHeight"] = graphConfig["routerYoffset"]* (Math.floor(routerIndex/2)+1);
+
+        //-----添加点
+        //网络点
+        graphData["nodes"].push({
+            nodeType: "NetWork",
+            name: "NetWork",
+            x: 0,
+            y: graphConfig["routerYoffset"]*Math.floor((routerIndex-1)/columnCount)/2,
+            value:[0 ,graphConfig["routerYoffset"]*Math.floor((routerIndex-1)/columnCount)/2 ],
+            symbol: icon_router,
+            symbolSize: graphConfig["symbolSize"],
+            label: {
+                position:'bottom',
+            },
+        });
+        for(var router in nodeData){
+            //路由点
+            var currentRouter = nodeData[router];
+
+            var routerCpuUsage = 0;
+            var routerMemoryUsage = 0;
+            var routerDiskIOPS = 0;
+            //主机点
+            for(var host in currentRouter["hosts"]){
+                var currentHost = currentRouter["hosts"][host];
+
+                var hostCpuUsage = 0;
+                var hostMemoryUsage = 0;
+                var hostDiskIOPS = 0;
+                if(hostSampleData.hasOwnProperty(currentHost["hostName"])){
+                    hostCpuUsage = hostSampleData[currentHost["hostName"]]["cpuUsage"]
+                    hostMemoryUsage = hostSampleData[currentHost["hostName"]]["memoryUsage"]
+                    hostDiskIOPS = hostSampleData[currentHost["hostName"]]["diskIOPS"]
+                }
+                routerCpuUsage += hostCpuUsage;
+                routerMemoryUsage += hostMemoryUsage;
+                routerDiskIOPS += hostDiskIOPS;
+
+                graphData["nodes"].push({
+                    nodeType: "host",
+                    name: currentHost["hostName"],
+                    x: currentRouter["x"] + currentHost["localX"],
+                    y: currentRouter["y"] + currentHost["localY"],
+
+                    value:[currentRouter["x"] + currentHost["localX"],currentRouter["y"] + currentHost["localY"]],
+                    symbol: icon_computer,
+                    label: {
+                        position:currentHost["labelPosition"],
+                        color: getColorByCurrentLoad(hostCpuUsage,hostMemoryUsage,hostDiskIOPS),
+                    },
+                    symbolSize: graphConfig["symbolSize"],
+                    cpuUsage:hostCpuUsage,
+                    memoryUsage:hostMemoryUsage,
+                    diskIOPS:hostDiskIOPS,
+                });
+
+                //router-Host连线
+                /*graphData["links"].push({
+                    source: currentHost["hostName"],
+                    target: currentRouter["routerName"],
+                });*/
+
+                graphData["lines"].push({
+                    coords: currentHost["lines"],
+                    lineStyle: {
+                        type: 'solid',
+                        width: 4,
+                        color: getColorByCurrentLoad(hostCpuUsage,hostMemoryUsage,hostDiskIOPS),
+                    }
+                });
+            }
+
+            routerCpuUsage = routerCpuUsage/currentRouter["hostNameList"].length;
+            routerMemoryUsage = routerMemoryUsage/currentRouter["hostNameList"].length;
+            routerDiskIOPS = routerDiskIOPS/currentRouter["hostNameList"].length;
+
+            graphData["nodes"].push({
+                nodeType: "router",
+                name: currentRouter["routerName"],
+                x: currentRouter["x"],
+                y: currentRouter["y"],
+                value:[currentRouter["x"] ,currentRouter["y"] ],
+                symbol: icon_router,
+                label: {
+                    position:'bottom',
+                    color: getColorByCurrentLoad(routerCpuUsage,routerMemoryUsage,routerDiskIOPS),
+                },
+                symbolSize: graphConfig["symbolSize"],
+
+                hostNameList: currentRouter["hostNameList"],
+                cpuUsage:routerCpuUsage/currentRouter["hostNameList"].length,
+                memoryUsage:routerMemoryUsage/currentRouter["hostNameList"].length,
+                diskIOPS:routerDiskIOPS/currentRouter["hostNameList"].length,
+            });
+
+            //Network-router连线
+            graphData["links"].push({
+                source: currentRouter["routerName"],
+                target: "NetWork",
+            });
+        }
+
+
+
+        return graphData;
+    }
+
+    window.onload=function(){
+        var graphData = initConfigData();
+
+        var option = {
+            tooltip: {
+                //triggerOn: 'click',
+                formatter: function(params){
+                    if(params.data.nodeType === "router"){
+                        var currentRouter = params.data.name;
+                        return "路由: "+currentRouter+"</br>" + getToolTip(params.data);
+                    }
+                    else if(params.data.nodeType === "host"){
+                        var currentIp = params.data.name;
+                        return  "IP: "+currentIp+"</br>"+ getToolTip(params.data);
+                    }
+                    else if(params.data.nodeType === "NetWork"){
+                        return "网络";
+                    }
+                    else{
+                        return "";
+                    }
+                },
+            },
+            xAxis: {
+                show: false,
+                type: 'value',
+            },
+            yAxis: {
+                inverse:true,
+                show: false,
+                type: 'value',
+            },
+            series: [
+                {
+                    coordinateSystem: 'cartesian2d',
+                    type: 'graph',
+                    layout: 'none',
+                    symbolSize: 50,
+                    roam: true,
+                    label: {
+                        //fontSize: 14,
+                        show: true,
+                        formatter: function(params){
+                            if(params.data.nodeType === "router"){
+                                return `${params.data.name}:(${params.data.x},${params.data.y})`;
+                            }
+                            else if(params.data.nodeType === "host"){
+                                return `${params.data.name}:(${params.data.x},${params.data.y})`;
+                            }
+                            else{
+                                return `${params.data.name}`;
+                            }
+                        }
+                    },
+                    edgeSymbol: ['circle', 'arrow'],
+                    edgeSymbolSize: [4, 10],
+                    edgeLabel: {
+                        fontSize: 20
+                    },
+                    data: graphData["nodes"],
+                    links: graphData["links"],
+                    lineStyle: {
+                        type: 'solid',
+                        width: 4,
+                        color: '#000000',
+                    }
+                },
+                {
+                    type: 'lines',
+                    polyline: true,
+                    coordinateSystem: 'cartesian2d',
+                    lineStyle: {
+                        type: 'solid',
+                        width: 6,
+                        color: '#000000',
+                    },
+                    data: graphData["lines"],
+                },
+            ]
+        };
+
+        var topologyChart = document.getElementById("SummaryChart");
+        //topologyChart.style.height = graphData["graphHeight"];
+        alert(graphData["graphHeight"]);
+        topologyChart.style.backgroundColor = "#000055";
+
+        var SummaryChart = echarts.init(topologyChart);
+        SummaryChart.setOption(option);
+    }
+</script>
+</html>
