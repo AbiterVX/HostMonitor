@@ -10,19 +10,19 @@ package com.hust.hostmonitor_client.utils.data_escape.DataEscapeUtils.common.han
 
 import java.util.Arrays;
 
-import com.data_escape.DataEscapeUtils.DiskEscape.DiskSender;
-import com.data_escape.DataEscapeUtils.SrcNode.ClientManager;
-import com.data_escape.DataEscapeUtils.common.Manager;
-import com.data_escape.DataEscapeUtils.common.dispatcher.Handler;
-import com.data_escape.DataEscapeUtils.common.dispatcher.MyPacket;
-import com.data_escape.DataEscapeUtils.common.packet.FileAckPacket;
 
+import com.hust.hostmonitor_client.utils.data_escape.DataEscapeUtils.DiskEscape.DiskSender;
+import com.hust.hostmonitor_client.utils.data_escape.DataEscapeUtils.SrcNode.ClientManager;
+import com.hust.hostmonitor_client.utils.data_escape.DataEscapeUtils.common.Manager;
+import com.hust.hostmonitor_client.utils.data_escape.DataEscapeUtils.common.dispatcher.Handler;
+import com.hust.hostmonitor_client.utils.data_escape.DataEscapeUtils.common.dispatcher.MyPacket;
+import com.hust.hostmonitor_client.utils.data_escape.DataEscapeUtils.common.packet.FileAckPacket;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tio.core.ChannelContext;
 import org.tio.core.Node;
 
-public class FileAckPacketHandler implements Handler<FileAckPacket>{
+public class FileAckPacketHandler implements Handler<FileAckPacket> {
     private static final Logger logger = LoggerFactory.getLogger(FileAckPacketHandler.class);
     private static final int WAIT = -2;         // 传输未开始
     private static final int COMPLETE = -1;     // 传输完成
@@ -57,7 +57,6 @@ public class FileAckPacketHandler implements Handler<FileAckPacket>{
     /**
      * @name:     
      * @descrb:         返回服务器想要接受的文件片序号，防TCP快速重传，若多次返回同一序号，则重传该序号的文件
-     * @param nbooleano recv
      * @return n*o
      */
     public int fielShardAck(boolean recv[]){
@@ -73,8 +72,8 @@ public class FileAckPacketHandler implements Handler<FileAckPacket>{
     /**
      * @name:     
      * @descrb:   
-     * @param nbooleano recv
-     * @param nbooleano send
+     * @param fileShardAckIndex recv
+
      * @return n*o
      */
     public int isNeedReSend(int fileShardAckIndex){

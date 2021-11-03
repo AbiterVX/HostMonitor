@@ -8,9 +8,9 @@
  */
 package com.hust.hostmonitor_client.utils.data_escape.DataEscapeUtils.common.packet;
 
-import com.data_escape.DataEscapeUtils.common.dispatcher.MyPacket;
+import com.hust.hostmonitor_client.utils.data_escape.DataEscapeUtils.common.dispatcher.MyPacket;
 
-public class FileAckPacket implements MyPacket{
+public class FileAckPacket implements MyPacket {
     public static final String TYPE = "SERVER_FILE_ACK";
 
     private boolean savedFileShard[];

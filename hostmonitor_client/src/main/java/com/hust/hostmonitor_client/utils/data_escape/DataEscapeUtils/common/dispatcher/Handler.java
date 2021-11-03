@@ -8,8 +8,8 @@
  */
 package com.hust.hostmonitor_client.utils.data_escape.DataEscapeUtils.common.dispatcher;
 
-import com.data_escape.DataEscapeUtils.common.Manager;
 
+import com.hust.hostmonitor_client.utils.data_escape.DataEscapeUtils.common.Manager;
 import org.tio.core.ChannelContext;
 
 public interface Handler<T extends MyPacket> {

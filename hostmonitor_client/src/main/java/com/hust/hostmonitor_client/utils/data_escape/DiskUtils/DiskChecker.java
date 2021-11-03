@@ -23,11 +23,11 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.serializer.SerializerFeature;
-import com.data_escape.DiskUtils.beans.LogicalDiskBean;
-import com.data_escape.DiskUtils.beans.PhysicalDiskBean;
-import com.data_escape.DiskUtils.cmds.CIMWin32_WMI;
-import com.data_escape.common.SystemInfo;
 
+import com.hust.hostmonitor_client.utils.data_escape.DiskUtils.beans.LogicalDiskBean;
+import com.hust.hostmonitor_client.utils.data_escape.DiskUtils.beans.PhysicalDiskBean;
+import com.hust.hostmonitor_client.utils.data_escape.DiskUtils.cmds.CIMWin32_WMI;
+import com.hust.hostmonitor_client.utils.data_escape.common.SystemInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -77,10 +77,10 @@ public class DiskChecker {
             JSONObject jsonObject = jsonArray.getJSONObject(i);
             pDiskBean = new PhysicalDiskBean();
             pDiskBean.setIndex(jsonObject.getIntValue("Index"));
-            pDiskBean.setSn(jsonObject.getString("SerialNumber").strip().trim());
+            pDiskBean.setSn(jsonObject.getString("SerialNumber").trim());
             pDiskBean.setType(jsonObject.getString("Type"));
-            pDiskBean.setCaption(jsonObject.getString("Caption").strip());
-            pDiskBean.setDeviceID(jsonObject.getString("DeviceID").strip());
+            pDiskBean.setCaption(jsonObject.getString("Caption").trim());
+            pDiskBean.setDeviceID(jsonObject.getString("DeviceID").trim());
             pDiskBean.setTotal(jsonObject.getLongValue("Size"));
 
             JSONArray logicalDisksJArray = jsonObject.getJSONArray("Logical_Disks");
@@ -89,8 +89,8 @@ public class DiskChecker {
             for (int j = 0; j < logicalDisksJArray.size(); j++) {
                 JSONObject partitionJObject = logicalDisksJArray.getJSONObject(j);
                 LogicalDiskBean lDiskBean = new LogicalDiskBean();
-                lDiskBean.setName(partitionJObject.getString("Name").strip());
-                lDiskBean.setCaption(partitionJObject.getString("Caption").strip());
+                lDiskBean.setName(partitionJObject.getString("Name").trim());
+                lDiskBean.setCaption(partitionJObject.getString("Caption").trim());
                 lDiskBean.setBootable(partitionJObject.getBooleanValue("BootPartition"));
                 lDiskBean.setBootPartition(partitionJObject.getBooleanValue("BootPartition"));
                 lDiskBean.setPrimaryPartition(partitionJObject.getBooleanValue("PrimaryPartition"));

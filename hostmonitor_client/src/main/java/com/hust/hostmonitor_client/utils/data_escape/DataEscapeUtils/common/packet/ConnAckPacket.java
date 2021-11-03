@@ -8,9 +8,9 @@
  */
 package com.hust.hostmonitor_client.utils.data_escape.DataEscapeUtils.common.packet;
 
-import com.data_escape.DataEscapeUtils.common.dispatcher.MyPacket;
+import com.hust.hostmonitor_client.utils.data_escape.DataEscapeUtils.common.dispatcher.MyPacket;
 
-public class ConnAckPacket implements MyPacket{
+public class ConnAckPacket implements MyPacket {
     public static final String TYPE = "SERVER_CONN_ACK";
     
     public final static int CONN_ACCEPT = 0;      // 连接接受

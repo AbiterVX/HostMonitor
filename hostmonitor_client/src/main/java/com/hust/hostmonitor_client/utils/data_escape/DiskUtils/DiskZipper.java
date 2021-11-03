@@ -15,13 +15,13 @@ import java.util.Date;
 import java.util.List;
 
 import com.alibaba.fastjson.JSON;
-import com.data_escape.DiskUtils.beans.ImageFileBean;
-import com.data_escape.DiskUtils.beans.LogicalDiskBean;
-import com.data_escape.DiskUtils.beans.PhysicalDiskBean;
-import com.data_escape.DiskUtils.cmds.DISM;
-import com.data_escape.common.MyMD5;
-import com.data_escape.common.SystemInfo;
 
+import com.hust.hostmonitor_client.utils.data_escape.DiskUtils.beans.ImageFileBean;
+import com.hust.hostmonitor_client.utils.data_escape.DiskUtils.beans.LogicalDiskBean;
+import com.hust.hostmonitor_client.utils.data_escape.DiskUtils.beans.PhysicalDiskBean;
+import com.hust.hostmonitor_client.utils.data_escape.DiskUtils.cmds.DISM;
+import com.hust.hostmonitor_client.utils.data_escape.common.MyMD5;
+import com.hust.hostmonitor_client.utils.data_escape.common.SystemInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 /**

@@ -8,9 +8,9 @@
  */
 package com.hust.hostmonitor_client.utils.data_escape.DataEscapeUtils.common.dispatcher;
 
-import com.data_escape.DataEscapeUtils.common.Manager;
-import com.data_escape.DataEscapeUtils.common.codec.NetPacket;
 
+import com.hust.hostmonitor_client.utils.data_escape.DataEscapeUtils.common.Manager;
+import com.hust.hostmonitor_client.utils.data_escape.DataEscapeUtils.common.codec.NetPacket;
 import org.tio.core.ChannelContext;
 import org.tio.core.intf.Packet;
 

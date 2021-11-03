@@ -12,7 +12,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONException;
 import com.alibaba.fastjson.JSONObject;
-import com.data_escape.common.ExeCmd;
+import com.hust.hostmonitor_client.utils.data_escape.common.ExeCmd;
 
 public class CIMWin32_WMI {
     private final static String disk_info = "Index, SerialNumber, DeviceID, Caption, Size";

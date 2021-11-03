@@ -8,9 +8,10 @@
  */
 package com.hust.hostmonitor_client.utils.data_escape.DataEscapeUtils.common.packet;
 
-import com.data_escape.DataEscapeUtils.common.dispatcher.MyPacket;
 
-public class FilePacket implements MyPacket{
+import com.hust.hostmonitor_client.utils.data_escape.DataEscapeUtils.common.dispatcher.MyPacket;
+
+public class FilePacket implements MyPacket {
     public final static String TYPE = "CLIENT_FILE";
 
     private int totalCounts;

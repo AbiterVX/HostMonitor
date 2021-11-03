@@ -8,8 +8,8 @@
  */
 package com.hust.hostmonitor_client.utils.data_escape.DataEscapeUtils.DstNode;
 
-import com.data_escape.common.TokenUtils;
 
+import com.hust.hostmonitor_client.utils.data_escape.common.TokenUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tio.core.ChannelContext;
