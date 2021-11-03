@@ -30,1000 +30,342 @@
     <script src="http://demo.qunee.com/lib/qunee-min.js"></script>
 </head>
 <body>
-    <div id="SummaryChart" style="width: 100%;height: 800px"></div>
+    <div id="SummaryChart" style="width: 100%;min-height: 800px;"></div>
     <div id="TestStr"></div>
 </body>
-
-<script>
-    var data = {
-        "children": [
-            {
-                "children": [
-                    {
-                        "ifend": "1",
-                        "name": "节点二1",
-                        "number": ".18"
-                    }
-                ],
-                "name": "节点一1",
-                "number": "0"
-            },
-            {
-                "children": [
-                    {
-                        "ifend": "1",
-                        "name": "节点二5",
-                        "number": ".18"
-                    }
-                ],
-                "name": "节点一2",
-                "number": "0"
-            },
-            {
-                "ifend": "1",
-                "name": "节点一2",
-                "number": ".87"
-            },
-            {
-                "ifend": "1",
-                "name": "节点一3",
-                "number": ".92"
-            },
-            {
-                "ifend": "1",
-                "name": "节点一4",
-                "number": "1.68"
-            },
-            {
-                "children": [
-                    {
-                        "code": "2",
-                        "ifend": "1",
-                        "name": "节点二10",
-                        "number": "10.01"
-                    },
-                    {
-                        "ifend": "1",
-                        "name": "节点二11",
-                        "number": "0.31"
-                    },
-                    {
-                        "code": "2",
-                        "ifend": "1",
-                        "name": "节点二12",
-                        "number": "-.92"
-                    },
-                    {
-                        "code": "2",
-                        "name": "节点二2",
-                        "number": "100"
-                    },
-                    {
-                        "ifend": "1",
-                        "name": "节点二3",
-                        "number": ".05"
-                    },
-                    {
-                        "ifend": "1",
-                        "name": "节点二4",
-                        "number": "1.53"
-                    },
-                    {
-                        "ifend": "1",
-                        "name": "节点二5",
-                        "number": "1.14"
-                    },
-                    {
-                        "ifend": "1",
-                        "name": "节点二6",
-                        "number": "1.98"
-                    },
-                    {
-                        "ifend": "1",
-                        "name": "节点二7",
-                        "number": ".02"
-                    },
-                    {
-                        "ifend": "1",
-                        "name": "节点二8",
-                        "number": "1.03"
-                    },
-
-                ],
-                "name": "节点一5",
-                "number": ".16"
-            },
-            {
-
-                "ifend": "1",
-                "name": "节点一6",
-                "number": "2.33"
-            }
-        ],
-        "name": "节点",
-        "number": ".46"
-    };
-
-    function format(data) {
-        data.x = 0;
-        data.y = 0;
-        if (!data.hasOwnProperty("children")) {
-            data.len = [1, -1];
-            data.leny = [1, 9];
-            return data;
-        }
-        var l2 = data.children;
-        var hi = parseInt(l2.length / 2);
-        var xi = l2.length - hi;
-        var his = getSum(l2, 0, hi);
-        var xis = getSum(l2, xi - 1, l2.length);
-        l2 = sortData(l2, hi, xi);
-        data.children = l2;
-        var jhi = (hi > 9 || his === 0) ? 300 : 200;
-        var jxi = (xi > 9 || xis === 0) ? 300 : 200;
-        var maxmin = [-100000, 100000];
-        var maxminy = [-100000, 100000];
-        for (var i = 0; i < l2.length; i++) {
-            if (i < hi) {
-                l2[i].x = getLoction(hi, data.x, i + 1);
-                l2[i].y = data.y + jhi;
-                l2[i].fx = getFX(hi, i, false);
-            } else {
-                l2[i].x = getLoction(xi, data.x, i - hi + 1);
-                l2[i].y = data.y - jxi;
-                l2[i].fx = getFX(xi, i - hi, true);
-            }
-            getMaxMin(maxmin, l2[i].x);
-            getMaxMin(maxminy, l2[i].y);
-            if (!l2[i].hasOwnProperty("children")) {
-                continue;
-            }
-            var l3 = l2[i].children;
-            for (var j = 0; j < l3.length; j++) {
-                if (i < hi) {
-                    l3[j].x = getLoction(l3.length, l2[i].x, j + 1);
-                    l3[j].y = l2[i].y + 200;
-                    l3[j].fx = getFX(l3.length, j, false);
-                } else {
-                    l3[j].x = getLoction(l3.length, l2[i].x, j + 1);
-                    l3[j].y = l2[i].y - 200;
-                    l3[j].fx = getFX(l3.length, j, true);
-                }
-                getMaxMin(maxmin, l3[j].x);
-                getMaxMin(maxminy, l3[j].y);
-            }
-        }
-        var c;
-        if (hi % 2 === 0) {
-            c = hi / 2;
-            if (l2[c].hasOwnProperty("children")) {
-                if (l2[c - 1].hasOwnProperty("children") &&
-                    l2[c].children[0].x < l2[c].x - 50) {
-                    var tem = 50 - l2[c].children[0].x;
-                    for (var j = 0; j < l2[c].children.length; j++) {
-                        l2[c].children[j].x = l2[c].children[j].x + tem;
-                        getMaxMin(maxmin, l2[c].children[j].x);
-                    }
-                    l2[c].x = getLoction2(l2[c].children);
-                }
-            }
-        } else {
-            c = parseInt(hi / 2);
-        }
-        for (var i = c + 1; i < hi; i++) {
-            if (l2[i].hasOwnProperty("children")) {
-                if (l2[i - 1].hasOwnProperty("children") &&
-                    l2[i - 1].children[l2[i - 1].children.length - 1].x - l2[i].children[0].x > -100) {
-                    var tem = l2[i - 1].children[l2[i - 1].children.length - 1].x + 100 - l2[i].children[0].x;
-                    for (var j = 0; j < l2[i].children.length; j++) {
-                        l2[i].children[j].x = l2[i].children[j].x + tem;
-                        getMaxMin(maxmin, l2[i].children[j].x);
-                    }
-                    l2[i].x = getLoction2(l2[i].children);
-                }
-            }
-        }
-        for (var i = c - 1; i >= 0; i--) {
-            if (l2[i].hasOwnProperty("children")) {
-                if (l2[i + 1].hasOwnProperty("children") &&
-                    l2[i + 1].children[0].x - l2[i].children[l2[i].children.length - 1].x < 100) {
-                    var tem = l2[i].children[l2[i].children.length - 1].x - (l2[i + 1].children[0].x - 100);
-                    for (var j = 0; j < l2[i].children.length; j++) {
-                        l2[i].children[j].x = l2[i].children[j].x - tem;
-                        getMaxMin(maxmin, l2[i].children[j].x);
-                    }
-                    l2[i].x = getLoction2(l2[i].children);
-                }
-            }
-        }
-
-        if (xi % 2 === 0) {
-            c = xi / 2 + hi;
-            if (l2[c].hasOwnProperty("children")) {
-                if (l2[c - 1].hasOwnProperty("children") &&
-                    l2[c].children[0].x < l2[c].x - 50) {
-                    var tem = 50 - l2[c].children[0].x;
-                    for (var j = 0; j < l2[c].children.length; j++) {
-                        l2[c].children[j].x = l2[c].children[j].x + tem;
-                        getMaxMin(maxmin, l2[c].children[j].x);
-                    }
-                    l2[c].x = getLoction2(l2[c].children);
-                }
-            }
-        } else {
-            c = parseInt(xi / 2) + hi;
-        }
-        for (var i = c + 1; i < l2.length; i++) {
-            if (l2[i].hasOwnProperty("children")) {
-                if (l2[i - 1].hasOwnProperty("children") &&
-                    l2[i - 1].children[l2[i - 1].children.length - 1].x - l2[i].children[0].x > -100) {
-                    var tem = l2[i - 1].children[l2[i - 1].children.length - 1].x + 100 - l2[i].children[0].x;
-                    for (var j = 0; j < l2[i].children.length; j++) {
-                        l2[i].children[j].x = l2[i].children[j].x + tem;
-                        getMaxMin(maxmin, l2[i].children[j].x);
-                    }
-                    l2[i].x = getLoction2(l2[i].children);
-                }
-            }
-        }
-        for (var i = c - 1; i >= hi; i--) {
-            if (l2[i].hasOwnProperty("children")) {
-                if (l2[i + 1].hasOwnProperty("children") &&
-                    l2[i + 1].children[0].x - l2[i].children[l2[i].children.length - 1].x < 100) {
-                    var tem = l2[i].children[l2[i].children.length - 1].x - (l2[i + 1].children[0].x - 100);
-                    for (var j = 0; j < l2[i].children.length; j++) {
-                        l2[i].children[j].x = l2[i].children[j].x - tem;
-                        getMaxMin(maxmin, l2[i].children[j].x);
-                    }
-                    l2[i].x = getLoction2(l2[i].children);
-                }
-            }
-        }
-        // data.x = (maxmin[0] - maxmin[1]) / 2 + maxmin[1];
-        if (maxmin[0] - maxmin[1] <= 400) {
-            maxmin[0] = maxmin[0] + 100;
-            maxmin[1] = maxmin[1] - 100;
-        }
-        data.len = maxmin;
-        data.leny = maxminy;
-        return data;
-    }
-
-    function format2(data) {
-        if (!data.hasOwnProperty("children")) {
-            return data;
-        }
-        var l2 = data.children;
-        var hi = parseInt(l2.length / 2);
-        var xi = l2.length - hi;
-        var maxmin = data.len;
-        for (var i = 0; i < l2.length; i++) {
-            if (!l2[i].hasOwnProperty("children")) {
-                if (i > 0 && (i != hi) && l2[i - 1].hasOwnProperty("children") && l2[i - 1].children.length > 5) {
-                    var tem = (l2[i - 1].children.length - 5) / 2;
-                    l2[i].x = l2[i].x + 100 * tem;
-                    var len, flag = false;
-                    if (i < hi) {
-                        len = hi;
-                    } else {
-                        len = l2.length;
-                    }
-                    for (var j = i + 1; j < len; j++) {
-                        flag = true;
-                        l2[j].x = l2[j].x + 100 * tem;
-                        if (l2[j].hasOwnProperty("children")) {
-                            var children = l2[j].children;
-                            for (var k = 0; k < children.length; k++) {
-                                children[k].x = children[k].x + 100 * tem;
-                                getMaxMin(maxmin, children[k].x);
-                            }
-                        }
-                        getMaxMin(maxmin, l2[j].x);
-                    }
-                    if (flag) {
-                        l2[i].x = l2[i].x > maxmin[0] ? maxmin[0] : l2[i].x;
-                    }
-                } else if (i < l2.length - 1 && l2[i + 1].hasOwnProperty("children") && l2[i + 1].children.length > 5) {
-                    var tem = (l2[i + 1].children.length - 5) / 2;
-                    l2[i].x = l2[i].x - 100 * tem;
-                    var len, flag = false;
-                    if (i < hi) {
-                        len = 0;
-                    } else {
-                        len = hi;
-                    }
-                    for (var j = i - 1; j >= len; j--) {
-                        flag = true;
-                        l2[j].x = l2[j].x - 100 * tem;
-                        if (l2[j].hasOwnProperty("children")) {
-                            var children = l2[j].children;
-                            for (var k = 0; k < children.length; k++) {
-                                children[k].x = children[k].x - 100 * tem;
-                                getMaxMin(maxmin, children[k].x);
-                            }
-                        }
-                        getMaxMin(maxmin, l2[j].x);
-                    }
-                    if (flag) {
-                        l2[i].x = l2[i].x < maxmin[1] ? maxmin[1] : l2[i].x;
-                    }
-                }
-            }
-        }
-        // data.x = (maxmin[0] - maxmin[1]) / 2 + maxmin[1];
-        if (maxmin[0] - maxmin[1] <= 400) {
-            maxmin[0] = maxmin[0] + 100;
-            maxmin[1] = maxmin[1] - 100;
-        }
-        data.len = maxmin;
-        return data;
-    }
-
-    function getLoction(num, x, index) {
-        if (num % 2 === 0) {
-            var c = num / 2 - index;
-            x = x - 50 - 100 * c;
-        } else {
-            var c = parseInt(num / 2 + 1) - index;
-            x = x - 100 * c;
-        }
-        return x;
-    }
-
-    /*function getLoction2(data) {
-        var len = data.length;
-        var x;
-        if (len % 2 === 0) {
-            var c = len / 2;
-            x = data[c - 1].x + 50;
-        } else {
-            var c = parseInt(len / 2 + 1);
-            x = data[c - 1].x;
-        }
-        return x;
-    }*/
-
-    function getFX(len, index, fx) {
-        var x, c;
-        if (len < 1) {
-            return 1;
-        }
-        c = (len % 2 === 0) ? len / 2 : (parseInt(len / 2) + 1);
-        x = (index < c) ? 1 : -1;
-        if (fx) {
-            x = -x;
-        }
-        return x;
-    }
-
-    function getSum(data, st, ed) {
-        if (ed > data.length) {
-            ed = data.length;
-        }
-        var count = 0;
-        for (var i = st; i < ed; i++) {
-            if (!data[i].hasOwnProperty("children")) {
-                continue;
-            }
-            var l3 = data[i].children;
-            count = count + l3.length;
-        }
-        return count;
-    }
-
-    function sortData(data, hi, xi) {
-        var res = [];
-        var len = hi - 1;
-        var pos = 0;
-        for (var i = 0; i < hi - 1; i++) {
-            var flag = 1;
-            for (var j = 0; j < len; j++) {
-                var dx = !data[j].hasOwnProperty("children") ? 0 : data[j].children.length,
-                    dx1 = !data[j + 1].hasOwnProperty("children") ? 0 : data[j + 1].children.length;
-                if (dx > dx1) {
-                    var tem = data[j];
-                    data[j] = data[j + 1];
-                    data[j + 1] = tem;
-                    flag = 0;
-                    pos = j;
-                }
-            }
-            len = pos;
-            if (flag === 1) {
-                break;
-            }
-        }
-        for (var i = 0; i < hi; i++) {
-            if (i % 2 === 0) {
-                res[i / 2] = data[i];
-            } else {
-                res[hi - (i + 1) / 2] = data[i];
-            }
-        }
-
-        len = data.length - 1;
-        pos = 0;
-        for (var i = hi; i < data.length - 1; i++) {
-            var flag = 1;
-            for (var j = hi; j < len; j++) {
-                var dx = !data[j].hasOwnProperty("children") ? 0 : data[j].children.length,
-                    dx1 = !data[j + 1].hasOwnProperty("children") ? 0 : data[j + 1].children.length;
-                if (dx > dx1) {
-                    var tem = data[j];
-                    data[j] = data[j + 1];
-                    data[j + 1] = tem;
-                    flag = 0;
-                    pos = j;
-                }
-            }
-            len = pos;
-            if (flag === 1) {
-                break;
-            }
-        }
-        for (var i = 0; i < xi; i++) {
-            if (i % 2 === 0) {
-                res[i / 2 + hi] = data[i + hi];
-            } else {
-                res[xi - (i + 1) / 2 + hi] = data[i + hi];
-            }
-        }
-        return res;
-    }
-
-    function getMaxMin(maxmin, x) {
-        if (maxmin[0] < x) {
-            maxmin[0] = x;
-        }
-        if (maxmin[1] > x) {
-            maxmin[1] = x;
-        }
-        return maxmin;
-    }
-
-    function initCharts(returninfo) {
-        var res = {};
-        var links = [];
-        var lines = [];
-        var yiji = "image://../images/icon_router.png";
-        var erji = "image://../images/icon_server.png";
-        var sanji = "image://../images/icon_computer.png";
-        returninfo.number = (returninfo.number === undefined) ? '--' : returninfo.number + '%';
-        returninfo.number = (returninfo.number.startsWith('.')) ? '0' + returninfo.number : returninfo.number;
-        returninfo.number = (returninfo.number.startsWith('-.')) ? returninfo.number.replace('-.', '-0.') : returninfo.number;
-        var url = '${pageContext.request.requestURL}'.replace('${pageContext.request.requestURI}', '');
-        var data = [{
-            name: returninfo.name + "：" + returninfo.number,
-            tooltip: {
-                formatter: "{b}"
-            },
-            symbol: yiji,
-            symbolSize: [60, 60],
-            value: [returninfo.x, returninfo.y],
-            datadate: returninfo.datadate,
-            spid: returninfo.id
-        }];
-        if ("children" in returninfo) {
-            var l2 = returninfo.children;
-            var curveness, colork, colorn, xs;
-            for (var i = 0; i < l2.length; i++) {
-                curveness = l2[i].fx === 1 ? 0.1 : -0.1;
-                l2[i].number = (l2[i].number === undefined) ? '--' : l2[i].number + '%';
-                l2[i].number = (l2[i].number.startsWith('.')) ? '0' + l2[i].number : l2[i].number;
-                l2[i].number = (l2[i].number.startsWith('-.')) ? l2[i].number.replace('-.', '-0.') : l2[i].number;
-                colork = (l2[i].code === '2' || l2[i].code === 2) ? '#C75050' : '#53B5EA';
-                var link = {
-                    source: returninfo.name + "：" + returninfo.number,
-                    target: l2[i].name + "：\n" + l2[i].number,
-                    lineStyle: {
-                        curveness: curveness,
-                        color: colork
-                    }
-                };
-                links.push(link);
-                colorn = (l2[i].code === '2' || l2[i].code === 2) ? 'rgba(199,80,80,0.5)' : 'rgba(55,155,255,0.5)';
-                var line = {
-                    coords: [
-                        [returninfo.x, returninfo.y],
-                        [l2[i].x, l2[i].y]
-                    ],
-                    lineStyle: {
-                        curveness: curveness,
-                        color: colorn
-                    }
-                };
-
-                lines.push(line);
-                var node = {
-                    name: l2[i].name + "：\n" + l2[i].number,
-                    tooltip: {
-                        formatter: "{b}"
-                    },
-                    symbol: erji,
-                    symbolSize: [60, 40],
-                    value: [l2[i].x, l2[i].y],
-                    datadate: l2[i].datadate,
-                    ifend: l2[i].ifend,
-                    spid: l2[i].id
-                };
-                data.push(node);
-                if ("children" in l2[i]) {
-                    var l3 = l2[i].children;
-                    for (var j = 0; j < l3.length; j++) {
-                        curveness = l3[j].fx === 1 ? 0.1 : -0.1;
-                        l3[j].number = (l3[j].number === undefined) ? '--' : l3[j].number + '%';
-                        l3[j].number = (l3[j].number.startsWith('.')) ? '0' + l3[j].number : l3[j].number;
-                        l3[j].number = (l3[j].number.startsWith('-.')) ? l3[j].number.replace('-.', '-0.') : l3[j].number;
-                        colork = (l3[j].code === '2' || l3[j].code === 2) ? '#C75050' : '#53B5EA';
-                        var link = {
-                            source: l2[i].name + "：\n" + l2[i].number,
-                            target: l3[j].name + "：\n" + l3[j].number,
-                            lineStyle: {
-                                curveness: curveness,
-                                color: colork
-                            }
-                        };
-                        links.push(link);
-                        colorn = (l3[j].code === '2' || l3[j].code === 2) ? 'rgba(199,80,80,0.5)' : 'rgba(55,155,255,0.5)';
-                        var line = {
-                            coords: [
-                                [l2[i].x, l2[i].y],
-                                [l3[j].x, l3[j].y]
-                            ],
-                            lineStyle: {
-                                curveness: curveness,
-                                color: colorn
-                            }
-                        };
-                        lines.push(line);
-                        node = {
-                            name: l3[j].name + "：\n" + l3[j].number,
-                            tooltip: {
-                                formatter: "{b}"
-                            },
-                            symbol: sanji,
-                            symbolSize: [40, 40],
-                            value: [l3[j].x, l3[j].y],
-                            datadate: l3[j].datadate,
-                            ifend: l3[j].ifend,
-                            spid: l3[j].id
-                        };
-                        data.push(node);
-                    }
-                }
-            }
-        }
-        res.data = data;
-        res.links = links;
-        res.lines = lines;
-        res.len = returninfo.len;
-        res.leny = returninfo.leny;
-        return res;
-    }
-
-    /*var jsons = format(data);
-    jsons = format2(jsons);
-    var returninfo = initCharts(jsons);
-    var option = {
-        backgroundColor: "#f5f5f5",
-        grid: {
-            left: '5%',
-            right: '5%'
-        },
-        xAxis: {
-            show: false,
-            type: "value",
-            max: returninfo.len[0],
-            min: returninfo.len[1]
-        },
-        yAxis: {
-            show: false,
-            type: "value",
-            max: returninfo.leny[0],
-            min: returninfo.leny[1] - 10
-        },
-        tooltip: {},
-        series: [{
-            type: "graph",
-            zlevel: 5,
-            draggable: false,
-            coordinateSystem: "cartesian2d", //使用二维的直角坐标系（也称笛卡尔坐标系）
-            label: {
-                show: true,
-                color: "#000",
-                position: 'bottom',
-            },
-            data: returninfo.data,
-            links: returninfo.links,
-            lineStyle: {
-                opacity: 1,
-                width: 2
-            }
-        }, {
-            type: "lines",
-            coordinateSystem: "cartesian2d",
-            zlevel: 1,
-            animation: false,
-            effect: {
-                show: true,
-                period: 5,
-                trailLength: 0.1,
-                symbolSize: 12,
-                symbol: "pin",
-                loop: true
-            },
-            data: returninfo.lines,
-            lineStyle: {
-                width: 0
-            }
-        }, {
-            type: "lines",
-            coordinateSystem: "cartesian2d",
-            zlevel: 1,
-            animation: false,
-            effect: {
-                show: true,
-                period: 5,
-                trailLength: 0.1,
-                symbolSize: 12,
-                symbol: "pin",
-                loop: true
-            },
-            data: returninfo.lines,
-            lineStyle: {
-                width: 0
-            }
-        }, {
-            type: "lines",
-            coordinateSystem: "cartesian2d",
-            zlevel: 1,
-            animation: false,
-            effect: {
-                show: true,
-                period: 5,
-                trailLength: 0.1,
-                symbolSize: 12,
-                symbol: "pin",
-                loop: true
-            },
-            data: returninfo.lines,
-            lineStyle: {
-                width: 0
-            }
-        }]
-    };
-    var SummaryChart = echarts.init(document.getElementById("SummaryChart"));
-    SummaryChart.setOption(option);*/
-
-</script>
 
 
 <script>
     var icon_router = "image://../images/icon_router.png";
     var icon_server = "image://../images/icon_server.png";
     var icon_computer = "image://../images/icon_computer.png";
-
-
-    /*
-    nodes:[
-            {
-                name: 'Node 1',
-                x: 300,
-                y: 300,
-                symbol: icon_router,
-                symbolSize: [200, 200],
-            },
-            {
-                name: 'Node 2',
-                x: 800,
-                y: 300
-            },
-            {
-                name: 'Node 3',
-                symbol: 'rect',
-                symbolSize: [180, 90],
-                x: 550,
-                y: 100,
-                itemStyle: {
-                    color: '#FFFFFF',
-                    borderColor: '#3169F8',
-                    borderWidth: 3,
-                },
-            },
-            {
-                name: 'Node 4',
-                x: 550,
-                y: 500
-            }
-        ],
-        */
-    /*
-        links: [
-            {
-                source: 0,
-                target: 1,
-                symbolSize: [5, 20],
-                label: {
-                    show: true
-                },
-                lineStyle: {
-                    width: 5,
-                    curveness: 0.2
-                }
-            },
-            {
-                source: 'Node 2',
-                target: 'Node 1',
-                label: {
-                    show: true
-                },
-                lineStyle: {
-                    curveness: 0.2
-                }
-            },
-            {
-                source: 'Node 1',
-                target: 'Node 3'
-            },
-            {
-                source: 'Node 2',
-                target: 'Node 3'
-            },
-            {
-                source: 'Node 2',
-                target: 'Node 4'
-            },
-            {
-                source: 'Node 1',
-                target: 'Node 4'
-            }
-        ],
-     */
-
+    var hostSampleData = {
+        "0.0.0.1":{
+            cpuUsage:1.5,
+            memoryUsage:2,
+            diskIOPS:3,
+        },
+        "0.0.0.2":{
+            cpuUsage:2,
+            memoryUsage:50,
+            diskIOPS:2,
+        },
+        "3.0.0.1":{
+            cpuUsage:11,
+            memoryUsage:7,
+            diskIOPS:5,
+        }
+    };
     var graphConfig ={
         //图表大小
         symbolSize: [70, 70],
         //路由偏移
         routerXoffset: 100,
-
-        //集群偏移
-        clusterXoffset: 100,
-        clusterYoffset: 100,
-        //集群宽度
-        clusterXsize: 450,
-
+        routerYoffset:200,
         //主机偏移
         hostXoffset: 50,
         hostYoffset: 50,
-
     };
+    var hostConfigData = [
+        {ip:"0.0.0.1", router:"127.0.0.1",},
+        {ip:"0.0.0.2", router:"127.0.0.1",},
+        {ip:"0.0.0.3", router:"127.0.0.1",},
+        {ip:"0.0.0.4", router:"127.0.0.1",},
+        {ip:"0.0.0.5", router:"127.0.0.1",},
+        {ip:"0.0.0.6", router:"127.0.0.1",},
+        {ip:"0.0.0.7", router:"127.0.0.1",},
+        {ip:"0.0.0.8", router:"127.0.0.1",},
+        {ip:"0.0.0.9", router:"127.0.0.1",},
+
+        {ip:"1.0.0.1", router:"127.0.0.2",},
+        {ip:"1.0.0.2", router:"127.0.0.2",},
+        {ip:"1.0.0.3", router:"127.0.0.2",},
+        {ip:"1.0.0.4", router:"127.0.0.2",},
+
+        {ip:"2.0.0.1", router:"127.0.0.3",},
+        {ip:"2.0.0.2", router:"127.0.0.3",},
+        {ip:"2.0.0.3", router:"127.0.0.3",},
+        {ip:"2.0.0.4", router:"127.0.0.3",},
+        {ip:"2.0.0.5", router:"127.0.0.3",},
+        {ip:"2.0.0.6", router:"127.0.0.3",},
+
+        {ip:"3.0.0.1", router:"127.0.0.4",},
+        {ip:"3.0.0.2", router:"127.0.0.4",},
+        {ip:"3.0.0.3", router:"127.0.0.4",},
+        {ip:"3.0.0.4", router:"127.0.0.4",},
+        {ip:"3.0.0.5", router:"127.0.0.4",},
+
+        {ip:"4.0.0.1", router:"127.0.0.5",},
+        {ip:"4.0.0.2", router:"127.0.0.5",},
+        {ip:"4.0.0.3", router:"127.0.0.5",},
+
+        {ip:"5.0.0.1", router:"127.0.0.6",},
+
+        {ip:"6.0.0.1", router:"127.0.0.7",},
+
+        {ip:"7.0.0.1", router:"127.0.0.8",},
+    ];
+
+    var threshold = {
+        cpuUsage:1,
+        memoryUsage:1,
+        diskIOPS:1,
+    };
+    //获取带颜色的文字
+    function getColoredTxt(displayValue,threshold){
+        if(displayValue>=threshold){
+            return '<span style="font-weight:bold;color:#ee6767">'+displayValue+'</span>';
+        }
+        else{
+            return displayValue;
+        }
+    }
+    //判断是否高负载
+    function getColorByCurrentLoad(cpuUsage,memoryUsage,diskIOPS){
+        if(cpuUsage>=threshold["cpuUsage"] || memoryUsage>=threshold["memoryUsage"] || diskIOPS>=threshold["diskIOPS"]){
+            return "#FF0000";
+        }
+        return "#000000";
+    }
+    //悬浮提示文字
+    function getToolTip(nodeData){
+        var result = "";
+        result+= "CPU利用率: " + getColoredTxt(nodeData["cpuUsage"],threshold["cpuUsage"])+"%</br>" +
+                 "内存利用率: " + getColoredTxt(nodeData["memoryUsage"],threshold["memoryUsage"])+"%</br>" +
+                 "IOPS:     " + getColoredTxt(nodeData["diskIOPS"],threshold["diskIOPS"])+"</br>" ;
+        return result;
+    }
 
 
     function initConfigData(){
-        //Host数据
-        var hostConfigData = [
-            {
-                ip:"39.105.123.116",
-                router:"127.0.0.1",
-                cluster:"阿里云",
-            },
-            {
-                ip:"10.17.16.188",
-                router:"127.0.0.1",
-                cluster:"B511",
-            },
-            {
-                ip:"192.168.3.114",
-                router:"222.20.95.235",
-                cluster:"实验室",
-            },
-        ];
-        //图数据
+        //拓扑图数据
         var graphData = {
             nodes:[],
-            links:[]
+            links:[],
+            lines:[],
+            graphWidth:0,
+            graphHeight:0,
         };
 
-        //集群映射: cluster-router
-
-        //路由列表
-
+        //处理原始数据-init初始结构
         var nodeData = {};
         for(var i=0;i<hostConfigData.length;i++){
             var ip = hostConfigData[i]["ip"];
             var router = hostConfigData[i]["router"];
-            var cluster = hostConfigData[i]["cluster"];
-
             if(!nodeData.hasOwnProperty(router)){
                 nodeData[router] = {
                     routerName: router,
                     x:0,
                     y:0,
-                    sumHeight:0,
-                    clusters:{},
+                    hosts:[],
+                    hostNameList:[],
                 };
             }
-            if(!nodeData[router]["clusters"].hasOwnProperty(cluster)){
-                nodeData[router]["clusters"][cluster] = {
-                    clusterName: cluster,
-                    x:0,
-                    y:0,
-                    xSize: 0,
-                    ySize: 0,
-                    hosts:[],
-                    firstX:0,
-                    firstY:0,
-                }
-            }
-            nodeData[router]["clusters"][cluster]["hosts"].push({
+            //主机
+            nodeData[router]["hosts"].push({
                 hostName: ip,
                 localX: 0,
                 localY: 0,
+                labelPosition:'bottom',
+                lines:[],
             });
+            nodeData[router]["hostNameList"].push(ip);
         }
 
-        //累计高度
-        var cumulativeY = [0, 0];
-
-        var columnInterval = graphConfig["routerXoffset"]+graphConfig["clusterXoffset"]+graphConfig["clusterXsize"]/2;
-        var clusterColumnX = [-1*columnInterval,columnInterval];
+        //每列路由的X坐标
         var routerColumnX = [-1*graphConfig["routerXoffset"],graphConfig["routerXoffset"]];
-        var columnCount = cumulativeY.length;
+        //路由列个数
+        var columnCount = routerColumnX.length;
 
-
+        //路由索引
         var routerIndex = 0;
-        var averageRouterY = 0;
         for(var router in nodeData){
-            var clusterIndex =0;
-            //列
+            //列号
             var columnIndex = routerIndex%columnCount;
 
-            //当前路由
-            var averageY = 0;
-            for(var cluster in nodeData[router]["clusters"]){
-                //Host节点相对位置
-                var hostIndex =0;
-                for(var host in nodeData[router]["clusters"][cluster]["hosts"]){
-                    nodeData[router]["clusters"][cluster]["hosts"][host]["localX"] = 75 * (hostIndex%4 + 1);
-                    nodeData[router]["clusters"][cluster]["hosts"][host]["localY"] = 75 * (hostIndex/4 + 1);
-                    hostIndex +=1;
+            //路由坐标
+            var currentRouter = nodeData[router];
+            currentRouter["x"] = routerColumnX[columnIndex];
+            currentRouter["y"] = graphConfig["routerYoffset"]*Math.floor(routerIndex/2);
+
+            //主机索引
+            var hostIndex =0;
+            for(var host in currentRouter["hosts"]){
+                var currentHost = currentRouter["hosts"][host];
+                //相对位置
+                currentHost["localX"] = graphConfig["hostXoffset"] * (Math.floor(hostIndex/2) + 1)* Math.pow(-1,(columnIndex + 1));
+                currentHost["localY"] = graphConfig["hostYoffset"] * Math.pow(-1,(hostIndex%2 + 1));
+                if(hostIndex%2 === 0){
+                    currentHost["labelPosition"] = 'top';
                 }
-
-                //集群节点长宽
-                nodeData[router]["clusters"][cluster]["xSize"] = 450 ;
-                nodeData[router]["clusters"][cluster]["ySize"] = 100* ((hostIndex-1)/4 + 1) + 50;
-
-                cumulativeY[columnIndex] += nodeData[router]["clusters"][cluster]["ySize"]/2;
-                nodeData[router]["clusters"][cluster]["x"] = clusterColumnX[columnIndex];
-                nodeData[router]["clusters"][cluster]["y"] = cumulativeY[columnIndex];
-
-
-                nodeData[router]["clusters"][cluster]["firstX"] = nodeData[router]["clusters"][cluster]["x"] - 75*2;
-                nodeData[router]["clusters"][cluster]["firstY"] = nodeData[router]["clusters"][cluster]["y"] - nodeData[router]["clusters"][cluster]["ySize"]/2 + 25;
-                averageY += cumulativeY[columnIndex];
-                cumulativeY[columnIndex]+= nodeData[router]["clusters"][cluster]["ySize"]/2 + 100;
-
-                clusterIndex +=1;
+                //折线
+                currentHost["lines"].push([currentRouter["x"] + currentHost["localX"],currentRouter["y"] + currentHost["localY"]]);
+                currentHost["lines"].push([currentRouter["x"] + currentHost["localX"],currentRouter["y"]]);
+                currentHost["lines"].push([currentRouter["x"],currentRouter["y"]]);
+                hostIndex +=1;
             }
-
-            nodeData[router]["x"] = routerColumnX[columnIndex];
-            nodeData[router]["y"] = averageY/clusterIndex;
-            averageRouterY+=nodeData[router]["y"];
-
             routerIndex +=1;
         }
+        graphData["graphHeight"] = graphConfig["routerYoffset"]* (Math.floor(routerIndex/2)+1);
 
-
+        //-----添加点
+        //网络点
         graphData["nodes"].push({
             nodeType: "NetWork",
             name: "NetWork",
             x: 0,
-            y: averageRouterY/routerIndex,
+            y: graphConfig["routerYoffset"]*Math.floor((routerIndex-1)/columnCount)/2,
+            value:[0 ,graphConfig["routerYoffset"]*Math.floor((routerIndex-1)/columnCount)/2 ],
             symbol: icon_router,
             symbolSize: graphConfig["symbolSize"],
+            label: {
+                position:'bottom',
+            },
         });
-
-
-        document.getElementById("TestStr").innerText = JSON.stringify(nodeData);
         for(var router in nodeData){
+            //路由点
+            var currentRouter = nodeData[router];
+
+            var routerCpuUsage = 0;
+            var routerMemoryUsage = 0;
+            var routerDiskIOPS = 0;
+            //主机点
+            for(var host in currentRouter["hosts"]){
+                var currentHost = currentRouter["hosts"][host];
+
+                var hostCpuUsage = 0;
+                var hostMemoryUsage = 0;
+                var hostDiskIOPS = 0;
+                if(hostSampleData.hasOwnProperty(currentHost["hostName"])){
+                    hostCpuUsage = hostSampleData[currentHost["hostName"]]["cpuUsage"]
+                    hostMemoryUsage = hostSampleData[currentHost["hostName"]]["memoryUsage"]
+                    hostDiskIOPS = hostSampleData[currentHost["hostName"]]["diskIOPS"]
+                }
+                routerCpuUsage += hostCpuUsage;
+                routerMemoryUsage += hostMemoryUsage;
+                routerDiskIOPS += hostDiskIOPS;
+
+                graphData["nodes"].push({
+                    nodeType: "host",
+                    name: currentHost["hostName"],
+                    x: currentRouter["x"] + currentHost["localX"],
+                    y: currentRouter["y"] + currentHost["localY"],
+
+                    value:[currentRouter["x"] + currentHost["localX"],currentRouter["y"] + currentHost["localY"]],
+                    symbol: icon_computer,
+                    label: {
+                        position:currentHost["labelPosition"],
+                        color: getColorByCurrentLoad(hostCpuUsage,hostMemoryUsage,hostDiskIOPS),
+                    },
+                    symbolSize: graphConfig["symbolSize"],
+                    cpuUsage:hostCpuUsage,
+                    memoryUsage:hostMemoryUsage,
+                    diskIOPS:hostDiskIOPS,
+                });
+
+                //router-Host连线
+                /*graphData["links"].push({
+                    source: currentHost["hostName"],
+                    target: currentRouter["routerName"],
+                });*/
+
+                graphData["lines"].push({
+                    coords: currentHost["lines"],
+                    lineStyle: {
+                        type: 'solid',
+                        width: 4,
+                        color: getColorByCurrentLoad(hostCpuUsage,hostMemoryUsage,hostDiskIOPS),
+                    }
+                });
+            }
+
+            routerCpuUsage = routerCpuUsage/currentRouter["hostNameList"].length;
+            routerMemoryUsage = routerMemoryUsage/currentRouter["hostNameList"].length;
+            routerDiskIOPS = routerDiskIOPS/currentRouter["hostNameList"].length;
+
             graphData["nodes"].push({
                 nodeType: "router",
-                name: nodeData[router]["routerName"],
-                x: nodeData[router]["x"],
-                y: nodeData[router]["y"],
+                name: currentRouter["routerName"],
+                x: currentRouter["x"],
+                y: currentRouter["y"],
+                value:[currentRouter["x"] ,currentRouter["y"] ],
                 symbol: icon_router,
                 label: {
                     position:'bottom',
+                    color: getColorByCurrentLoad(routerCpuUsage,routerMemoryUsage,routerDiskIOPS),
                 },
                 symbolSize: graphConfig["symbolSize"],
+
+                hostNameList: currentRouter["hostNameList"],
+                cpuUsage:routerCpuUsage/currentRouter["hostNameList"].length,
+                memoryUsage:routerMemoryUsage/currentRouter["hostNameList"].length,
+                diskIOPS:routerDiskIOPS/currentRouter["hostNameList"].length,
             });
 
-            for(var cluster in nodeData[router]["clusters"]){
-                graphData["nodes"].push({
-                    nodeType: "cluster",
-                    name: nodeData[router]["clusters"][cluster]["clusterName"],
-                    x: nodeData[router]["clusters"][cluster]["x"],
-                    y: nodeData[router]["clusters"][cluster]["y"],
-                    symbol: 'rect',
-                    symbolSize: [nodeData[router]["clusters"][cluster]["xSize"],nodeData[router]["clusters"][cluster]["ySize"]],
-                    /*label: {
-                        show: false,
-                    },*/
-                    emphasis:{
-
-                    },
-                    itemStyle: {
-                        color: '#FFFFFF',
-                        borderColor: '#000000',
-                        borderWidth: 2,
-                    },
-                    label: {
-                        position:'top',
-                    }
-
-                });
-
-                for(var host in nodeData[router]["clusters"][cluster]["hosts"]){
-                    graphData["nodes"].push({
-                        nodeType: "host",
-                        name: nodeData[router]["clusters"][cluster]["hosts"][host]["hostName"],
-                        x: nodeData[router]["clusters"][cluster]["firstX"] + nodeData[router]["clusters"][cluster]["hosts"][host]["localX"],
-                        y: nodeData[router]["clusters"][cluster]["firstY"] + nodeData[router]["clusters"][cluster]["hosts"][host]["localY"],
-                        symbol: icon_computer,
-                        label: {
-                            position:'bottom',
-                        },
-                        symbolSize: graphConfig["symbolSize"],
-                    });
-                }
-
-                graphData["links"].push({
-                    source: nodeData[router]["routerName"],
-                    target: nodeData[router]["clusters"][cluster]["clusterName"],
-                });
-                graphData["links"].push({
-                    source: "NetWork",
-                    target: nodeData[router]["routerName"],
-                });
-            }
+            //Network-router连线
+            graphData["links"].push({
+                source: currentRouter["routerName"],
+                target: "NetWork",
+            });
         }
+
+
 
         return graphData;
     }
-
 
     window.onload=function(){
         var graphData = initConfigData();
 
         var option = {
             tooltip: {
-                triggerOn: 'click',
+                //triggerOn: 'click',
                 formatter: function(params){
-                    return `${params.data.x},${params.data.y}:  ${params.data.symbolSize}`;
+                    if(params.data.nodeType === "router"){
+                        var currentRouter = params.data.name;
+                        return "路由: "+currentRouter+"</br>" + getToolTip(params.data);
+                    }
+                    else if(params.data.nodeType === "host"){
+                        var currentIp = params.data.name;
+                        return  "IP: "+currentIp+"</br>"+ getToolTip(params.data);
+                    }
+                    else if(params.data.nodeType === "NetWork"){
+                        return "网络";
+                    }
+                    else{
+                        return "";
+                    }
                 },
+            },
+            xAxis: {
+                show: false,
+                type: 'value',
+            },
+            yAxis: {
+                inverse:true,
+                show: false,
+                type: 'value',
             },
             series: [
                 {
+                    coordinateSystem: 'cartesian2d',
                     type: 'graph',
                     layout: 'none',
                     symbolSize: 50,
                     roam: true,
                     label: {
+                        //fontSize: 14,
                         show: true,
                         formatter: function(params){
-                            if(params.data.nodeType === "cluster"){
-                                return `${params.data.name}:(${params.data.x},${params.data.y})`;
-                            }
-                            else if(params.data.nodeType === "router"){
+                            if(params.data.nodeType === "router"){
                                 return `${params.data.name}:(${params.data.x},${params.data.y})`;
                             }
                             else if(params.data.nodeType === "host"){
                                 return `${params.data.name}:(${params.data.x},${params.data.y})`;
                             }
                             else{
-                                return "";
+                                return `${params.data.name}`;
                             }
-
                         }
                     },
                     edgeSymbol: ['circle', 'arrow'],
@@ -1035,46 +377,31 @@
                     links: graphData["links"],
                     lineStyle: {
                         type: 'solid',
-                        opacity: 1,
                         width: 4,
                         color: '#000000',
                     }
-                }
+                },
+                {
+                    type: 'lines',
+                    polyline: true,
+                    coordinateSystem: 'cartesian2d',
+                    lineStyle: {
+                        type: 'solid',
+                        width: 6,
+                        color: '#000000',
+                    },
+                    data: graphData["lines"],
+                },
             ]
         };
-        var SummaryChart = echarts.init(document.getElementById("SummaryChart"));
+
+        var topologyChart = document.getElementById("SummaryChart");
+        //topologyChart.style.height = graphData["graphHeight"];
+        alert(graphData["graphHeight"]);
+        topologyChart.style.backgroundColor = "#000055";
+
+        var SummaryChart = echarts.init(topologyChart);
         SummaryChart.setOption(option);
     }
 </script>
-
-<!--<script>-->
-<!--    var graph = new Q.Graph('canvas');-->
-<!--    window.onload=function(){-->
-<!--        graph.onclick = function(evt) {-->
-<!--            var target = graph.getElementByMouseEvent(evt);-->
-<!--            if(target && target instanceof Q.Node){-->
-<!--                alert(target.name);-->
-<!--            }-->
-<!--        };-->
-<!--        -->
-<!--        var n1 = graph.createNode("1.1.1.1");-->
-<!--        n1.image = Q.Graphs.exchanger;-->
-
-<!--        var hello = graph.createNode("Hello");-->
-<!--        hello.image = Q.Graphs.server;-->
-<!--        //hello.image = Q.Graphs.-->
-<!--        var qunee = graph.createNode("Qunee");-->
-<!--        var edge = graph.createEdge("Hello\nQunee", hello, qunee);-->
-
-
-<!--        edge.setStyle(Q.Styles.LABEL_OFFSET_Y, -10);-->
-<!--        edge.setStyle(Q.Styles.LABEL_POSITION, Q.Position.CENTER_TOP);-->
-<!--        edge.setStyle(Q.Styles.LABEL_ANCHOR_POSITION, Q.Position.CENTER_BOTTOM);-->
-<!--        edge.setStyle(Q.Styles.LABEL_BORDER, 1);-->
-<!--        edge.setStyle(Q.Styles.LABEL_POINTER, true);-->
-<!--        edge.setStyle(Q.Styles.LABEL_PADDING, new Q.Insets(2, 5));-->
-<!--        edge.setStyle(Q.Styles.LABEL_BACKGROUND_GRADIENT,-->
-<!--            Q.Gradient.LINEAR_GRADIENT_VERTICAL);-->
-<!--    };-->
-<!--</script>-->
 </html>
