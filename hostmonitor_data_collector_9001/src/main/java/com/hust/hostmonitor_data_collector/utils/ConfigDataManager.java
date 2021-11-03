@@ -182,6 +182,9 @@ public class ConfigDataManager {
     private JSONObject getConfigJsonObject(String key){
         return JSONObject.parseObject(configJson.getJSONObject(key).toJSONString());
     }
+    public int getSampleMethod(){
+        return configJson.getInteger("sampleSelect");
+    }
     public static void main(String[] args) {
         ConfigDataManager configDataManager = ConfigDataManager.getInstance();
         List<HostConfigData> hostConfigDataList = configDataManager.getSSHConfigHostList();

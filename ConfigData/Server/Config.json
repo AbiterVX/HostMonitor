@@ -3,6 +3,7 @@
   "ServerSampleListenPort": 7000,
   "SpecialUsagePort": 7001,
   "DataSourceSelect": 1,
+  "sampleSelect": 1,
   "loadPartition": {
     "cpuLoad": [30.0,70.0,100.0],
     "memoryLoad": [30.0,70.0,100.0],

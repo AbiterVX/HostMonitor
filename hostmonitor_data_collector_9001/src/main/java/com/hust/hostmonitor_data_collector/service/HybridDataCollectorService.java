@@ -32,28 +32,77 @@ import java.util.concurrent.Executors;
 
 
 public class HybridDataCollectorService implements DataCollectorService{
-    //数据采样
-    private DataSampleManager dataSampleManager = DataSampleManager.getInstance();
-    //配置数据
-    private ConfigDataManager configDataManager= ConfigDataManager.getInstance();
 
-
+    //自动注入类
     @Autowired
     UserDao userDao;
     @Autowired
     DiskFailureMapper diskFailureMapper;
     @Autowired
     DispersedMapper dispersedMapper;
+
+    //数据采样管理
+    private DataSampleManager dataSampleManager = DataSampleManager.getInstance();
+    //配置数据管理
+    private ConfigDataManager configDataManager= ConfigDataManager.getInstance();
+    //采样方式选择
+    private int sampleSelect=configDataManager.getSampleMethod();
+    //cmd命令执行
     DataSampleManager cmdSampleManager=DataSampleManager.getInstance();
-    HashMap<String,JSONObject> hostsSampleData;
     private String dataPath;
+    //格式资源变量
     private final SimpleDateFormat sdf=new SimpleDateFormat("yyyy-MM-dd");
+
+    //----- 监控节点
+    //SSH 连接的节点配置数据List
+    private List<HostConfigData> sshHostList;
+    //Socket 连接的节点List
+    //List<> socketHostList;
+    //线程池(用于SSH节点的定时采样)
+    private ExecutorService executorService;
+
+    //----- 定时作业
+    //定时器
+    private Timer mainTimer = new Timer();
     //定时器周期参数
     private final long sampleInterval=10000;
     private final int sampleStoreDelayMS=500;
     private final int offset=1000;
     private final long predictInterval=24*3600*1000;
-
+    //定时任务(Host性能采样)
+    private TimerTask performanceSampleTask= new TimerTask() {
+        @Override
+        public void run() {
+            for(HostConfigData hostConfigData:dataSampleManager.hostList){
+                if(sshSampleData.containsKey(hostConfigData.ip)){
+                    dataSampleManager.sampleHostData(hostConfigData,sshSampleData.get(hostConfigData.ip));
+                }
+                else{
+                    JSONObject initObject=dataSampleManager.sampleHostHardwareData(hostConfigData);
+                    sshSampleData.put(hostConfigData.ip,initObject);
+                    dataSampleManager.sampleHostData(hostConfigData,initObject);
+                }
+                System.out.println("[DSManager]"+hostConfigData.ip+" Sample Finish");
+            }
+            storeSampleData();
+        }
+    };
+    //定时任务(Host进程采样)
+    private TimerTask processSampleTask=new TimerTask() {
+        @Override
+        public void run() {
+            for(HostConfigData hostConfigData:dataSampleManager.hostList){
+                if(sshSampleData.containsKey(hostConfigData.ip)){
+                    dataSampleManager.sampleHostProcess(hostConfigData,sshSampleData.get(hostConfigData.ip));
+                }
+                else{
+                    JSONObject initObject=dataSampleManager.sampleHostHardwareData(hostConfigData);
+                    sshSampleData.put(hostConfigData.ip,initObject);
+                    dataSampleManager.sampleHostProcess(hostConfigData,initObject);
+                }
+            }
+        }
+    };
     //定时器采样任务
     private final TimerTask diskPredictTask= new TimerTask() {
         @Override
@@ -62,6 +111,7 @@ public class HybridDataCollectorService implements DataCollectorService{
             diskPredict();
         }
     };
+    //socket采样持久化任务
     private final TimerTask dataPersistanceTask = new TimerTask() {
         @Override
         public void run() {
@@ -76,6 +126,7 @@ public class HybridDataCollectorService implements DataCollectorService{
             }
         }
     };
+    //实际数据库持久化操作
     private void storeSampleData(){
         System.out.println("[hosts size]"+hostsSampleData.size());
         for(Map.Entry<String, JSONObject> entry: hostsSampleData.entrySet()){
@@ -123,64 +174,16 @@ public class HybridDataCollectorService implements DataCollectorService{
 
 
 
-    //----- 监控节点
-    //SSH 连接的节点配置数据List
-    private List<HostConfigData> sshHostList;
-    //Socket 连接的节点List
-    //List<> socketHostList;
-    //线程池(用于SSH节点的定时采样)
-    private ExecutorService executorService;
-
-    //----- 定时作业
-    //定时器
-    private Timer mainTimer = new Timer();
-    //定时任务(Host性能采样)
-    private TimerTask performanceSampleTask= new TimerTask() {
-        @Override
-        public void run() {
-            for(HostConfigData hostConfigData:dataSampleManager.hostList){
-                if(sshSampleData.containsKey(hostConfigData.ip)){
-                    dataSampleManager.sampleHostData(hostConfigData,sshSampleData.get(hostConfigData.ip));
-                }
-                else{
-                    JSONObject initObject=dataSampleManager.sampleHostHardwareData(hostConfigData);
-                    sshSampleData.put(hostConfigData.ip,initObject);
-                    dataSampleManager.sampleHostData(hostConfigData,initObject);
-                }
-                System.out.println("[DSManager]"+hostConfigData.ip+" Sample Finish");
-            }
-            storeSampleData();
-        }
-    };;
-    //定时任务(Host进程采样)
-    private TimerTask processSampleTask=new TimerTask() {
-        @Override
-        public void run() {
-            for(HostConfigData hostConfigData:dataSampleManager.hostList){
-                if(sshSampleData.containsKey(hostConfigData.ip)){
-                    dataSampleManager.sampleHostProcess(hostConfigData,sshSampleData.get(hostConfigData.ip));
-                }
-                else{
-                    JSONObject initObject=dataSampleManager.sampleHostHardwareData(hostConfigData);
-                    sshSampleData.put(hostConfigData.ip,initObject);
-                    dataSampleManager.sampleHostProcess(hostConfigData,initObject);
-                }
-            }
-        }
-    };
-
-
     //----- 数据 -----
     //总体统计数据
     private JSONObject summaryInfo;
     public float[][] loadPartition;
-
     //IO测试数据
     public Map<String, JSONObject> ioTestInfoList = new HashMap<>();
-
     //采样数据
-    private Map<String,JSONObject> sshSampleData = new HashMap<>();
-    private Map<String,JSONObject> socketSampleData = new HashMap<>();
+    private HashMap<String,JSONObject> sshSampleData = null;
+    private HashMap<String,JSONObject> oshiSampleData=null;
+    private HashMap<String,JSONObject> hostsSampleData=null;
 
     //----- 内部函数 -----
     //构造函数
@@ -189,13 +192,12 @@ public class HybridDataCollectorService implements DataCollectorService{
         //线程池大小设为Host个数*2
         executorService= Executors.newFixedThreadPool(sshHostList.size()*2);
         dataPath=System.getProperty("user.dir")+"/DiskPredict/";
-        System.out.println("Choose sample Mode:[1]SSH Commands [2]OSHI/选择采样模式:[1]SSH远程执行指令[2]OSHI");
+        System.out.println("You can check select in Config.json [1]SSH Commands [2]OSHI/选择采样模式:[1]SSH远程执行指令[2]OSHI");
         System.out.println("Default:SSH Commands/默认使用SSH远程执行指令");
-        Scanner in=new Scanner(System.in);
-        int select=1;
-        if(in.hasNextInt())
-            select=in.nextInt();
-        if(select==1){
+
+        if(sampleSelect==1){
+            sshSampleData=new HashMap<>();
+            hostsSampleData=sshSampleData;
             for(HostConfigData hostConfigData:dataSampleManager.hostList){
                 JSONObject initObject=dataSampleManager.sampleHostHardwareData(hostConfigData);
                 sshSampleData.put(hostConfigData.ip,initObject);
@@ -206,8 +208,13 @@ public class HybridDataCollectorService implements DataCollectorService{
             mainTimer.schedule(processSampleTask,13*1000,sampleInterval);
 
         }
-        else if(select==2){
+        else if(sampleSelect==2){
+            oshiSampleData=new HashMap<>();
+            hostsSampleData=sshSampleData;
             //TODO 植入OSHI实现
+
+
+
             mainTimer.schedule(dataPersistanceTask,sampleInterval/2,sampleInterval-offset);
         }
         summaryInfo=configDataManager.getSummaryFormat();
@@ -227,7 +234,6 @@ public class HybridDataCollectorService implements DataCollectorService{
             date=addDay(date,1);
         }
         mainTimer.schedule(diskPredictTask,date,predictInterval);
-
     }
     private Date addDay(Date date,int num){
         Calendar calendar=Calendar.getInstance();
@@ -439,8 +445,6 @@ public class HybridDataCollectorService implements DataCollectorService{
     public List<Float> getTrainProgress(){
         return progressPercentage;
     }
-
-
 
     @Override
     public void train(int modelType, float positiveDataProportion, float negativeDataProportion, float verifyProportion, JSONObject extraParams, String operatorID) {
