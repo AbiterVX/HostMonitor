@@ -5,6 +5,7 @@ import ch.ethz.ssh2.Session;
 import ch.ethz.ssh2.StreamGobbler;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
@@ -98,5 +99,11 @@ public class EthzSSHManager implements SSHManager {
             //session NULL
         }
         return result;
+    }
+    public static void main(String[] args) throws IOException {
+        Connection newConnection = new Connection("39.105.123.116");
+        newConnection.connect();
+
+        boolean isAuthenticated = newConnection.authenticateWithPassword("root","VX117Halo");
     }
 }

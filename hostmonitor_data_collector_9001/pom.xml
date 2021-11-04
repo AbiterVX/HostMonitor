@@ -269,6 +269,10 @@
             <artifactId>Dm8JdbcDriver18</artifactId>
             <version>8.1.1.49</version>
         </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
 
     </dependencies>
 

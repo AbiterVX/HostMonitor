@@ -8,7 +8,7 @@ public class DispersedProvider {
     public String insertNewRecord(){
         String SQL=null;
         if(dataSourceSelect==0){
-            SQL= "insert into DISPERSEDMONITORRECORD values (" +
+            SQL= "insert into DispersedMonitorRecord values (" +
                     "#{hostname},#{ip},#{timestamp},#{MemUsage},#{CpuUsage},#{NetRecv},#{NetSent},#{DiskReadRates},#{DiskWriteRates})";
         }
         else if (dataSourceSelect==1){

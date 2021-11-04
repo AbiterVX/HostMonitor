@@ -8,6 +8,7 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.hust.hostmonitor_data_collector.utils.SSHConnect.JschSSHManager;
 import com.hust.hostmonitor_data_collector.utils.SSHConnect.SSHManager;
 import com.vnetpublishing.java.suapp.SU;
 import com.vnetpublishing.java.suapp.SuperUserApplication;
@@ -53,7 +54,7 @@ public class CmdExecutor {
     private SSHManager sshManager;
     public CmdExecutor(){
         //SSH默认连接方式为JSCH。
-        sshManager = new EthzSSHManager();
+        sshManager = new JschSSHManager();
     }
     public List<String> runCommand(String cmd, HostConfigData hostConfigData) {
         if(hostConfigData == null){

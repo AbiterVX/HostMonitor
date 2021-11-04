@@ -31,7 +31,7 @@ public interface UserDao {
                         @Param("user_id") String user_id);
 
 
-    @UpdateProvider(type=UserProvider.class,method = "")
+    @UpdateProvider(type=UserProvider.class,method = "updateUserPassword")
     void updateUserPassword(@Param("user_id") String user_id, @Param("user_password") String user_password,
                             @Param("new_password") String new_password);
 

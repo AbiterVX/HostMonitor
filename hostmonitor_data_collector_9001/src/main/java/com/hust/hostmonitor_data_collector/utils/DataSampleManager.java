@@ -79,6 +79,7 @@ public class DataSampleManager {
         JSONObject sampleData = configDataManager.getSampleFormat("hostInfo");
         OSType osType = getOSType(hostConfigData);
         if(osType.equals(OSType.LINUX)){
+            sampleData.put("ip",hostConfigData.ip);
             //hostName
             {
                 List<String> cmdResult=cmdExecutor.runCommand("hostname",hostConfigData);
@@ -124,7 +125,7 @@ public class DataSampleManager {
                     {
                         newDiskInfo.put("diskName",Serial.trim());
                         newDiskInfo.put("diskModel",Model.trim());
-                        newDiskInfo.put("diskCapacitySize",LinuxDataProcess.doubleTo2bits_double(size*1.0f/1024/1024/1024));
+                        newDiskInfo.put("diskTotalSize",LinuxDataProcess.doubleTo2bits_double(size*1.0f/1024/1024/1024));
                         newDiskInfo.put("type",1);
                         //TODO 加入smart信息对照
 
@@ -132,7 +133,7 @@ public class DataSampleManager {
                     sampleData.getJSONArray("diskInfoList").add(newDiskInfo);
                     totalsize+=size;
                 }
-                sampleData.put("diskCapacityTotalSizeSum",LinuxDataProcess.doubleTo2bits_double(totalsize*1.0/1024/1024/1024));
+                sampleData.put("allDiskTotalSize",LinuxDataProcess.doubleTo2bits_double(totalsize*1.0/1024/1024/1024));
             }
             //cpuInfoList
             {
@@ -170,7 +171,7 @@ public class DataSampleManager {
 
                     if (found) {
                         if (split.length < 2) {
-                            cardList.add(new LinuxGPU(name, deviceId, vendor, versionInfoList.isEmpty() ? "unknown" : String.join(", ", versionInfoList), LinuxDataProcess.queryLspciMemorySize(lookupDevice)));
+                            cardList.add(new LinuxGPU(name, deviceId, vendor, versionInfoList.isEmpty() ? "unknown" : String.join(", ", versionInfoList), LinuxDataProcess.queryLspciMemorySize(lookupDevice,hostConfigData)));
                             versionInfoList.clear();
                             found = false;
                         } else {
@@ -195,7 +196,7 @@ public class DataSampleManager {
                     }
                 }
                 if (found) {
-                    cardList.add(new LinuxGPU(name, deviceId, vendor, versionInfoList.isEmpty() ? "unknown" : String.join(", ", versionInfoList), LinuxDataProcess.queryLspciMemorySize(lookupDevice)));
+                    cardList.add(new LinuxGPU(name, deviceId, vendor, versionInfoList.isEmpty() ? "unknown" : String.join(", ", versionInfoList), LinuxDataProcess.queryLspciMemorySize(lookupDevice,hostConfigData)));
                 }
                 for(LinuxGPU linuxGPU:cardList){
                         JSONObject newGpuInfo = configDataManager.getSampleFormat("gpuInfo");
@@ -358,8 +359,8 @@ public class DataSampleManager {
         if(osType.equals(OSType.LINUX)){
             LinuxPeriodRecord record=new LinuxPeriodRecord();
             //TODO
-            String scriptPath=System.getProperty("user.dir")+"/ConfigData/Client/SampleCommand.sh";
-            List<String> sampleInfo=cmdExecutor.runCommand(scriptPath,hostConfigData);
+            //String scriptPath=System.getProperty("user.dir")+"/ConfigData/Client/SampleCommand.sh";
+            List<String> sampleInfo=cmdExecutor.runCommand("/root/SampleCommand.sh",hostConfigData);
             List<String> mountUsageInfo = cmdExecutor.runCommand("df",hostConfigData); //查询结果使用量为KB
             HashMap<String, Pair<Long,Long>> mountUsage=new HashMap<>();
             for (int i=0;i<mountUsageInfo.size();i++
@@ -390,7 +391,7 @@ public class DataSampleManager {
                 Iterator<String> itr = sampleInfo.iterator();
                 while (itr.hasNext()) {
                     String currentString = itr.next();
-                    if (currentString.contains(scriptPath)) {
+                    if (currentString.contains("SampleCommand.sh")) {
                         continue;
                     }
                     String[] tokens = currentString.split(":");
@@ -486,14 +487,13 @@ public class DataSampleManager {
                     } catch (Exception e) {
                         System.out.println("usage2bitsError");
                     }
-                    JSONArray singleArray=new JSONArray();
-                    double singleTotalSize=sampleData.getJSONArray("diskInfoList").getJSONObject(i).getDouble("diskCapacityTotalSize");
+
+                    double singleTotalSize=sampleData.getJSONArray("diskInfoList").getJSONObject(i).getDouble("diskTotalSize");
                     double singleUsedSize=tempDiskInfo.diskFSUsageAmount*1.0f/1024/1024;
-                    singleArray.add(LinuxDataProcess.doubleTo2bits_double(singleUsedSize));
-                    singleArray.add(singleTotalSize);
+
                     totalUsedSize+=singleUsedSize;
                     sampleData.getJSONArray("diskInfoList").getJSONObject(i).put("diskUsage",usage2bits);
-                    sampleData.getJSONArray("diskInfoList").getJSONObject(i).put("diskCapacitySize",singleArray);
+                    sampleData.getJSONArray("diskInfoList").getJSONObject(i).put("diskTotalFreeSize",LinuxDataProcess.doubleTo2bits_double((singleTotalSize-singleUsedSize)));
                     double ReadRates = tempDiskInfo.diskReadSpeed;
                     double WriteRates = tempDiskInfo.diskWriteSpeed;
                     sampleData.getJSONArray("diskInfoList").getJSONObject(j).put("diskIOPS", tempDiskInfo.diskIOPS);
@@ -504,10 +504,7 @@ public class DataSampleManager {
                     sampleData.getJSONArray("diskInfoList").getJSONObject(j).put("diskWrite",0);
                     sampleData.getJSONArray("diskInfoList").getJSONObject(j).put("diskWriteBytes",0);
                 }
-                JSONArray diskUsage=new JSONArray();
-                diskUsage.add(LinuxDataProcess.doubleTo2bits_double(totalUsedSize));
-                diskUsage.add(sampleData.getDouble("diskCapacityTotalSizeSum"));
-                sampleData.put("diskCapacityTotalUsage",diskUsage);
+                sampleData.put("allDiskTotalFreeSize",LinuxDataProcess.doubleTo2bits_double(sampleData.getDouble("allDiskTotalSize")-totalUsedSize));
             }
         }
         else if(osType.equals(OSType.WINDOWS)){
@@ -743,7 +740,6 @@ public class DataSampleManager {
                 //TODO 进程过滤
                 processInfoList.add(newProcess);
             }
-            System.out.println("进程个数"+processInfoList.size());
             sampleData.put("processInfoList",processInfoList);
 
         }

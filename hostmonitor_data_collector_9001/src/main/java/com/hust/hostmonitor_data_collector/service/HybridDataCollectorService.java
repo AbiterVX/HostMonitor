@@ -15,6 +15,8 @@ import com.hust.hostmonitor_data_collector.utils.DiskPredict.DiskPredictProgress
 import com.hust.hostmonitor_data_collector.utils.DiskPredict.QueryResources;
 import com.hust.hostmonitor_data_collector.utils.TestInitiator;
 import com.hust.hostmonitor_data_collector.utils.linuxsample.LinuxDataProcess;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.File;
@@ -41,6 +43,9 @@ public class HybridDataCollectorService implements DataCollectorService{
     @Autowired
     DispersedMapper dispersedMapper;
 
+
+    //日志输出
+    Logger logger= LoggerFactory.getLogger(HybridDataCollectorService.class);
     //数据采样管理
     private DataSampleManager dataSampleManager = DataSampleManager.getInstance();
     //配置数据管理
@@ -82,7 +87,7 @@ public class HybridDataCollectorService implements DataCollectorService{
                     sshSampleData.put(hostConfigData.ip,initObject);
                     dataSampleManager.sampleHostData(hostConfigData,initObject);
                 }
-                System.out.println("[DSManager]"+hostConfigData.ip+" Sample Finish");
+               logger.info("[DSManager]"+hostConfigData.ip+" performance sample");
             }
             storeSampleData();
         }
@@ -93,13 +98,25 @@ public class HybridDataCollectorService implements DataCollectorService{
         public void run() {
             for(HostConfigData hostConfigData:dataSampleManager.hostList){
                 if(sshSampleData.containsKey(hostConfigData.ip)){
-                    dataSampleManager.sampleHostProcess(hostConfigData,sshSampleData.get(hostConfigData.ip));
+                    executorService.execute(new Runnable() {
+                        @Override
+                        public void run() {
+                            dataSampleManager.sampleHostProcess(hostConfigData,sshSampleData.get(hostConfigData.ip));
+                        }
+                    });
+
                 }
                 else{
-                    JSONObject initObject=dataSampleManager.sampleHostHardwareData(hostConfigData);
-                    sshSampleData.put(hostConfigData.ip,initObject);
-                    dataSampleManager.sampleHostProcess(hostConfigData,initObject);
+                    executorService.execute(new Runnable() {
+                        @Override
+                        public void run() {
+                            JSONObject initObject=dataSampleManager.sampleHostHardwareData (hostConfigData) ;
+                            sshSampleData.put(hostConfigData.ip,initObject);
+                            dataSampleManager.sampleHostProcess(hostConfigData,initObject);
+                        }
+                    });
                 }
+                logger.info("[DSManager]"+hostConfigData.ip+" process sample");
             }
         }
     };
@@ -107,32 +124,37 @@ public class HybridDataCollectorService implements DataCollectorService{
     private final TimerTask diskPredictTask= new TimerTask() {
         @Override
         public void run() {
-            //System.out.println("[TimerTask:Disk Predict]"+new Date());
+            logger.info("[DiskPredict]"+new Date());
             diskPredict();
         }
     };
     //socket采样持久化任务
-    private final TimerTask dataPersistanceTask = new TimerTask() {
+    private final TimerTask dataPersistenceTask = new TimerTask() {
         @Override
         public void run() {
-            //采样
-            //System.out.println("[TimerTask:Data Persistance]"+new Date());
+            logger.info("[DataPersistance]"+new Date());
             try {
                 Thread.sleep(sampleStoreDelayMS);
-                //存储新采样的数据
                 storeSampleData();
             } catch (InterruptedException e) {
-                System.err.println("[Thread Sleep Error]: In TimerTask run()");
+                logger.error("[ThreadSleepError]: In TimerTask dataPersistenceTask");
             }
         }
     };
     //实际数据库持久化操作
     private void storeSampleData(){
-        System.out.println("[hosts size]"+hostsSampleData.size());
+        logger.info("[Persistence]DataHostsSize "+hostsSampleData.size());
         for(Map.Entry<String, JSONObject> entry: hostsSampleData.entrySet()){
             JSONObject tempObject=entry.getValue();
-            if(!tempObject.getBoolean("hasPersistent")){
-                double memUsage=tempObject.getJSONArray("memoryUsage").getDouble(0)/tempObject.getJSONArray("memoryUsage").getDouble(1);
+            if(!tempObject.getBoolean("hasPersistent")){  //TODO
+                double memUsage;
+                if(tempObject.getJSONArray("memoryUsage").getDouble(1)==0){
+                    memUsage=0;
+                }
+                else{
+                    memUsage=tempObject.getJSONArray("memoryUsage").getDouble(0)/tempObject.getJSONArray("memoryUsage").getDouble(1);
+                }
+
                 double DiskReadRates=0;
                 double DiskWriteRates=0;
                 for(int i=0;i<tempObject.getJSONArray("diskInfoList").size();i++){
@@ -142,24 +164,20 @@ public class HybridDataCollectorService implements DataCollectorService{
                 if( tempObject.getDouble("cpuUsage")==0){
                     continue;
                 }
-
                 dispersedMapper.insertNewRecord(tempObject.getString("hostName"),tempObject.getString("ip"),
                         tempObject.getTimestamp("lastUpdateTime")/*这里可能要改时间*/,memUsage,
                         tempObject.getDouble("cpuUsage"),
                         tempObject.getDouble("netReceiveSpeed"),
                         tempObject.getDouble("netSendSpeed"),DiskReadRates,DiskWriteRates);
                 entry.getValue().put("hasPersistent",true);
-                //System.out.println("[Database]Insert a record.");
                 JSONArray diskArray=tempObject.getJSONArray("diskInfoList");
                 for(int i=0;i<diskArray.size();i++){
                     JSONObject tempDiskObject=diskArray.getJSONObject(i);
                     String diskSerial=diskFailureMapper.queryDiskHardwareExists(tempDiskObject.getString("diskName"));
                     if(diskSerial==null){
                         diskSerial=tempDiskObject.getString("diskName");
-
-                        System.out.println(tempDiskObject.getJSONArray("diskCapacitySize").getDoubleValue(1));
                         diskFailureMapper.insertDiskHardwareInfo(diskSerial,tempObject.getString("hostName"),
-                                tempDiskObject.getJSONArray("diskCapacitySize").getDoubleValue(1),
+                                tempDiskObject.getDoubleValue("diskTotalSize"),
                                 tempDiskObject.getIntValue("type")>0? true:false,
                                 tempDiskObject.getString("diskModel"),
                                 tempObject.getString("ip"));
@@ -182,49 +200,41 @@ public class HybridDataCollectorService implements DataCollectorService{
     public Map<String, JSONObject> ioTestInfoList = new HashMap<>();
     //采样数据
     private HashMap<String,JSONObject> sshSampleData = null;
-    private HashMap<String,JSONObject> oshiSampleData=null;
+    private HashMap<String,JSONObject> socketSampleData=null;
     private HashMap<String,JSONObject> hostsSampleData=null;
 
     //----- 内部函数 -----
     //构造函数
     public HybridDataCollectorService(){
-        sshHostList = configDataManager.getSSHConfigHostList();
+        sshHostList = dataSampleManager.hostList;
         //线程池大小设为Host个数*2
         executorService= Executors.newFixedThreadPool(sshHostList.size()*2);
         dataPath=System.getProperty("user.dir")+"/DiskPredict/";
-        System.out.println("You can check select in Config.json [1]SSH Commands [2]OSHI/选择采样模式:[1]SSH远程执行指令[2]OSHI");
-        System.out.println("Default:SSH Commands/默认使用SSH远程执行指令");
-
+        logger.info("Check select in Config.json [1]SSH Commands [2]OSHI/选择采样模式:[1]SSH远程执行指令[2]OSHI");
+        logger.info("Default:SSH Commands/默认使用SSH远程执行指令");
         if(sampleSelect==1){
             sshSampleData=new HashMap<>();
             hostsSampleData=sshSampleData;
-            for(HostConfigData hostConfigData:dataSampleManager.hostList){
+            for(HostConfigData hostConfigData:sshHostList){
+
                 JSONObject initObject=dataSampleManager.sampleHostHardwareData(hostConfigData);
+
                 sshSampleData.put(hostConfigData.ip,initObject);
             }
-            //mainTimer.schedule(sampleAndPersistantTask,sampleInterval/2,sampleInterval);
-            //定时作业
             mainTimer.schedule(performanceSampleTask,7*1000,sampleInterval);
             mainTimer.schedule(processSampleTask,13*1000,sampleInterval);
 
         }
         else if(sampleSelect==2){
-            oshiSampleData=new HashMap<>();
+
+            socketSampleData=new HashMap<>();
             hostsSampleData=sshSampleData;
-            //TODO 植入OSHI实现
 
-
-
-            mainTimer.schedule(dataPersistanceTask,sampleInterval/2,sampleInterval-offset);
+            mainTimer.schedule(dataPersistenceTask,sampleInterval/2,sampleInterval-offset);
         }
+
         summaryInfo=configDataManager.getSummaryFormat();
         loadPartition=configDataManager.getLoadPartitionFormat();
-        //SSH 采样
-        {
-            for(int i=0;i<sshHostList.size();i++){
-                sshHostList.get(i);
-            }
-        }
         Calendar calendar=Calendar.getInstance();
         calendar.set(Calendar.HOUR_OF_DAY, 1);
         calendar.set(Calendar.MINUTE,0);
@@ -260,7 +270,7 @@ public class HybridDataCollectorService implements DataCollectorService{
         for(Map.Entry<String,JSONObject> hostInfo: sshSampleData.entrySet()){
             JSONObject hostInfoJson = hostInfo.getValue();
             hostIp.add(hostInfo.getKey());
-            totalSumCapacity+=hostInfoJson.getJSONArray("diskCapacityTotalUsage").getDouble(1);
+            totalSumCapacity+=hostInfoJson.getDoubleValue("diskTotalSize");
             if(hostInfoJson.getString("osName").toLowerCase().contains(("windows").toLowerCase())){
                 windowsCount++;
             }
@@ -305,8 +315,9 @@ public class HybridDataCollectorService implements DataCollectorService{
             //硬盘负载统计
             JSONArray diskInfoList = hostInfoJson.getJSONArray("diskInfoList");
             for(int i=0;i<diskInfoList.size();i++){
-                JSONArray diskCapacitySize =  diskInfoList.getJSONObject(i).getJSONArray("diskCapacitySize");
-                float diskUsage = (diskCapacitySize.getFloat(0) / diskCapacitySize.getFloat(1))*100;
+                double singleTotal= diskInfoList.getJSONObject(i).getDoubleValue("diskTotalSize");
+                double singleFree=diskInfoList.getJSONObject(i).getDoubleValue("diskTotalFreeSize");
+                double diskUsage = (singleTotal-singleFree) / singleTotal*100;
                 for(int j=0;j<loadPartition[2].length;j++){
                     if(diskUsage <= loadPartition[2][j]){
                         loadCount[2][j] += 1;

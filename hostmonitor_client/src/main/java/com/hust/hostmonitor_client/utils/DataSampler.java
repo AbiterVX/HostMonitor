@@ -97,7 +97,7 @@ public class DataSampler {
             HWDiskStore tempDiskStore=hwDiskStoreList.get(i);
             dataObject.getJSONArray("diskInfoList").getJSONObject(i).put("diskName",tempDiskStore.getSerial().trim());
             dataObject.getJSONArray("diskInfoList").getJSONObject(i).put("diskModel",tempDiskStore.getModel());
-            dataObject.getJSONArray("diskInfoList").getJSONObject(i).put("diskCapacityTotalSize",FormatUtils.doubleTo2bits_double((tempDiskStore.getSize()*1.0/1024/1024/1024)));
+            dataObject.getJSONArray("diskInfoList").getJSONObject(i).put("diskTotalSize",FormatUtils.doubleTo2bits_double((tempDiskStore.getSize()*1.0/1024/1024/1024)));
             dataObject.getJSONArray("diskInfoList").getJSONObject(i).put("lastUpdateTime",timestamp);
             String serial=tempDiskStore.getSerial().trim();
             for(String string:types.keySet()){
@@ -128,7 +128,7 @@ public class DataSampler {
 
         //单位GB
 
-        dataObject.put("diskCapacityTotalSizeSum",FormatUtils.doubleTo2bits_double(totalsize*1.0/1024/1024/1024));
+        dataObject.put("allDiskTotalSize",FormatUtils.doubleTo2bits_double(totalsize*1.0/1024/1024/1024));
         //resultObject.put("Disks",diskArray);
         //GPU
         List<GraphicsCard> graphicsCards =  systemInfo.getHardware().getGraphicsCards();
@@ -260,13 +260,9 @@ public class DataSampler {
                 //e.printStackTrace();
                 System.out.println("usage2bitsError");
             }
-            JSONArray singleArray=new JSONArray();
+
             double singleTotalSize=dataObject.getJSONArray("diskInfoList").getJSONObject(j).getDouble("diskCapacityTotalSize");
-            singleArray.add(FormatUtils.doubleTo2bits_double((total-usable)*1.0/1024/1024/1024));
-            singleArray.add(singleTotalSize);
-            totalUsedSize+=total-usable;
-            dataObject.getJSONArray("diskInfoList").getJSONObject(j).put("diskUsage",usage2bits);
-            dataObject.getJSONArray("diskInfoList").getJSONObject(j).put("diskCapacitySize",singleArray);
+            dataObject.getJSONArray("diskInfoList").getJSONObject(j).put("diskTotalFreeSize",FormatUtils.doubleTo2bits_double(usable*1.0/1024/1024/1024));
             long previousReadNumber=dataObject.getJSONArray("diskInfoList").getJSONObject(j).getLong("diskRead");
             long previousReadBytes=dataObject.getJSONArray("diskInfoList").getJSONObject(j).getLong("diskReadBytes");
             long previousWriteNumber=dataObject.getJSONArray("diskInfoList").getJSONObject(j).getLong("diskWrite");
@@ -286,10 +282,7 @@ public class DataSampler {
             dataObject.getJSONArray("diskInfoList").getJSONObject(j).put("diskWrite",WriteNumber);
             dataObject.getJSONArray("diskInfoList").getJSONObject(j).put("diskWriteBytes",WriteBytes);
         }
-        JSONArray diskUsage=new JSONArray();
-        diskUsage.add(FormatUtils.doubleTo2bits_double(totalUsedSize*1.0/1024/1024/1024));
-        diskUsage.add(dataObject.getDouble("diskCapacityTotalSizeSum"));
-        dataObject.put("diskCapacityTotalUsage",diskUsage);
+        dataObject.put("allDiskTotalFreeSize",FormatUtils.doubleTo2bits_double(dataObject.getDouble("allDiskTotalSize")-totalUsedSize*1.0/1024/1024/1024));
         //网络速率计算
         List<NetworkIF> networkIFS=systemInfo.getHardware().getNetworkIFs();
         double totalNetRecv=0;
@@ -414,22 +407,12 @@ public class DataSampler {
                     }
                 }
             }
-            double usage=usable*1.0/total;
-            double usage2bits=0.0;
-            try {
-                usage2bits = FormatUtils.doubleTo2bits_double(usage);
-            } catch (Exception e) {
-                //e.printStackTrace();
-                System.out.println("usage2bitsError");
-            }
+
 
             JSONArray singleArray=new JSONArray();
-            double singleTotalSize=dataObject.getJSONArray("diskInfoList").getJSONObject(j).getDouble("diskCapacityTotalSize");
-            singleArray.add(FormatUtils.doubleTo2bits_double((total-usable)*1.0/1024/1024/1024));
-            singleArray.add(singleTotalSize);
+            double singleTotalSize=dataObject.getJSONArray("diskInfoList").getJSONObject(j).getDouble("diskTotalSize");
             totalUsedSize+=total-usable;
-            dataObject.getJSONArray("diskInfoList").getJSONObject(j).put("diskUsage",usage2bits);
-            dataObject.getJSONArray("diskInfoList").getJSONObject(j).put("diskCapacitySize",singleArray);
+            dataObject.getJSONArray("diskInfoList").getJSONObject(j).put("diskTotalFreeSize",FormatUtils.doubleTo2bits_double(usable*1.0/1024/1024/1024));
             long ReadNumber=hwInThisLoop.getReads();
             long ReadBytes=hwInThisLoop.getReadBytes();
             long WriteNumber=hwInThisLoop.getWrites();
@@ -442,7 +425,7 @@ public class DataSampler {
         JSONArray diskUsage=new JSONArray();
         diskUsage.add(FormatUtils.doubleTo2bits_double(totalUsedSize*1.0/1024/1024/1024));
         diskUsage.add(dataObject.getDoubleValue("diskCapacityTotalSizeSum"));
-        dataObject.put("diskCapacityTotalUsage",diskUsage);
+        dataObject.put("allDiskTotalFreeSize",FormatUtils.doubleTo2bits_double(dataObject.getDouble("allDiskTotalSize")-totalUsedSize*1.0/1024/1024/1024));
         //网络速率计算
         List<NetworkIF> networkIFS=systemInfo.getHardware().getNetworkIFs();
         for(int k=0;k<networkIFS.size();k++){
@@ -454,7 +437,6 @@ public class DataSampler {
 
         }
         //System.out.println("[Data Sample]Sample Finish");
-
     }
     public String outputSampleData(boolean insertProcessOrNot){
         JSONObject outputObject=new JSONObject();

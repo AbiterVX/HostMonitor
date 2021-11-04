@@ -1,5 +1,7 @@
 package com.hust.hostmonitor_data_collector.utils.linuxsample;
 
+import com.hust.hostmonitor_data_collector.utils.CmdExecutor;
+import com.hust.hostmonitor_data_collector.utils.SSHConnect.HostConfigData;
 import com.hust.hostmonitor_data_collector.utils.linuxsample.Entity.Pair;
 
 import java.io.BufferedReader;
@@ -20,9 +22,10 @@ public class LinuxDataProcess {
 //    public static int getGraphicsCardSize() {
 //        return getGraphicsCardsFromLspci().size();
 //    }
-    public static long queryLspciMemorySize(String lookupDevice) {
+    private static CmdExecutor cmdExecutor=new CmdExecutor();
+    public static long queryLspciMemorySize(String lookupDevice, HostConfigData hostConfigData) {
         long vram = 0L;
-        List<String> lspciMem = runCommand("lspci -v -s " + lookupDevice);
+        List<String> lspciMem = cmdExecutor.runCommand("lspci -v -s " + lookupDevice,hostConfigData);
         Iterator var4 = lspciMem.iterator();
 
         while(var4.hasNext()) {
@@ -91,21 +94,5 @@ public class LinuxDataProcess {
         Matcher matcher = LSPCI_MACHINE_READABLE.matcher(line);
         return matcher.matches() ? new Pair(matcher.group(1), matcher.group(2)) : null;
     }
-    public static List<String> runCommand(String string){
-        try {
-            Runtime rt = Runtime.getRuntime();
-            Process process=rt.exec(string);
-            BufferedReader in =new BufferedReader(new InputStreamReader(process.getInputStream()));
-            ArrayList<String> result=new ArrayList<>();
-            String tempStr;
-            while((tempStr=in.readLine())!=null){
-                result.add(tempStr);
-            }
-            in.close();
-            return  result;
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
+
 }
