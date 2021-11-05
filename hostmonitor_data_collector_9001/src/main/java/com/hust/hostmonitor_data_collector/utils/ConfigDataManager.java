@@ -162,10 +162,12 @@ public class ConfigDataManager {
                         }
                     }
                 };
+                String router = currentHost.getString("router");
+
                 if(proxyMap.containsKey(proxyId)){
                     proxyConfigData = proxyMap.get(proxyId);
                 }
-                hostConfigDataList.add(new HostConfigData(ip,username,password,proxyConfigData,osType));
+                hostConfigDataList.add(new HostConfigData(ip,username,password,proxyConfigData,osType,router));
             }
         }
         return hostConfigDataList;

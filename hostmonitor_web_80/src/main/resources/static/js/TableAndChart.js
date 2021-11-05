@@ -1331,10 +1331,11 @@ function FRefreshDFPSummaryChart(currentChart,currentData){
 }
 
 //获取ChartOption-TrendChart
-function FGetTrendChartOption(){
+function FGetTrendChartOption(verticalLayout){
     var titleName = ["CPU利用率","内存利用率","硬盘IO","网络IO"];
     var seriesName = ["CPU利用率","内存利用率","硬盘读取","硬盘写入","网络接受","网络发送"];
     var unitLabel =["%","%","Kb/s","Kb/s"];
+
     var trendChartOption = {
         title: [
             {
@@ -1403,6 +1404,40 @@ function FGetTrendChartOption(){
         yAxis: [],
         series: [],
     };
+
+    if(verticalLayout === true){
+        trendChartOption["grid"] =[
+            {
+                left: '1%',
+                right: '99%',
+                top: '50px',
+                height:'300px',
+                containLabel: true
+            },
+            {
+                left: '1%',
+                right: '99%',
+                top: '430px',
+                height:'300px',
+                containLabel: true
+            },
+            {
+                left: '1%',
+                right: '99%',
+                top: '810px',
+                height:'300px',
+                containLabel: true
+            },
+            {
+                left: '1%',
+                right: '99%',
+                top: '1190px',
+                height:'300px',
+                containLabel: true
+            },
+        ];
+    }
+
 
     //数据格式
     for(var i=0;i<6;i++){

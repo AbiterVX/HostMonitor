@@ -53,7 +53,7 @@
     <div class="card" >
         <h2 class="card-header h2">节点资源使用情况</h2>
         <div class="card-body">
-            <div id="TrendChart" style="width: 100%;height: 800px;"></div>
+            <div id="TrendChart" style="width: 100%;height: 1600px;"></div>
         </div>
     </div>
     <div style="width:100%;height: 40px;"></div>
@@ -65,7 +65,6 @@
     <!--主机状态Table-->
     <!--<table id="hostInfo1Table" style="table-layout: fixed;word-break: break-all"></table>-->
 </body>
-
 
 <script>
     //拓扑图
@@ -147,9 +146,11 @@
         {ip:"7.0.0.1", router:"127.0.0.8",},
     ];
     var threshold = {
-        cpuUsage:1,
-        memoryUsage:1,
-        diskIOPS:1,
+        cpuUsage:50,
+        memoryUsage:50,
+        diskCapacityUsage:50,
+        netSendSpeed:1000,
+        netReceiveSpeed:1000,
     };
     //获取带颜色的文字
     function getColoredTxt(displayValue,threshold){
@@ -161,8 +162,9 @@
         }
     }
     //判断是否高负载
-    function getColorByCurrentLoad(cpuUsage,memoryUsage,diskIOPS){
-        if(cpuUsage>=threshold["cpuUsage"] || memoryUsage>=threshold["memoryUsage"] || diskIOPS>=threshold["diskIOPS"]){
+    function getColorByCurrentLoad(cpuUsage,memoryUsage,diskCapacityUsage,netSendSpeed,netReceiveSpeed){
+        if(cpuUsage>=threshold["cpuUsage"] || memoryUsage>=threshold["memoryUsage"] || diskCapacityUsage>=threshold["diskCapacityUsage"] ||
+            netSendSpeed>=threshold["netSendSpeed"] || netReceiveSpeed>=threshold["netReceiveSpeed"] ){
             return "#FF0000";
         }
         return "#000000";
@@ -172,7 +174,9 @@
         var result = "";
         result+= "CPU利用率: " + getColoredTxt(nodeData["cpuUsage"],threshold["cpuUsage"])+"%</br>" +
             "内存利用率: " + getColoredTxt(nodeData["memoryUsage"],threshold["memoryUsage"])+"%</br>" +
-            "IOPS:     " + getColoredTxt(nodeData["diskIOPS"],threshold["diskIOPS"])+"</br>" ;
+            "存储容量:     " + getColoredTxt(nodeData["diskCapacityUsage"],threshold["diskCapacityUsage"])+"%</br>" +
+            "网络接受:     " + getColoredTxt(nodeData["netSendSpeed"],threshold["netSendSpeed"])+"</br>" +
+            "网络发送:     " + getColoredTxt(nodeData["netReceiveSpeed"],threshold["netReceiveSpeed"])+"</br>" ;
         return result;
     }
     //拓扑图数据
@@ -184,6 +188,8 @@
             lines:[],
             graphWidth:0,
             graphHeight:0,
+            xAxis:[0,0],
+            yAxis:[0,0],
         };
 
         //处理原始数据-init初始结构
@@ -252,9 +258,9 @@
             routerIndex +=1;
         }
         graphData["graphHeight"] =  graphConfig["routerYoffset"]* (Math.floor(routerIndex/2)+1.5);
-        //alert(graphWidth);
         graphData["graphWidth"] = 2*graphConfig["routerXoffset"]+(graphWidth[0] + graphWidth[1])*2.5;
-        //alert(graphData["graphWidth"]);
+        graphData["xAxis"] = [-graphWidth[0]-100-graphConfig["routerXoffset"],graphWidth[1]+100+graphConfig["routerXoffset"]];
+        graphData["yAxis"] = [-200,graphData["graphHeight"]+100];
         //-----添加点
         //网络点
         graphData["nodes"].push({
@@ -275,22 +281,31 @@
 
             var routerCpuUsage = 0;
             var routerMemoryUsage = 0;
-            var routerDiskIOPS = 0;
+            var routerDiskCapacityUsage = 0;
+            var routerNetSendSpeed = 0;
+            var routerNetReceiveSpeed = 0;
+
             //主机点
             for(var host in currentRouter["hosts"]){
                 var currentHost = currentRouter["hosts"][host];
 
                 var hostCpuUsage = 0;
                 var hostMemoryUsage = 0;
-                var hostDiskIOPS = 0;
+                var hostDiskCapacityUsage = 0;
+                var hostNetSendSpeed = 0;
+                var hostNetReceiveSpeed = 0;
                 if(hostSampleData.hasOwnProperty(currentHost["hostName"])){
-                    hostCpuUsage = hostSampleData[currentHost["hostName"]]["cpuUsage"]
-                    hostMemoryUsage = hostSampleData[currentHost["hostName"]]["memoryUsage"]
-                    hostDiskIOPS = hostSampleData[currentHost["hostName"]]["diskIOPS"]
+                    hostCpuUsage = hostSampleData[currentHost["hostName"]]["cpuUsage"];
+                    hostMemoryUsage = hostSampleData[currentHost["hostName"]]["memoryUsage"][0] / hostSampleData[currentHost["hostName"]]["memoryUsage"][1];
+                    hostDiskCapacityUsage = 1 - hostSampleData[currentHost["hostName"]]["allDiskTotalFreeSize"] / hostSampleData[currentHost["hostName"]]["allDiskTotalSize"];
+                    hostNetSendSpeed = hostSampleData[currentHost["hostName"]]["netSendSpeed"];
+                    hostNetReceiveSpeed = hostSampleData[currentHost["hostName"]]["netReceiveSpeed"];
                 }
                 routerCpuUsage += hostCpuUsage;
                 routerMemoryUsage += hostMemoryUsage;
-                routerDiskIOPS += hostDiskIOPS;
+                routerDiskCapacityUsage += hostDiskCapacityUsage;
+                routerNetSendSpeed += hostNetSendSpeed;
+                routerNetReceiveSpeed += hostNetReceiveSpeed;
 
                 graphData["nodes"].push({
                     nodeType: "host",
@@ -302,12 +317,14 @@
                     symbol: icon_computer,
                     label: {
                         position:currentHost["labelPosition"],
-                        color: getColorByCurrentLoad(hostCpuUsage,hostMemoryUsage,hostDiskIOPS),
+                        color: getColorByCurrentLoad(hostCpuUsage,hostMemoryUsage,hostDiskCapacityUsage,hostNetSendSpeed,hostNetReceiveSpeed),
                     },
                     symbolSize: graphConfig["symbolSize"],
                     cpuUsage:hostCpuUsage,
                     memoryUsage:hostMemoryUsage,
-                    diskIOPS:hostDiskIOPS,
+                    diskCapacityUsage:hostDiskCapacityUsage,
+                    netSendSpeed:hostNetSendSpeed,
+                    netReceiveSpeed:hostNetReceiveSpeed,
                 });
 
                 //router-Host连线
@@ -321,14 +338,16 @@
                     lineStyle: {
                         type: 'solid',
                         width: 4,
-                        color: getColorByCurrentLoad(hostCpuUsage,hostMemoryUsage,hostDiskIOPS),
+                        color: getColorByCurrentLoad(hostCpuUsage,hostMemoryUsage,hostDiskCapacityUsage,hostNetSendSpeed,hostNetReceiveSpeed),
                     }
                 });
             }
 
             routerCpuUsage = routerCpuUsage/currentRouter["hostNameList"].length;
             routerMemoryUsage = routerMemoryUsage/currentRouter["hostNameList"].length;
-            routerDiskIOPS = routerDiskIOPS/currentRouter["hostNameList"].length;
+            routerDiskCapacityUsage = routerDiskCapacityUsage/currentRouter["hostNameList"].length;
+            routerNetSendSpeed = routerNetSendSpeed/currentRouter["hostNameList"].length;
+            routerNetReceiveSpeed = routerNetReceiveSpeed/currentRouter["hostNameList"].length;
 
             graphData["nodes"].push({
                 nodeType: "router",
@@ -339,14 +358,16 @@
                 symbol: icon_router,
                 label: {
                     position:'bottom',
-                    color: getColorByCurrentLoad(routerCpuUsage,routerMemoryUsage,routerDiskIOPS),
+                    color: getColorByCurrentLoad(routerCpuUsage,routerMemoryUsage,routerDiskCapacityUsage,routerNetSendSpeed,routerNetReceiveSpeed),
                 },
                 symbolSize: graphConfig["symbolSize"],
 
                 hostNameList: currentRouter["hostNameList"],
-                cpuUsage:routerCpuUsage/currentRouter["hostNameList"].length,
-                memoryUsage:routerMemoryUsage/currentRouter["hostNameList"].length,
-                diskIOPS:routerDiskIOPS/currentRouter["hostNameList"].length,
+                cpuUsage:routerCpuUsage,
+                memoryUsage:routerMemoryUsage,
+                diskCapacityUsage:routerDiskCapacityUsage,
+                netSendSpeed:routerNetSendSpeed,
+                netReceiveSpeed:routerNetReceiveSpeed,
             });
 
             //Network-router连线
@@ -357,9 +378,7 @@
         }
         return graphData;
     }
-
 </script>
-
 
 <script>
     //摘要Chart
@@ -368,6 +387,10 @@
     var hostInfo1Table = document.getElementById("hostInfo1Table");
     //Host名
     var hostIpList = [];
+
+    //趋势图数据
+    var trendChartData = [[],[],[],[],[],[]];
+
     //加载后执行
     window.onload=function (){
         //初始化SummaryChart
@@ -376,7 +399,29 @@
             refreshSummary(true);
         }
 
+        //趋势图
+        {
+            TrendChart.setOption(FGetTrendChartOption(true));
+        }
 
+        //获取拓扑图数据
+        {
+            FSendGetRequest(false, "/getHostInfo/AllHostDetail", function (resultData) {
+                hostSampleData =resultData;
+                refreshTrendChartData();
+            });
+            setInterval(function (){
+                FSendGetRequest(false, "/getHostInfo/AllHostDetail", function (resultData) {
+                    hostSampleData =resultData;
+                    refreshTrendChartData();
+                })
+            },20000);
+
+
+            FSendGetRequest(false, "/getHostsRouter", function (resultData) {
+                hostConfigData =resultData;
+            });
+        }
         //拓扑图
         {
             var graphData = initConfigData();
@@ -409,11 +454,15 @@
                 xAxis: {
                     show: false,
                     type: 'value',
+                    min:graphData["xAxis"][0],
+                    max:graphData["xAxis"][1],
                 },
                 yAxis: {
                     inverse:true,
                     show: false,
                     type: 'value',
+                    min:graphData["yAxis"][0],
+                    max:graphData["yAxis"][1],
                 },
                 series: [
                     {
@@ -467,22 +516,15 @@
             var chartParent = topologyChartHtml.parentNode;
             topologyChartHtml.style.height = graphData["graphHeight"] + 'px';
             topologyChartHtml.style.width = graphData["graphWidth"] + "px";
-            topologyChartHtml.style.minWidth = chartParent.clientWidth+ "px";
+            topologyChartHtml.style.minWidth = chartParent.clientWidth+ "px" ;
             chartParent.style.height = graphData["graphHeight"] + 'px';
             var topologyChart = echarts.init(topologyChartHtml);
             topologyChart.setOption(option);
         }
 
-        //趋势图
-        {
-            TrendChart.setOption(FGetTrendChartOption());
-
-            //refreshTrendChartData(trendChartData);
-        }
 
 
-
-        //-----更新HostInfo数据.
+        //更新HostInfo数据.
         {
             FRefreshDataHostInfoAll(function (){
                 //refreshHostInfoAndDiskInfoTable(true);
@@ -496,7 +538,6 @@
                 });
             },20000);
         }
-
     }
 
     function refreshSummary(init){
@@ -528,7 +569,15 @@
     }
 
     //刷新Chart-Data-TrendChart
-    function refreshTrendChartData(trendChartData){
+    function refreshTrendChartData(){
+
+        /*trendChartData[0].push([]);
+        trendChartData[1];
+        trendChartData[2];
+        trendChartData[3];
+        trendChartData[4];
+        trendChartData[5];*/
+
         var subChartIndex = [0,1,2,2,3,3];
         var option = {
             series: []
@@ -542,7 +591,6 @@
         }
         TrendChart.setOption(option);
     }
-
 
     //刷新Table-HostInfo-DiskInfo-All
     function refreshHostInfoAndDiskInfoTable(init){
@@ -562,8 +610,6 @@
         }
 
     }
-
-
 </script>
 
 </html>
