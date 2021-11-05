@@ -211,14 +211,10 @@
                 data: [hostInfo["hostInfo2"]],
                 classes : 'table table-bordered'
             });
-            alert(JSON.stringify(hostInfo["diskInfoList"]));
-
             $('#diskInfo').bootstrapTable({
                 columns: tableColumns["diskInfo"],
                 data: hostInfo["diskInfoList"],
             });
-
-
             $('#cpuInfo').bootstrapTable({
                 columns: tableColumns["cpuInfo"],
                 data: hostInfo["cpuInfoList"],
