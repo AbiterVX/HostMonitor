@@ -12,6 +12,21 @@ public class CSModeDataCollectorService implements DataCollectorService{
     }
 
     @Override
+    public void setAllDiskDFPState(String hostIp, boolean b) {
+
+    }
+
+    @Override
+    public String getAllHostsInfoDetail() {
+        return null;
+    }
+
+    @Override
+    public String getHostsRouterInfo() {
+        return null;
+    }
+
+    @Override
     public String getHostInfoDashboardAll() {
         return null;
     }
@@ -73,6 +88,11 @@ public class CSModeDataCollectorService implements DataCollectorService{
 
     @Override
     public String getDFPSummary() {
+        return null;
+    }
+
+    @Override
+    public HashMap<String, JSONObject> getSocketMap() {
         return null;
     }
 }

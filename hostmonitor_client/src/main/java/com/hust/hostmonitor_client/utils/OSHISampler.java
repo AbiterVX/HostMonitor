@@ -3,6 +3,10 @@ package com.hust.hostmonitor_client.utils;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.hust.hostmonitor_client.utils.Entity.SmartInfo;
+import com.hust.hostmonitor_client.utils.Entity.partionInfo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import oshi.SystemInfo;
 import oshi.hardware.*;
 import oshi.software.os.OSFileStore;
@@ -34,7 +38,12 @@ import java.util.Map;
     操作系统：类型，版本
 
 */
-public class DataSampler {
+public class OSHISampler implements Sampler{
+    @Override
+    public String OSName() {
+        return null;
+    }
+    private Logger logger= LoggerFactory.getLogger(OSHISampler.class);
     private SystemInfo systemInfo;
     private JSONObject dataObject;
     private FormatConfig formatConfig=FormatConfig.getInstance();
@@ -43,7 +52,7 @@ public class DataSampler {
     private Map<String, Float> processFilter;
     private String diskDataPath;
     //静态硬件信息采样，不会周期性调用
-    public DataSampler(){
+    public OSHISampler(){
         diskDataPath=System.getProperty("user.dir")+"/DiskPredict/client/sampleData/data.csv";
         systemInfo = new SystemInfo();
         dataObject= new JSONObject();
@@ -71,13 +80,14 @@ public class DataSampler {
             temp.putAll(formatConfig.getGpuInfoJson());
             dataObject.getJSONArray("gpuInfoList").add(temp);
         }
+        JSONArray netList=new JSONArray();
         int netInterfaceNumber=systemInfo.getHardware().getNetworkIFs().size();
         for(i=0;i<netInterfaceNumber;i++){
             JSONObject temp=new JSONObject();
             temp.putAll(formatConfig.getNetInterfaceInfoJson());
-            dataObject.getJSONArray("netInterfaceList").add(temp);
+            netList.add(temp);
         }
-
+        dataObject.put("netInterfaceList",netList);
     }
     public void hardWareSample(){
         Timestamp timestamp=new Timestamp(System.currentTimeMillis());
@@ -88,7 +98,7 @@ public class DataSampler {
         CentralProcessor centralProcessor = systemInfo.getHardware().getProcessor();
         CentralProcessor.ProcessorIdentifier identifier=centralProcessor.getProcessorIdentifier();
         dataObject.getJSONArray("cpuInfoList").getJSONObject(0).put("cpuName",identifier.getName());
-        HashMap<String,SmartInfo> types=readDiskSmartInfo();
+        HashMap<String, SmartInfo> types=readDiskSmartInfo();
         //磁盘
         List<HWDiskStore> hwDiskStoreList=systemInfo.getHardware().getDiskStores();
         int i=0;
@@ -146,7 +156,7 @@ public class DataSampler {
             dataObject.getJSONArray("netInterfaceList").getJSONObject(i).put("netInterfaceName",tempNetworkIF.getDisplayName());
         }
     }
-    public String stringReorder(String original){
+    private String stringReorder(String original){
         StringBuffer stringBuffer=new StringBuffer();
         int groupNumber=original.length()/2;
         int i=0;
@@ -243,8 +253,6 @@ public class DataSampler {
             for(HWPartition hwPartition:hwpList){
                 for(partionInfo pInfo:pList){
                     String id=hwPartition.getUuid()+hwPartition.getIdentification()+hwPartition.getName();
-                    //System.out.println(id);
-                    //System.out.println(pInfo.volumn);
                     if(id.contains(pInfo.volumn)){
                         usable+=pInfo.usable;
                         total+=pInfo.total;
@@ -252,16 +260,10 @@ public class DataSampler {
                     }
                 }
             }
-            double usage=usable*1.0/total;
-            double usage2bits=0.0;
-            try {
-                usage2bits = FormatUtils.doubleTo2bits_double(usage);
-            } catch (Exception e) {
-                //e.printStackTrace();
-                System.out.println("usage2bitsError");
-            }
 
-            double singleTotalSize=dataObject.getJSONArray("diskInfoList").getJSONObject(j).getDouble("diskCapacityTotalSize");
+
+
+            double singleTotalSize=dataObject.getJSONArray("diskInfoList").getJSONObject(j).getDouble("diskTotalSize");
             dataObject.getJSONArray("diskInfoList").getJSONObject(j).put("diskTotalFreeSize",FormatUtils.doubleTo2bits_double(usable*1.0/1024/1024/1024));
             long previousReadNumber=dataObject.getJSONArray("diskInfoList").getJSONObject(j).getLong("diskRead");
             long previousReadBytes=dataObject.getJSONArray("diskInfoList").getJSONObject(j).getLong("diskReadBytes");
@@ -307,7 +309,7 @@ public class DataSampler {
         dataObject.put("netReceiveSpeed",FormatUtils.doubleTo2bits_double(totalNetRecv/1024/1024));
         dataObject.put("netSendSpeed",FormatUtils.doubleTo2bits_double(totalNetSent/1024/1024));
 
-        //System.out.println("[Data Sample]Sample Finish");
+        logger.info("[DataSample]Sample Finish");
     }
     private List<partionInfo> processing(List<OSFileStore> fsList){
         ArrayList<partionInfo> result=new ArrayList<>();
@@ -366,6 +368,7 @@ public class DataSampler {
             }
         }
         processMapLastSample = tempProcessMap;
+        logger.info("[ProcessSample]Process Sample Finish");
     }
     private void firstSample(){
         GlobalMemory globalMemory = systemInfo.getHardware().getMemory();
@@ -422,9 +425,6 @@ public class DataSampler {
             dataObject.getJSONArray("diskInfoList").getJSONObject(j).put("diskWrite",WriteNumber);
             dataObject.getJSONArray("diskInfoList").getJSONObject(j).put("diskWriteBytes",WriteBytes);
         }
-        JSONArray diskUsage=new JSONArray();
-        diskUsage.add(FormatUtils.doubleTo2bits_double(totalUsedSize*1.0/1024/1024/1024));
-        diskUsage.add(dataObject.getDoubleValue("diskCapacityTotalSizeSum"));
         dataObject.put("allDiskTotalFreeSize",FormatUtils.doubleTo2bits_double(dataObject.getDouble("allDiskTotalSize")-totalUsedSize*1.0/1024/1024/1024));
         //网络速率计算
         List<NetworkIF> networkIFS=systemInfo.getHardware().getNetworkIFs();
@@ -436,25 +436,24 @@ public class DataSampler {
             dataObject.getJSONArray("netInterfaceList").getJSONObject(k).put("sentBytes",SentBytes);
 
         }
-        //System.out.println("[Data Sample]Sample Finish");
+        logger.info("[ProcessSample]Process Sample Finish");
     }
     public String outputSampleData(boolean insertProcessOrNot){
         JSONObject outputObject=new JSONObject();
-        outputObject.putAll(formatConfig.getOutputInfoJson());
+        outputObject.putAll(formatConfig.getHostInfoJson());
         for(String a:outputObject.keySet()){
             outputObject.put(a,dataObject.get(a));
         }
         if(insertProcessOrNot){
             outputObject.put("processInfoList", processInfoList);
         }
-
         return outputObject.toJSONString();
     }
     public String getHostName(){
         return dataObject.getString("hostName");
     }
     public static void main(String[] args) {
-        DataSampler dataSampler = new DataSampler();
+        OSHISampler dataSampler = new OSHISampler();
         dataSampler.processInfoSample(10,1);
     }
 }

@@ -7,8 +7,25 @@ import java.util.*;
 
 public class SSHDataCollectorService implements DataCollectorService{
 
+    @Override
+    public void setAllDiskDFPState(String hostIp, boolean b) {
 
+    }
 
+    @Override
+    public String getAllHostsInfoDetail() {
+        return null;
+    }
+
+    @Override
+    public String getHostsRouterInfo() {
+        return null;
+    }
+
+    @Override
+    public HashMap<String, JSONObject> getSocketMap() {
+        return null;
+    }
 
     //----------对外接口----------
     @Override

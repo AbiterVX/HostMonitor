@@ -1,8 +1,10 @@
 package com.hust.hostmonitor_data_collector.service;
 
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
+import java.util.HashMap;
 import java.util.List;
 
 public interface DataCollectorService {
@@ -23,4 +25,10 @@ public interface DataCollectorService {
     //获取模型训练进度
     List<Float> getTrainProgress();
     String getDFPSummary();
+    HashMap<String,JSONObject> getSocketMap();
+    void setAllDiskDFPState(String hostIp, boolean b);
+
+    String getAllHostsInfoDetail();
+
+    String getHostsRouterInfo();
 }

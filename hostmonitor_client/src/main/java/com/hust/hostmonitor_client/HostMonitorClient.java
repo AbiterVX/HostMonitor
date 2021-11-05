@@ -1,22 +1,22 @@
 package com.hust.hostmonitor_client;
 
-import com.hust.hostmonitor_client.utils.DataSampler;
+import com.hust.hostmonitor_client.utils.OSHISampler;
 import com.hust.hostmonitor_client.utils.DiskPredictDataSampler;
 import com.hust.hostmonitor_client.utils.FormatConfig;
+import com.hust.hostmonitor_client.utils.Sampler;
 import lombok.SneakyThrows;
 import oshi.util.Util;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
-import java.net.UnknownHostException;
 
 public class HostMonitorClient {
     public static Object lockObject=new Object();
     public static int SamplePeriod=20000;
     public static int sampleIndex=0;
     private static int processFrequency=1;
-    private static DataSampler mainSampler=new DataSampler();
+    private static Sampler mainSampler=new OSHISampler();
     private static int WRITE_READ_UTF_MAX_LENGTH=65535;
     private static int SEGMENT_LENGTH=60000;
     @SneakyThrows

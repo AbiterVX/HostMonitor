@@ -13,6 +13,7 @@ import com.hust.hostmonitor_data_collector.utils.DataSampleManager;
 import com.hust.hostmonitor_data_collector.utils.DiskPredict.DiskPredict;
 import com.hust.hostmonitor_data_collector.utils.DiskPredict.DiskPredictProgress;
 import com.hust.hostmonitor_data_collector.utils.DiskPredict.QueryResources;
+import com.hust.hostmonitor_data_collector.utils.SocketConnect.DataReceiver;
 import com.hust.hostmonitor_data_collector.utils.TestInitiator;
 import com.hust.hostmonitor_data_collector.utils.linuxsample.LinuxDataProcess;
 import org.slf4j.Logger;
@@ -29,6 +30,7 @@ import com.hust.hostmonitor_data_collector.utils.DataSampleManager;
 import com.hust.hostmonitor_data_collector.utils.SSHConnect.HostConfigData;
 
 import java.util.*;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -58,6 +60,8 @@ public class HybridDataCollectorService implements DataCollectorService{
     //格式资源变量
     private final SimpleDateFormat sdf=new SimpleDateFormat("yyyy-MM-dd");
 
+    //Sokect数据接收
+    private DataReceiver dataReceiver;
     //----- 监控节点
     //SSH 连接的节点配置数据List
     private List<HostConfigData> sshHostList;
@@ -78,30 +82,55 @@ public class HybridDataCollectorService implements DataCollectorService{
     private TimerTask performanceSampleTask= new TimerTask() {
         @Override
         public void run() {
+            CountDownLatch latch=new CountDownLatch(dataSampleManager.hostList.size());
             for(HostConfigData hostConfigData:dataSampleManager.hostList){
                 if(sshSampleData.containsKey(hostConfigData.ip)){
-                    dataSampleManager.sampleHostData(hostConfigData,sshSampleData.get(hostConfigData.ip));
+                    executorService.execute(new Runnable() {
+                        @Override
+                        public void run() {
+                            dataSampleManager.sampleHostData(hostConfigData,sshSampleData.get(hostConfigData.ip));
+                            latch.countDown();
+                        }
+                    });
+
                 }
                 else{
-                    JSONObject initObject=dataSampleManager.sampleHostHardwareData(hostConfigData);
-                    sshSampleData.put(hostConfigData.ip,initObject);
-                    dataSampleManager.sampleHostData(hostConfigData,initObject);
+                    executorService.execute(new Runnable() {
+                        @Override
+                        public void run() {
+                            JSONObject initObject=dataSampleManager.sampleHostHardwareData(hostConfigData);
+                            sshSampleData.put(hostConfigData.ip,initObject);
+                            dataSampleManager.sampleHostData(hostConfigData,initObject);
+                            latch.countDown();
+                        }
+                    });
+
                 }
                logger.info("[DSManager]"+hostConfigData.ip+" performance sample");
             }
-            storeSampleData();
+            try {
+                latch.await();
+                logger.info("[DSManager] performance sample finish");
+                storeSampleData();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+                logger.error("[DSManager] performance sample latch error");
+            }
+
         }
     };
     //定时任务(Host进程采样)
     private TimerTask processSampleTask=new TimerTask() {
         @Override
         public void run() {
+            CountDownLatch latch=new CountDownLatch(dataSampleManager.hostList.size());
             for(HostConfigData hostConfigData:dataSampleManager.hostList){
                 if(sshSampleData.containsKey(hostConfigData.ip)){
                     executorService.execute(new Runnable() {
                         @Override
                         public void run() {
                             dataSampleManager.sampleHostProcess(hostConfigData,sshSampleData.get(hostConfigData.ip));
+                            latch.countDown();
                         }
                     });
 
@@ -113,10 +142,18 @@ public class HybridDataCollectorService implements DataCollectorService{
                             JSONObject initObject=dataSampleManager.sampleHostHardwareData (hostConfigData) ;
                             sshSampleData.put(hostConfigData.ip,initObject);
                             dataSampleManager.sampleHostProcess(hostConfigData,initObject);
+                            latch.countDown();
                         }
                     });
                 }
                 logger.info("[DSManager]"+hostConfigData.ip+" process sample");
+            }
+            try {
+                latch.await();
+                logger.info("[DSManager] process sample finish");
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+                logger.error("[DSManager] process sample latch error");
             }
         }
     };
@@ -203,6 +240,11 @@ public class HybridDataCollectorService implements DataCollectorService{
     private HashMap<String,JSONObject> socketSampleData=null;
     private HashMap<String,JSONObject> hostsSampleData=null;
 
+    @Override
+    public HashMap<String, JSONObject> getSocketMap() {
+        return socketSampleData;
+    }
+
     //----- 内部函数 -----
     //构造函数
     public HybridDataCollectorService(){
@@ -229,7 +271,8 @@ public class HybridDataCollectorService implements DataCollectorService{
 
             socketSampleData=new HashMap<>();
             hostsSampleData=sshSampleData;
-
+            dataReceiver=new DataReceiver(this);
+            dataReceiver.startListening();
             mainTimer.schedule(dataPersistenceTask,sampleInterval/2,sampleInterval-offset);
         }
 
@@ -305,7 +348,13 @@ public class HybridDataCollectorService implements DataCollectorService{
             }
             //内存负载统计
             JSONArray memoryUsageJson =  hostInfoJson.getJSONArray("memoryUsage");
-            float memoryUsage = (memoryUsageJson.getFloat(0) / memoryUsageJson.getFloat(1))*100;
+            float memoryUsage;
+            if(memoryUsageJson.getFloat(1)==0){
+                memoryUsage=0;
+            }
+            else {
+                memoryUsage = (memoryUsageJson.getFloat(0) / memoryUsageJson.getFloat(1))*100;
+            }
             for(int j=0;j<loadPartition[1].length;j++){
                 if(memoryUsage <= loadPartition[1][j]){
                     loadCount[1][j] += 1;
@@ -845,24 +894,49 @@ public class HybridDataCollectorService implements DataCollectorService{
         result.put("trend",Trend);
         return result.toJSONString();
     }
-    public String remoteTest(String nodeIp,int mode){
+    public String remoteTest(String nodeIp){
         //客户端版本
-        if(mode==2) {
+        if(sampleSelect==2) {
             TestInitiator testInitiator = new TestInitiator(nodeIp);
             testInitiator.socketInitialization();
             String result = testInitiator.executeTest(1);
             testInitiator.closeTestSocket();
             return result;
         }
-        else {
+        else if(sampleSelect==1){
             //指令版本 默认只有IO测速
 
             //JSONObject result = cmdSampleManager.ioTest(nodeIp);
             return null;
         }
+        return "sampleSelect Error";
     }
 
     public String providerTest(String userName, String password, Timestamp timestamp){
         return userDao.signUp(userName,password,timestamp);
+    }
+
+    @Override
+    public void setAllDiskDFPState(String hostIp, boolean b) {
+        if(socketSampleData.containsKey(hostIp)){
+            JSONObject jsonObject=socketSampleData.get(hostIp);
+            JSONArray diskArray=jsonObject.getJSONArray("diskInfoList");
+            for(int i=0;i<diskArray.size();i++) {
+                String diskName=diskArray.getJSONObject(i).getString("diskName");
+                jsonObject.getJSONObject("DFPList").put(diskName, b);
+            }
+        }
+    }
+
+    //TODO 返回所有节点的实时信息
+    @Override
+    public String getAllHostsInfoDetail() {
+        return null;
+    }
+
+    //TODO 返回所有hostList里面的信息（无密码和账号）
+    @Override
+    public String getHostsRouterInfo() {
+        return null;
     }
 }

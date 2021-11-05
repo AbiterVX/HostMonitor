@@ -42,6 +42,12 @@ public class DataSampleController {
         String result= dataCollectorService.getHostInfoDetail(map.get("Ip"));
         return result;
     }
+    @GetMapping(value = "/getHostInfo/AllHostDetail/")
+    @ResponseBody
+    public String getHostInfo_AllHostDetail(){
+        String result=dataCollectorService.getAllHostsInfoDetail();
+        return result;
+    }
 
     @GetMapping(value="/getHostInfo/Trend/HostDetail/{Ip}")
     @ResponseBody
@@ -127,6 +133,11 @@ public class DataSampleController {
     @ResponseBody
     public String getDFPTrainRecordList(){
         String string= dataCollectorService.getDFPTrainList();
+        return string;
+    }
+    @GetMapping(value = "/getHostsRouter")
+    public String getHostsRouterInfo(){
+        String string=dataCollectorService.getHostsRouterInfo();
         return string;
     }
 }

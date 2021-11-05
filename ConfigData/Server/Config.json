@@ -4,6 +4,7 @@
   "SpecialUsagePort": 7001,
   "DataSourceSelect": 0,
   "sampleSelect": 1,
+  "clientSampleSelect": 0,
   "loadPartition": {
     "cpuLoad": [30.0,70.0,100.0],
     "memoryLoad": [30.0,70.0,100.0],
@@ -96,8 +97,20 @@
       "netDownloadSpeed": "",
       "diskIOSpeed": "",
       "lastUpdateTime": 0
+    },
+    "netInterfaceInfo": {
+      "netInterfaceName": "",
+      "sentBytes": 0,
+      "recvBytes": 0,
+      "sentSpeed": 0,
+      "recvSpeed": 0
     }
   },
-
+  "filter": {
+    "cpuUsage": 100,
+    "memoryUsage": 100,
+    "diskReadSpeed": 0,
+    "diskWriteSpeed": 0
+  }
 
 }

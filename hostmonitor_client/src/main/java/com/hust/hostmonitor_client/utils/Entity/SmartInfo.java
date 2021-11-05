@@ -1,4 +1,4 @@
-package com.hust.hostmonitor_client.utils;
+package com.hust.hostmonitor_client.utils.Entity;
 
 import java.util.List;
 

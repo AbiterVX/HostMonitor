@@ -9,8 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class FormatConfig {
-    private final JSONObject configJson = JSONObject.parseObject(readFile("ConfigData/OriginalSampleDataFormat.json"));
-    private final JSONObject DispersedConfigJson = JSONObject.parseObject(readFile("ConfigData/DispersedConfig.json"));
+    private final JSONObject configJson = JSONObject.parseObject(readFile("ConfigData/Config.json"));
     private final String path = System.getProperty("user.dir");
     private static volatile FormatConfig formatConfig=null;
     public static FormatConfig getInstance(){
@@ -38,46 +37,50 @@ public class FormatConfig {
         }
         return resultData;
     }
-    private JSONObject getConfigJsonObject(String key){
-        return JSONObject.parseObject(configJson.getJSONObject(key).toJSONString());
+    private JSONObject getConfigSampleFormat(String key){
+        return JSONObject.parseObject(configJson.getJSONObject("SampleFormat").getJSONObject(key).toJSONString());
     }
     public String getCollectorIP(){
-        return DispersedConfigJson.getString("DataCollectorServerIP");
+        return configJson.getString("DataCollectorServerIP");
+    }
+    public int getSampleSelect() {
+        //0 OSHI,1 commands
+        return configJson.getIntValue("clientSampleSelect");
     }
     public int getPort(int choice){
         if(choice==1){
-            return DispersedConfigJson.getIntValue("ServerSampleListenPort");
+            return configJson.getIntValue("ServerSampleListenPort");
         }
         else if(choice==2){
-            return DispersedConfigJson.getIntValue("SpecialUsagePort");
+            return configJson.getIntValue("SpecialUsagePort");
         }
         return 7000;
     }
     //-----获取配置文件JsonObject-对外接口-----
     public JSONObject getHostInfoJson(){
-        return getConfigJsonObject("hostInfo");
+        return getConfigSampleFormat("hostInfo");
     }
     public JSONObject getDiskInfoJson(){
-        return getConfigJsonObject("diskInfo");
+        return getConfigSampleFormat("diskInfo");
     }
     public JSONObject getCpuInfoJson(){
-        return getConfigJsonObject("cpuInfo");
+        return getConfigSampleFormat("cpuInfo");
     }
     public JSONObject getGpuInfoJson(){
-        return getConfigJsonObject("gpuInfo");
+        return getConfigSampleFormat("gpuInfo");
     }
     public JSONObject getProcessInfoJson(){
-        return getConfigJsonObject("processInfo");
+        return getConfigSampleFormat("processInfo");
     }
     public JSONObject getNetInterfaceInfoJson(){
-        return getConfigJsonObject("netInterfaceInfo");
+        return getConfigSampleFormat("netInterfaceInfo");
     }
-    public JSONObject getOutputInfoJson(){
-        return getConfigJsonObject("outputFormat");
-    }
-
+//    public JSONObject getOutputInfoJson(){
+//        return getConfigJsonObject("outputFormat");
+//    }
+//
     public Map<String, Float> getProcessFilter(){
-        JSONObject processFilter = getConfigJsonObject("processFilter");
+        JSONObject processFilter = configJson.getJSONObject("filter");
         Map<String, Float> result = new HashMap<>();
         result.put("cpuUsage",processFilter.getFloat("cpuUsage"));
         result.put("memoryUsage",processFilter.getFloat("memoryUsage"));

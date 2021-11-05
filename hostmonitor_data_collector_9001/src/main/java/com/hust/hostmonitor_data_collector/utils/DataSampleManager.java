@@ -137,14 +137,16 @@ public class DataSampleManager {
             }
             //cpuInfoList
             {
-                List<String> cmdResult = cmdExecutor.runCommand("cat /proc/cpuinfo |grep cpu",hostConfigData);
+                List<String> cmdResult = cmdExecutor.runCommand("cat /proc/cpuinfo",hostConfigData);
 
                 for(String rowData:cmdResult){
-                        JSONObject newCpuInfo = configDataManager.getSampleFormat("cpuInfo");
-                        {
-                            newCpuInfo.put("cpuName",rowData.split(":")[1]);
+                        if(rowData.contains("model name")) {
+                            JSONObject newCpuInfo = configDataManager.getSampleFormat("cpuInfo");
+                            {
+                                newCpuInfo.put("cpuName", rowData.split(":")[1]);
+                            }
+                            sampleData.getJSONArray("cpuInfoList").add(newCpuInfo);
                         }
-                        sampleData.getJSONArray("cpuInfoList").add(newCpuInfo);
                 }
             }
             //gpuInfo
@@ -469,6 +471,14 @@ public class DataSampleManager {
                     sampleData.put("lastUsedTicks",record.getCPUused());
                 }
             }
+            //Memory
+            {
+                JSONArray memoryUsage = new JSONArray();
+                memoryUsage.add(LinuxDataProcess.doubleTo2bits_double((record.getMemTotal() - record.getMemAvailable())*1.0/1024/1024) );
+                memoryUsage.add(LinuxDataProcess.doubleTo2bits_double(record.getMemTotal() * 1.0 / 1024 / 1024 ));
+                sampleData.put("memoryUsage",memoryUsage);
+            }
+
             //NetIO
             {
                 sampleData.put("netSendSpeed",LinuxDataProcess.doubleTo2bits_double(record.getNetSend()*1.0f/1024/1024));
