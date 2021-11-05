@@ -106,14 +106,16 @@
             currentHostIndex = 0;
         }
 
-
         //初始化-DropDown-IP
         FInitDropDown("HostIpDropDownMenu","HostIpDropDownBtn",mainInfo["hostIp"],"dropDownSelectHostIp",currentHostIndex);
         //初始化-DropDown-TimeInterval
         FInitDropDown("DateIntervalDropDownMenu","DateIntervalDropDownBtn",DateIntervalText,"dropDownSelectDateInterval",currentDateIntervalIndex);
 
         //初始化SummaryChart
+
         TrendChart.setOption(FGetTrendChartOption());
+
+
         //-----更新HostInfo数据.
         FRefreshDataHostInfo(mainInfo["hostIp"][currentHostIndex],function (hostInfo){
             //刷新HostDetailTable
@@ -124,7 +126,6 @@
         FRefreshDataHostDetailTrend(mainInfo["hostIp"][currentHostIndex],function (trendChartData){
             refreshTrendChartData(trendChartData);
         });
-
 
         //定时刷新
         setInterval(function (){
@@ -139,12 +140,7 @@
                 refreshTrendChartData(trendChartData);
             });
         },20000);
-
-
-
     }
-
-
 
     //[DropDown]选择-HostIp
     function dropDownSelectHostIp(index){
@@ -206,6 +202,7 @@
 
     //刷新Table-HostDetailTable
     function refreshHostDetailTable(init,hostInfo){
+
         var ip = mainInfo["hostIp"][currentHostIndex];
         document.getElementById("HostIp").innerText = "节点详情: "+ip;
         if(init){
@@ -214,10 +211,14 @@
                 data: [hostInfo["hostInfo2"]],
                 classes : 'table table-bordered'
             });
+            alert(JSON.stringify(hostInfo["diskInfoList"]));
+
             $('#diskInfo').bootstrapTable({
                 columns: tableColumns["diskInfo"],
                 data: hostInfo["diskInfoList"],
             });
+
+
             $('#cpuInfo').bootstrapTable({
                 columns: tableColumns["cpuInfo"],
                 data: hostInfo["cpuInfoList"],
@@ -233,6 +234,7 @@
             $('#cpuInfo').bootstrapTable("load",hostInfo["cpuInfoList"]);
             $('#gpuInfo').bootstrapTable("load",hostInfo["gpuInfoList"]);
         }
+
     }
     //刷新Table-ProcessInfo
     function refreshProcessInfoTable(init,hostInfo){
@@ -262,8 +264,6 @@
         }
         TrendChart.setOption(option);
     }
-
-
 </script>
 
 </html>

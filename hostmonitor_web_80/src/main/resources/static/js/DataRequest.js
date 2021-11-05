@@ -146,45 +146,43 @@ function FRefreshDataDiskInfoAll(uiRefreshCallbackFunc){
 
 function FRefreshDataHostInfo(hostName,uiRefreshCallbackFunc){
     var hostInfo = FGetHostInfo(hostName);
-    var timestamp=new Date().getTime();
-    if(timestamp-hostInfo["lastUpdateTime"] >= requestCoolDownTime["RefreshDataHostInfo"]){
-        FSendGetRequest(false,"/getHostInfo/HostDetail/"+ hostName,function (resultData){
-            //alert(JSON.stringify(resultData));
-            //hostInfo1
-            for(var key in hostInfo["hostInfo1"]){
-                hostInfo["hostInfo1"][key] = resultData[key];
-            }
+    FSendGetRequest(false,"/getHostInfo/HostDetail/"+ hostName,function (resultData){
 
-            //hostInfo2
-            for(var key in hostInfo["hostInfo2"]){
-                hostInfo["hostInfo2"][key] = resultData[key];
-            }
-            //diskInfoList
-            hostInfo["diskInfoList"] = resultData["diskInfoList"];
-            for(var j=0;j<hostInfo["diskInfoList"].length;j++){
-                hostInfo["diskInfoList"][j]["diskCapacityUsage"] = (hostInfo["diskInfoList"][j]["diskCapacitySize"][0] / hostInfo["diskInfoList"][j]["diskCapacitySize"][1]*100).toFixed(2);
-            }
+        //hostInfo1
+        for(var key in hostInfo["hostInfo1"]){
+            hostInfo["hostInfo1"][key] = resultData[key];
+        }
+        //hostInfo2
+        for(var key in hostInfo["hostInfo2"]){
+            hostInfo["hostInfo2"][key] = resultData[key];
+        }
+        hostInfo["hostInfo2"]["diskCapacityTotalUsage"] = [0,0];
+        //diskInfoList
+        hostInfo["diskInfoList"] = resultData["diskInfoList"];
 
-            //connected
-            hostInfo["connected"] = resultData["connected"];
-            //cpuInfoList
-            hostInfo["cpuInfoList"] = resultData["cpuInfoList"];
-            //gpuInfoList
-            hostInfo["gpuInfoList"] = resultData["gpuInfoList"];
-            //processInfoList
-            hostInfo["processInfoList"] = resultData["processInfoList"];
-            //lastUpdateTime
-            //hostInfo["lastUpdateTime"] = 2000000;
+        for(var j=0;j<hostInfo["diskInfoList"].length;j++){
+            hostInfo["diskInfoList"][j]["diskCapacitySize"] = [hostInfo["diskInfoList"][j]["diskTotalSize"]-hostInfo["diskInfoList"][j]["diskTotalFreeSize"],hostInfo["diskInfoList"][j]["diskTotalSize"]];
+            hostInfo["diskInfoList"][j]["diskCapacityUsage"] = (hostInfo["diskInfoList"][j]["diskCapacitySize"][0] / hostInfo["diskInfoList"][j]["diskCapacitySize"][1]*100).toFixed(2);
+            hostInfo["hostInfo2"]["diskCapacityTotalUsage"][0] += hostInfo["diskInfoList"][j]["diskTotalSize"] - hostInfo["diskInfoList"][j]["diskTotalFreeSize"];
+            hostInfo["hostInfo2"]["diskCapacityTotalUsage"][0] += hostInfo["diskInfoList"][j]["diskTotalSize"];
+        }
 
-            //更新hostInfo缓存
-            FSetData("hostInfo_"+hostName,hostInfo);
+        //connected
+        hostInfo["connected"] = resultData["connected"];
+        //cpuInfoList
+        hostInfo["cpuInfoList"] = resultData["cpuInfoList"];
+        //gpuInfoList
+        hostInfo["gpuInfoList"] = resultData["gpuInfoList"];
+        //processInfoList
+        hostInfo["processInfoList"] = resultData["processInfoList"];
 
-            uiRefreshCallbackFunc(hostInfo);
-        });
-    }
-    else{
+        //更新hostInfo缓存
+        FSetData("hostInfo_"+hostName,hostInfo);
+
         uiRefreshCallbackFunc(hostInfo);
-    }
+    });
+
+
 
 
 }
