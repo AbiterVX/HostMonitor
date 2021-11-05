@@ -1,2 +1,2 @@
-ip,userName,password,proxyId,OSType
-39.105.123.116,root,VX117Halo,0,linux
+ip,userName,password,proxyId,OSType,router
+39.105.123.116,root,VX117Halo,0,linux,127.0.0.1

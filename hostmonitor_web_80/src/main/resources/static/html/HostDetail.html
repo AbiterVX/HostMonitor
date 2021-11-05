@@ -89,7 +89,7 @@
 </body>
 
 <script>
-    //摘要图表
+    //图表
     var TrendChart = echarts.init(document.getElementById("TrendChart"));
     //当前HostIndex
     var currentHostIndex = 0;
@@ -110,8 +110,6 @@
         FInitDropDown("HostIpDropDownMenu","HostIpDropDownBtn",mainInfo["hostIp"],"dropDownSelectHostIp",currentHostIndex);
         //初始化-DropDown-TimeInterval
         FInitDropDown("DateIntervalDropDownMenu","DateIntervalDropDownBtn",DateIntervalText,"dropDownSelectDateInterval",currentDateIntervalIndex);
-
-        //初始化SummaryChart
 
         TrendChart.setOption(FGetTrendChartOption());
 
