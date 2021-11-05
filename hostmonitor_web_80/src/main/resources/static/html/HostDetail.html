@@ -27,52 +27,64 @@
     <script src="../bootstrap-table/bootstrap-table-zh-CN.min.js"></script>
 </head>
 <body>
-    <!--标题-->
-    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
-        <h2 id="HostIp" class="h2">节点</h2>
-        <div style="margin-left: 20px;">
-            <!-- IP-DropDown-->
-            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" style="width: 200px;" type="button" id="HostIpDropDownBtn" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                0.0.0.0
-            </button>
-            <div id="HostIpDropDownMenu" class="dropdown-menu" aria-labelledby="HostIpDropDownBtn">
-                <a class="dropdown-item" href="#" > 0.0.0.0</a>
+    <div class="card" >
+        <div class="card-header">
+            <div class="d-flex align-items-center">
+                <h2 id="HostIp" class="mr-auto h2">节点</h2>
+                <div>
+                    <!-- IP-DropDown-->
+                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" style="width: 180px;height: 35px;font-size:16px;" type="button" id="HostIpDropDownBtn" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        0.0.0.0
+                    </button>
+                    <div id="HostIpDropDownMenu" class="dropdown-menu" aria-labelledby="HostIpDropDownBtn">
+                        <a class="dropdown-item" href="#" > 0.0.0.0</a>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
-
-    <div class="row"  style="margin-bottom: 10px;">
-        <div class="col-sm-12">
-            <div class="accordion" id="accordion" style="margin-bottom: 5px;">
-                <table id="hostInfo2" style="table-layout: fixed;word-break: break-all"></table>
-                <table id="diskInfo" style="table-layout: fixed;word-break: break-all;margin-top: 5px;"></table>
-                <table id="cpuInfo" style="table-layout: fixed;word-break: break-all;margin-top: 5px;"></table>
-                <table id="gpuInfo" style="table-layout: fixed;word-break: break-all;margin-top: 5px;"></table>
-            </div>
-        </div>
-    </div>
-    <!--标题-->
-    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
-        <h2 class="h2">资源利用趋势</h2>
-        <div class="btn-toolbar mb-2 mb-md-0" role="toolbar" style="margin-right: 5px;">
-            <!-- 间隔时间-DropDown -->
-            <div>
-                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" style="width: 100px;" type="button" id="DateIntervalDropDownBtn" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    1
-                </button>
-                <div id="DateIntervalDropDownMenu" class="dropdown-menu" aria-labelledby="DateIntervalDropDownBtn">
-                    <a class="dropdown-item" href="#" > 0.0.0.0</a>
+        <div class="card-body">
+            <div class="col-sm-12">
+                <div class="accordion" id="accordion" style="margin-bottom: 5px;">
+                    <table id="hostInfo2" style="table-layout: fixed;word-break: break-all"></table>
+                    <table id="diskInfo" style="table-layout: fixed;word-break: break-all;margin-top: 5px;"></table>
+                    <table id="cpuInfo" style="table-layout: fixed;word-break: break-all;margin-top: 5px;"></table>
+                    <table id="gpuInfo" style="table-layout: fixed;word-break: break-all;margin-top: 5px;"></table>
                 </div>
             </div>
         </div>
     </div>
-    <div id="TrendChart" style="width: 100%;height: 800px;"></div>
+    <div style="width:100%;height: 40px;"></div>
 
-    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
-        <h2 class="h2">进程资源消耗</h2>
+    <div class="card" >
+        <div class="card-header">
+            <div class="d-flex align-items-center">
+                <h2 class="mr-auto h2">资源利用趋势</h2>
+                <div>
+                    <!-- 间隔时间-DropDown -->
+                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" style="width: 100px;" type="button" id="DateIntervalDropDownBtn" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        1
+                    </button>
+                    <div id="DateIntervalDropDownMenu" class="dropdown-menu" aria-labelledby="DateIntervalDropDownBtn">
+                        <a class="dropdown-item" href="#" > 0.0.0.0</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            <div id="TrendChart" style="width: 100%;height: 800px;"></div>
+        </div>
     </div>
-    <table id="processInfo" style="table-layout: fixed;word-break: break-all;"
-           data-pagination="true" data-page-size="20" data-page-list="[10,20]"></table>
+    <div style="width:100%;height: 40px;"></div>
+
+    <div class="card" >
+        <h2 class="card-header">进程资源消耗</h2>
+        <div class="card-body">
+            <div class="media text-muted pt-3" style="min-height:300px;height:auto;overflow-x:scroll;overflow-y: hidden;position: relative">
+                <table id="processInfo" style="table-layout: fixed;word-break: break-all;" data-pagination="true" data-page-size="20" data-page-list="[10,20]"></table>
+            </div>
+        </div>
+    </div>
+
     <div style="height: 500px;width: 100%"></div>
 </body>
 

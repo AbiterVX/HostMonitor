@@ -38,11 +38,15 @@
     }
 </style>
 <body>
-    <div class="row">
-        <div class="col-sm-6 " >
-            <div class="card overflow-auto" style="height: 1000px;">
-                <ul class="nav flex-column">
-                    <li class="nav-item">
+<div class="row">
+    <div class="col-sm-6 " >
+        <div class="card overflow-auto" style="height: 1000px;">
+            <h5 class="card-header">
+                源硬盘
+            </h5>
+            <div class="card-body">
+                <ul id="originDiskList" class="nav flex-column">
+                    <!--<li class="nav-item">
                         <label id="NavCollapse1" href="#homeSubmenu" data-toggle="collapse" class=" dropdown-toggle h5">0.0.0.0</label>
                         <ul id="homeSubmenu" class="collapse list-unstyled show">
                             <li class="nav-item DiskCheckNavItem">
@@ -51,36 +55,58 @@
                                     <label for="1" class="form-check-label h5">fgh</label>
                                 </div>
                             </li>
-                            <li class="nav-item DiskCheckNavItem">
-                                <div class="form-check form-check-inline">
-                                    <input id="2" class="form-check-input DiskCheckBox" type="checkbox">
-                                    <label for="2" class="form-check-label h5">fgh</label>
-                                </div>
-                            </li>
                         </ul>
-                    </li>
-
-
+                    </li>-->
                 </ul>
-            </div>
-        </div>
-
-        <div class="col-sm-6">
-            <div class="card">
-
             </div>
         </div>
     </div>
 
-
-
+    <div class="col-sm-6">
+        <div class="card">
+            <h5 class="card-header">
+                目标硬盘
+            </h5>
+            <div class="card-body">
+                <ul id="destinationDiskList" class="nav flex-column">
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
 
 </body>
 <script>
     //alert(FGetDateTime(1623930113000));
 
+    var DiskList = {
+       "127.0.0.1":[
+           {
+               diskName: "aaa",
+               diskCapacitySize: 900,
+           },
+           {
+               diskName: "bbb",
+               diskCapacitySize: 800,
+           },
+       ],
+        "127.0.0.2":[
+            {
+                diskName: "ccc",
+                diskCapacitySize: 500,
+            },
+            {
+                diskName: "ddd",
+                diskCapacitySize: 400,
+            },
+        ],
+    };
 
 
+    //加载后执行
+    window.onload=function (){
+
+    }
 
     function getHostDiskListHtml(hostIp,diskList){
         var diskListHtml = '';
@@ -92,7 +118,7 @@
             '<li class="nav-item">\n' +
             '    <label id="NavCollapse1" href="#homeSubmenu" data-toggle="collapse" class=" dropdown-toggle h5">0.0.0.0</label>\n' +
             '    <ul id="homeSubmenu" class="collapse list-unstyled show">\n' +
-                    diskListHtml+
+            diskListHtml+
             '    </ul>\n' +
             '</li>';
         return resultHtml;

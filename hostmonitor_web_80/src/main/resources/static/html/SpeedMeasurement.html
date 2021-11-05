@@ -27,15 +27,20 @@
     <script src="../bootstrap-table/bootstrap-table-zh-CN.min.js"></script>
 </head>
 <body>
-    <!--标题-->
-    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
-        <h2 class="h2">测速</h2>
-        <div class="btn-toolbar mb-2 mb-md-0" role="toolbar" style="margin-right: 5px;">
-            <button id="measureBtn" onclick="measureBtnOnclick()" type="button" class="btn btn-secondary" style="width: 120px;height: 40px;font-size: 18px;" >开始测试</button>
+    <div class="card" >
+        <div class="card-header">
+            <div class="d-flex align-items-center">
+                <h2 class="mr-auto h2">测速</h2>
+                <div class="btn-toolbar mb-2 mb-md-0" role="toolbar" style="margin-right: 5px;">
+                    <button id="measureBtn" onclick="measureBtnOnclick()" type="button" class="btn btn-secondary" style="width: 120px;height: 40px;font-size: 18px;" >开始测试</button>
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            <table id="speedMeasurement" style="table-layout: fixed;word-break: break-all;"></table>
         </div>
     </div>
-    <table id="speedMeasurement" style="table-layout: fixed;word-break: break-all;"></table>
-    <div style="height: 100px;width: 100%"></div>
+    <div style="width:100%;height: 40px;"></div>
 </body>
 <script>
     //table选中项

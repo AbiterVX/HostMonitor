@@ -27,42 +27,44 @@
     <script src="../bootstrap-table/bootstrap-table-zh-CN.min.js"></script>
 </head>
 <body>
-    <!--标题-->
-    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
-        <h2 class="h2">故障盘统计</h2>
-    </div>
-
-    <div class="row"  style="margin-bottom: 10px;">
-        <div class="col-sm-9">
-            <div id="FailureTypeStatisticsChart" style="width: 100%;height: 300px;"></div>
+    <div class="card" >
+        <h2 class="card-header">故障盘统计</h2>
+        <div class="card-body">
+            <div class="row"  style="margin-bottom: 10px;">
+                <div class="col-sm-9">
+                    <div id="FailureTypeStatisticsChart" style="width: 100%;height: 300px;"></div>
+                </div>
+                <div class="col-sm-3">
+                    <div id="DFPSummaryChart" style="width: 300px;height: 300px;"></div>
+                </div>
+            </div>
         </div>
-        <div class="col-sm-3">
-            <div id="DFPSummaryChart" style="width: 300px;height: 300px;"></div>
+    </div>
+    <div style="width:100%;height: 40px;"></div>
+
+
+    <div class="card" >
+        <h2 class="card-header">当前模型指标比对</h2>
+        <div class="card-body">
+            <div style="margin-bottom: 30px;">
+                <table id="dfpComparison" style="table-layout: fixed;word-break: break-all"></table>
+            </div>
         </div>
-
     </div>
+    <div style="width:100%;height: 40px;"></div>
 
 
 
-    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
-        <h2 class="h2">当前模型指标比对</h2>
+    <div class="card" >
+        <h2 class="card-header">故障盘数量趋势</h2>
+        <div class="card-body">
+            <div class="row">
+                <div id="FailureCountStatisticsChart" style="width: 100%;height: 350px;"></div>
+            </div>
+        </div>
     </div>
+    <div style="width:100%;height: 40px;"></div>
 
-    <div style="margin-bottom: 30px;">
-        <table id="dfpComparison" style="table-layout: fixed;word-break: break-all"></table>
-    </div>
-
-
-    <!--标题-->
-    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
-        <h2 class="h2">故障盘数量趋势</h2>
-    </div>
-
-    <div class="row">
-        <div id="FailureCountStatisticsChart" style="width: 100%;height: 350px;"></div>
-    </div>
-
-    <div style="height: 100px;width: 100%"></div>
 </body>
 
 <script>

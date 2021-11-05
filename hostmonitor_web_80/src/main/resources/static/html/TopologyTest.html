@@ -26,18 +26,101 @@
     <!-- Latest compiled and minified Locales -->
     <script src="../bootstrap-table/bootstrap-table-zh-CN.min.js"></script>
 
-    <!--拓扑    -->
-    <script src="http://demo.qunee.com/lib/qunee-min.js"></script>
 </head>
 <body>
-    <div id="SummaryChart" style="width: 100%;min-height: 800px;"></div>
-    <div id="TestStr"></div>
+    <!-- 顶部导航项 -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <a id="Title" class="navbar-brand col-sm-3 col-md-2 mr-0" href="#"></a>
+        <!--自适应下拉栏
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNavDropdown">
+            <ul class="navbar-nav"></ul>
+        </div>
+        -->
+        <ul class="mr-auto"></ul>
+        <div class="form-inline mt-2 mt-md-0">
+            <div style="width:35px;height:35px;background-color: white;border-radius: 20px;">
+                <img src="../images/userImg.png" style="width: 35px;height: 35px;border-radius: 20px;">
+            </div>
+
+            <ul class="navbar-nav px-3">
+                <li class="nav-item text-nowrap">
+                    <a id="UserBtn" class="nav-link"></a>
+                </li>
+                <li class="nav-item text-nowrap">
+                    <a id="SignInBtn" class="nav-link"></a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+    <!-- 主要内容 -->
+    <div class="container-fluid">
+        <div class="row">
+            <!-- 左侧导航项 -->
+            <nav class="col-md-2 d-none d-md-block bg-light sidebar">
+                <div class="sidebar-sticky">
+                    <ul class="nav flex-column">
+                        <!-- 导航项 -->
+                        <li class="nav-item">
+                            <a id="NavItem1" class="nav-link" href="#"></a>
+                        </li>
+                        <li class="nav-item">
+                            <a id="NavItem2" href="#hostList" data-toggle="collapse" class="dropdown-toggle nav-link"></a>
+                            <ul id="hostList" class="collapse list-unstyled show">
+                            </ul>
+                        </li>
+
+                        <li class="nav-item">
+                            <a id="NavCollapse1" href="#homeSubmenu" data-toggle="collapse" class="dropdown-toggle nav-link">故障预测</a>
+                            <ul class="collapse list-unstyled show" id="homeSubmenu">
+                                <li class="nav-item">
+                                    <a id="NavItem3" class="nav-link" href="#"></a>
+                                </li>
+                                <li class="nav-item">
+                                    <a id="NavItem4" class="nav-link" href="#"></a>
+                                </li>
+                                <li class="nav-item">
+                                    <a id="NavItem5" class="nav-link" href="#"></a>
+                                </li>
+                            </ul>
+                        </li>
+
+                        <li class="nav-item">
+                            <a id="NavItem6" class="nav-link" href="#"></a>
+                        </li>
+                        <li class="nav-item">
+                            <a id="NavItem7" class="nav-link" href="#"></a>
+                        </li>
+                        <li class="nav-item">
+                            <a id="NavItem8" class="nav-link" href="#"></a>
+                        </li>
+                        <li class="nav-item">
+                            <a id="NavItem9" class="nav-link" href="#"></a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+            <!-- 右侧主内容 -->
+            <main role="main" class="col-md-9 ml-sm-auto col-lg-10 pt-3 px-4">
+                <div class="my-3 p-3 rounded box-shadow" style="background-color: rgba(0,0,0,0.05);">
+                    <h3 class="border-bottom border-gray pb-2 mb-0">系统概况</h3>
+                    <div class="media text-muted pt-3" style="min-height:300px;height:auto;overflow-x:scroll;overflow-y: hidden;position: relative">
+                        <div id="TopologyChart" style="min-height: 300px;position: absolute"></div>
+                    </div>
+                    <div class="media text-muted pt-3">
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
 </body>
 
 
 <script>
     var icon_router = "image://../images/icon_router.png";
-    var icon_server = "image://../images/icon_server.png";
+    var icon_cable = "image://../images/icon_cable.png";
     var icon_computer = "image://../images/icon_computer.png";
     var hostSampleData = {
         "0.0.0.1":{
@@ -76,11 +159,19 @@
         {ip:"0.0.0.7", router:"127.0.0.1",},
         {ip:"0.0.0.8", router:"127.0.0.1",},
         {ip:"0.0.0.9", router:"127.0.0.1",},
+        {ip:"0.0.0.10", router:"127.0.0.1",},
+        {ip:"0.0.0.11", router:"127.0.0.1",},
+        {ip:"0.0.0.12", router:"127.0.0.1",},
+        {ip:"0.0.0.13", router:"127.0.0.1",},
 
         {ip:"1.0.0.1", router:"127.0.0.2",},
         {ip:"1.0.0.2", router:"127.0.0.2",},
         {ip:"1.0.0.3", router:"127.0.0.2",},
         {ip:"1.0.0.4", router:"127.0.0.2",},
+        {ip:"1.0.0.5", router:"127.0.0.2",},
+        {ip:"1.0.0.6", router:"127.0.0.2",},
+        {ip:"1.0.0.7", router:"127.0.0.2",},
+        {ip:"1.0.0.8", router:"127.0.0.2",},
 
         {ip:"2.0.0.1", router:"127.0.0.3",},
         {ip:"2.0.0.2", router:"127.0.0.3",},
@@ -105,7 +196,6 @@
 
         {ip:"7.0.0.1", router:"127.0.0.8",},
     ];
-
     var threshold = {
         cpuUsage:1,
         memoryUsage:1,
@@ -114,10 +204,10 @@
     //获取带颜色的文字
     function getColoredTxt(displayValue,threshold){
         if(displayValue>=threshold){
-            return '<span style="font-weight:bold;color:#ee6767">'+displayValue+'</span>';
+            return '<span style="font-weight:bold;color:#ee6767">'+displayValue.toFixed(2)+'</span>';
         }
         else{
-            return displayValue;
+            return displayValue.toFixed(2);
         }
     }
     //判断是否高负载
@@ -135,8 +225,7 @@
                  "IOPS:     " + getColoredTxt(nodeData["diskIOPS"],threshold["diskIOPS"])+"</br>" ;
         return result;
     }
-
-
+    //拓扑图数据
     function initConfigData(){
         //拓扑图数据
         var graphData = {
@@ -177,6 +266,7 @@
         //路由列个数
         var columnCount = routerColumnX.length;
 
+        var graphWidth = [0,0];
         //路由索引
         var routerIndex = 0;
         for(var router in nodeData){
@@ -204,10 +294,17 @@
                 currentHost["lines"].push([currentRouter["x"],currentRouter["y"]]);
                 hostIndex +=1;
             }
+            var tempWidth = graphConfig["hostXoffset"] * (Math.floor(currentRouter["hosts"].length /2)+1);
+            if(graphWidth[columnIndex] < tempWidth){
+                graphWidth[columnIndex] = tempWidth;
+            }
+
             routerIndex +=1;
         }
-        graphData["graphHeight"] = graphConfig["routerYoffset"]* (Math.floor(routerIndex/2)+1);
-
+        graphData["graphHeight"] =  graphConfig["routerYoffset"]* (Math.floor(routerIndex/2)+1.5);
+        //alert(graphWidth);
+        graphData["graphWidth"] = 2*graphConfig["routerXoffset"]+(graphWidth[0] + graphWidth[1])*2.5;
+        //alert(graphData["graphWidth"]);
         //-----添加点
         //网络点
         graphData["nodes"].push({
@@ -216,7 +313,7 @@
             x: 0,
             y: graphConfig["routerYoffset"]*Math.floor((routerIndex-1)/columnCount)/2,
             value:[0 ,graphConfig["routerYoffset"]*Math.floor((routerIndex-1)/columnCount)/2 ],
-            symbol: icon_router,
+            symbol: icon_cable,
             symbolSize: graphConfig["symbolSize"],
             label: {
                 position:'bottom',
@@ -308,9 +405,6 @@
                 target: "NetWork",
             });
         }
-
-
-
         return graphData;
     }
 
@@ -318,6 +412,12 @@
         var graphData = initConfigData();
 
         var option = {
+            grid: {
+                left: '0%',
+                right: '100%',
+                top: '0%',
+                width: '100%',
+            },
             tooltip: {
                 //triggerOn: 'click',
                 formatter: function(params){
@@ -358,10 +458,10 @@
                         show: true,
                         formatter: function(params){
                             if(params.data.nodeType === "router"){
-                                return `${params.data.name}:(${params.data.x},${params.data.y})`;
+                                return `${params.data.name}`;
                             }
                             else if(params.data.nodeType === "host"){
-                                return `${params.data.name}:(${params.data.x},${params.data.y})`;
+                                return `${params.data.name}`;
                             }
                             else{
                                 return `${params.data.name}`;
@@ -376,7 +476,7 @@
                     data: graphData["nodes"],
                     links: graphData["links"],
                     lineStyle: {
-                        type: 'solid',
+                        type: 'dashed',
                         width: 4,
                         color: '#000000',
                     }
@@ -395,13 +495,17 @@
             ]
         };
 
-        var topologyChart = document.getElementById("SummaryChart");
-        //topologyChart.style.height = graphData["graphHeight"];
-        alert(graphData["graphHeight"]);
-        topologyChart.style.backgroundColor = "#000055";
+        var topologyChartHtml = document.getElementById("TopologyChart");
+        var chartParent = topologyChartHtml.parentNode;
 
-        var SummaryChart = echarts.init(topologyChart);
-        SummaryChart.setOption(option);
+        topologyChartHtml.style.height = graphData["graphHeight"] + 'px';
+        topologyChartHtml.style.width = graphData["graphWidth"] + "px";
+        topologyChartHtml.style.minWidth = chartParent.clientWidth+ "px";
+        chartParent.style.height = graphData["graphHeight"] + 'px';
+
+
+        var topologyChart = echarts.init(topologyChartHtml);
+        topologyChart.setOption(option);
     }
 </script>
 </html>

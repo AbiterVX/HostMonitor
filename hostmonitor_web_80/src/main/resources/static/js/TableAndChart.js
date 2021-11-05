@@ -556,7 +556,7 @@ const tableColumns = {
         {
             field: 'predictProbability',
             title: '状态',
-            width: 80,
+            width: 100,
             sortable: true,
             formatter : function (value, row, index) {
                 var color = "";
@@ -572,6 +572,25 @@ const tableColumns = {
                 return '<span style="font-weight:bold;color:'+ color +'">'+displayValue+'</span>';
             }
         },
+        {
+            field: 'failureSymbol',
+            title: '标记',
+            align: 'center',
+            width: 80,
+            clickToSelect: false,
+            events: {
+                'click .display': function (e, value, row, index) {
+                    //displayUserInfo(row,index);
+                    alert("!");
+                },
+            },
+            formatter: function operateFormatter(value, row, index) {
+                //['#92cc76','#fac859','#ee6767']
+                return [
+                    '<a class="display"  style="font-weight:bold;text-decoration:none;" href="javascript:void(0)" title="Like">正常</a>',
+                ].join('')
+            }
+        }
     ],
     //测速
     speedMeasurement: [
@@ -754,49 +773,49 @@ const tableColumns = {
         },
         {
             field: 'FDR',
-            title: 'FDR',
+            title: '故障检测率',
             sortable: true,
             width:50,
         },
         {
             field: 'FAR',
-            title: 'FAR',
+            title: '误报率',
             sortable: true,
             width:50,
         },
         {
             field: 'AUC',
-            title: 'AUC',
+            title: '曲线下面积',
             sortable: true,
             width:50,
         },
         {
             field: 'FNR',
-            title: 'FNR',
+            title: '漏报率',
             sortable: true,
             width:50,
         },
         {
             field: 'Accuracy',
-            title: 'Accuracy',
+            title: '准确率',
             sortable: true,
             width:50,
         },
         {
             field: 'Precision',
-            title: 'Precision',
+            title: '精密度',
             sortable: true,
             width:50,
         },
         {
             field: 'Specificity',
-            title: 'Specificity',
+            title: '特异度',
             sortable: true,
             width:50,
         },
         {
             field: 'ErrorRate',
-            title: 'ErrorRate',
+            title: '错误率',
             sortable: true,
             width:50,
         },
@@ -818,35 +837,35 @@ const tableColumns = {
         },
         {
             field: 'FDR',
-            title: 'FDR',
+            title: '故障检测率',
         },
         {
             field: 'FAR',
-            title: 'FAR',
+            title: '误报率',
         },
         {
             field: 'AUC',
-            title: 'AUC',
+            title: '曲线下面积',
         },
         {
             field: 'FNR',
-            title: 'FNR',
+            title: '漏报率',
         },
         {
             field: 'Accuracy',
-            title: 'Accuracy',
+            title: '准确率',
         },
         {
             field: 'Precision',
-            title: 'Precision',
+            title: '精密度',
         },
         {
             field: 'Specificity',
-            title: 'Specificity',
+            title: '特异度',
         },
         {
             field: 'ErrorRate',
-            title: 'ErrorRate',
+            title: '错误率',
         },
     ]
 };

@@ -15,6 +15,7 @@ function FGetNavItems(){
         document.getElementById("NavItem6"),
         document.getElementById("NavItem7"),
         document.getElementById("NavItem8"),
+        document.getElementById("NavItem9"),
     ];
 }
 
@@ -27,6 +28,7 @@ var minRequireUserType = [
     2,
     2,
     0,
+    2,
 ];
 
 var innerHTMLList = [
@@ -38,6 +40,7 @@ var innerHTMLList = [
     icon_file + '系统设置',
     icon_file + '用户管理',
     icon_file + '测速',
+    icon_file + '备份',
 ];
 
 var signInSrc = "/Signin";
@@ -51,6 +54,7 @@ var srcHtml = [
     "Settings.html",
     "UserManagement.html",
     "SpeedMeasurement.html",
+    "DiskBackup.html",
 ];
 
 

@@ -27,47 +27,56 @@
     <script src="../bootstrap-table/bootstrap-table-zh-CN.min.js"></script>
 </head>
 <body>
-    <!--标题-->
-    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
-        <h2 class="h2">硬盘故障趋势</h2>
-        <div class="btn-toolbar mb-2 mb-md-0" role="toolbar" style="margin-right: 5px;">
-            <!-- HostIp -DropDown-->
-            <div style="margin-right: 15px;">
-                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="HostIpDropDownBtn" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    0.0.0.0
-                </button>
-                <div id="HostIpDropDownMenu" class="dropdown-menu" aria-labelledby="HostIpDropDownBtn">
-                    <a class="dropdown-item" href="#"> 0.0.0.0</a>
-                </div>
-            </div>
+    <div class="card" >
+        <div class="card-header">
+            <div class="d-flex align-items-center">
+                <h2 class="mr-auto h2">硬盘故障趋势</h2>
 
-            <!-- DiskName -DropDown-->
-            <div>
-                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="DiskNameDropDownBtn" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    None Disk
-                </button>
-                <div id="DiskNameDropDownMenu" class="dropdown-menu" aria-labelledby="DiskNameDropDownBtn">
-                    <a class="dropdown-item" href="#"> None Disk</a>
+                    <!-- HostIp -DropDown-->
+                    <div style="margin-right: 15px;">
+                        <button id="HostIpDropDownBtn" class="btn btn-sm btn-outline-secondary dropdown-toggle" style="width: 180px;height: 35px;font-size:16px;" type="button"  data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            0.0.0.0
+                        </button>
+                        <div id="HostIpDropDownMenu" class="dropdown-menu" aria-labelledby="HostIpDropDownBtn">
+                            <a class="dropdown-item" href="#"> 0.0.0.0</a>
+                        </div>
+                    </div>
+
+                    <!-- DiskName -DropDown-->
+                    <div>
+                        <button  id="DiskNameDropDownBtn" class="btn btn-sm btn-outline-secondary dropdown-toggle" style="width: 180px;height: 35px;font-size:16px;" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            None Disk
+                        </button>
+                        <div id="DiskNameDropDownMenu" class="dropdown-menu" aria-labelledby="DiskNameDropDownBtn">
+                            <a class="dropdown-item" href="#"> None Disk</a>
+                        </div>
+                    </div>
+
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="row"  style="margin-bottom: 10px;">
+                <!--摘要Chart-->
+                <div class="col-sm-12">
+                    <div id="DFPTrendChart" style="width: 100%;height: 300px;"></div>
                 </div>
             </div>
         </div>
     </div>
-    <div class="row"  style="margin-bottom: 10px;">
-        <!--摘要Chart-->
-        <div class="col-sm-12">
-            <div id="DFPTrendChart" style="width: 100%;height: 300px;"></div>
+    <div style="width:100%;height: 40px;"></div>
+
+
+    <div class="card" >
+        <h2 class="card-header">预测结果</h2>
+        <div class="card-body">
+            <table id="diskFailurePredictInfo" style="table-layout: fixed;word-break: break-all;"
+                   data-search="true" data-pagination="true" data-page-size="20" data-page-list="[10,20]"></table>
         </div>
     </div>
+    <div style="width:100%;height: 40px;"></div>
 
-    <!--标题-->
-    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
-        <h2 class="h2">预测结果</h2>
-    </div>
 
-    <table id="diskFailurePredictInfo" style="table-layout: fixed;word-break: break-all;"
-           data-search="true"
-           data-pagination="true" data-page-size="20" data-page-list="[10,20]"></table>
-    <div style="height: 100px;width: 100%"></div>
+
 </body>
 
 <script>
