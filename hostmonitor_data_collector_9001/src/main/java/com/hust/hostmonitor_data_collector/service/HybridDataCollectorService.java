@@ -939,22 +939,42 @@ public class HybridDataCollectorService implements DataCollectorService{
         }
     }
 
-    //TODO 返回所有节点的实时信息
+    //返回所有节点的实时信息
     @Override
     public String getAllHostsInfoDetail() {
-        return null;
+        JSONObject result = new JSONObject();
+        Set<String> ipSet = hostsSampleData.keySet();
+        for(String currentIp :ipSet){
+            JSONObject currentSampleData = hostsSampleData.get(currentIp);
+            JSONObject hostResultData = new JSONObject();
+            {
+                hostResultData.put("cpuUsage",currentSampleData.getDouble("cpuUsage"));
+                hostResultData.put("memoryUsage",currentSampleData.getJSONArray("memoryUsage"));
+                hostResultData.put("allDiskTotalFreeSize",currentSampleData.getDouble("allDiskTotalFreeSize"));
+                hostResultData.put("allDiskTotalSize",currentSampleData.getDouble("allDiskTotalSize"));
+                hostResultData.put("netSendSpeed",currentSampleData.getDouble("netSendSpeed"));
+                hostResultData.put("netReceiveSpeed",currentSampleData.getDouble("netReceiveSpeed"));
+                hostResultData.put("diskReadBytes",currentSampleData.getDouble("diskReadBytes"));
+                hostResultData.put("diskWriteBytes",currentSampleData.getDouble("diskWriteBytes"));
+            }
+            result.put(currentIp,hostResultData);
+        }
+        return result.toJSONString();
     }
 
-    //TODO 返回所有hostList里面的信息（无密码和账号）
+    //返回所有hostList里面的信息（无密码和账号）
     @Override
     public String getHostsRouterInfo() {
-        JSONArray result=new JSONArray();
-        for(HostConfigData hostConfigData:sshHostList){
-            JSONObject tempObject=new JSONObject();
-            tempObject.put("IP",hostConfigData.ip);
-            tempObject.put("osName",hostConfigData.osType);
-            tempObject.put("router",hostConfigData.router);
-            result.add(tempObject);
+
+        JSONArray result = new JSONArray();
+        List<HostConfigData> hostList = configDataManager.getSSHConfigHostList();
+        for(HostConfigData hostConfigData:hostList){
+            JSONObject currentHost = new JSONObject();
+            {
+                currentHost.put("ip",hostConfigData.ip);
+                currentHost.put("router",hostConfigData.router);
+            }
+            result.add(currentHost);
         }
         return result.toJSONString();
     }

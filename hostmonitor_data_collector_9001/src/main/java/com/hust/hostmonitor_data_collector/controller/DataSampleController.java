@@ -136,6 +136,7 @@ public class DataSampleController {
         return string;
     }
     @GetMapping(value = "/getHostsRouter")
+    @ResponseBody
     public String getHostsRouterInfo(){
         String string=dataCollectorService.getHostsRouterInfo();
         return string;

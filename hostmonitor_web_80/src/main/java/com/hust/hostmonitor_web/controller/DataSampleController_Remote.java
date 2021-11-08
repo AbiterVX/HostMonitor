@@ -161,4 +161,18 @@ public class DataSampleController_Remote {
         System.out.println("[测速]");
         return restTemplate.postForObject(dataCollectorUrl + "/diskSpeedTest", jsonParam,String.class);
     }
+
+
+
+    @GetMapping(value="/getHostInfo/AllHostDetail")
+    @ResponseBody
+    public String getHostInfo_AllHostDetail(){
+        return getRequestData(dataCollectorUrl + "/getHostInfo/AllHostDetail/", 1000);
+    }
+
+    @GetMapping(value="/getHostsRouter")
+    @ResponseBody
+    public String getHostsRouter(){
+        return getRequestData(dataCollectorUrl + "/getHostsRouter", 1000);
+    }
 }

@@ -1331,12 +1331,103 @@ function FRefreshDFPSummaryChart(currentChart,currentData){
 }
 
 //获取ChartOption-TrendChart
-function FGetTrendChartOption(){
-    var titleName = ["CPU利用率","内存利用率","硬盘IO","网络IO"];
-    var seriesName = ["CPU利用率","内存利用率","硬盘读取","硬盘写入","网络接受","网络发送"];
-    var unitLabel =["%","%","Kb/s","Kb/s"];
+function FGetTrendChartOption(verticalLayout){
+    var titleName = [];
+    var seriesName = [];
+    var unitLabel = [];
+    if(verticalLayout === true){
+        titleName = ["CPU利用率","内存利用率","存储容量","网络IO"];
+        unitLabel =["%","%","%","Kb/s"];
+        seriesName = ["CPU利用率","内存利用率","存储容量","网络接受","网络发送"];
+    }
+    else{
+        titleName = ["CPU利用率","内存利用率","硬盘IO","网络IO"];
+        unitLabel =["%","%","Kb/s","Kb/s"];
+        seriesName = ["CPU利用率","内存利用率","硬盘读取","硬盘写入","网络接受","网络发送"];
+    }
+
+
+
     var trendChartOption = {
-        title: [
+        title:[],
+        /*legend: {},*/
+        grid:[],
+        tooltip: {
+            trigger: 'axis',
+            formatter: function(params){
+                var returnTxt = "时间: "+ FGetDateTime(params[0].value[0]) +"<br/>";
+                for(var i =0; i< params.length; i++){
+                    returnTxt += params[i].marker+" "+params[i].seriesName+ " "+params[i].value[1] + unitLabel[params[i].axisIndex] + "<br/>";
+                }
+                return returnTxt;
+            }
+        },
+        xAxis: [],
+        yAxis: [],
+        series: [],
+    };
+
+    //Title Grid
+    if(verticalLayout === true){
+        trendChartOption["title"] = [
+            {
+                text: titleName[0],
+                left: '0%',
+                top: '0px',
+            },
+            {
+                text: titleName[1],
+                left: '0%',
+                top: '360px',
+            },
+            {
+                text: titleName[2],
+                left: '0%',
+                top: '740px',
+            },
+            {
+                text: titleName[3],
+                left: '0%',
+                top: '1120px',
+            },
+        ];
+        trendChartOption["grid"] =[
+            {
+                left: '1%',
+                right: '99%',
+                top: '50px',
+                height:'300px',
+                width: '98%',
+                containLabel: true
+            },
+            {
+                left: '1%',
+                right: '99%',
+                top: '430px',
+                height:'300px',
+                width: '98%',
+                containLabel: true
+            },
+            {
+                left: '1%',
+                right: '99%',
+                top: '810px',
+                height:'300px',
+                width: '98%',
+                containLabel: true
+            },
+            {
+                left: '1%',
+                right: '99%',
+                top: '1190px',
+                height:'300px',
+                width: '98%',
+                containLabel: true
+            },
+        ];
+    }
+    else{
+        trendChartOption["title"] =  [
             {
                 text: titleName[0],
                 left: '0%',
@@ -1357,9 +1448,8 @@ function FGetTrendChartOption(){
                 left: '50%',
                 top: '360px',
             },
-        ],
-        /*legend: {},*/
-        grid: [
+        ];
+        trendChartOption["grid"]= [
             {
                 left: '1%',
                 right: '51%',
@@ -1388,24 +1478,11 @@ function FGetTrendChartOption(){
                 height:'300px',
                 containLabel: true
             },
-        ],
-        tooltip: {
-            trigger: 'axis',
-            formatter: function(params){
-                var returnTxt = "时间: "+ FGetDateTime(params[0].value[0]) +"<br/>";
-                for(var i =0; i< params.length; i++){
-                    returnTxt += params[i].marker+" "+params[i].seriesName+ " "+params[i].value[1] + unitLabel[params[i].axisIndex] + "<br/>";
-                }
-                return returnTxt;
-            }
-        },
-        xAxis: [],
-        yAxis: [],
-        series: [],
-    };
+        ];
+    }
 
-    //数据格式
-    for(var i=0;i<6;i++){
+    //series数据格式
+    for(var i=0;i<seriesName.length;i++){
         trendChartOption["series"].push({
             name:seriesName[i],
             smooth:true,

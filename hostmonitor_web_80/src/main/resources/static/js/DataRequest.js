@@ -11,7 +11,6 @@ var requestCoolDownTime = {
     RefreshDataSpeedMeasurementInfoAll: 0,
 }
 
-
 //发送get请求
 function FSendGetRequest(async,url,callbackFunc){
     $.ajax({
