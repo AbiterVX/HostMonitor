@@ -190,6 +190,7 @@
             graphHeight:0,
             xAxis:[0,0],
             yAxis:[0,0],
+            networkAverageWorkLoad:{}
         };
 
         //处理原始数据-init初始结构
@@ -262,19 +263,12 @@
         graphData["xAxis"] = [-graphWidth[0]-100-graphConfig["routerXoffset"],graphWidth[1]+100+graphConfig["routerXoffset"]];
         graphData["yAxis"] = [-200,graphData["graphHeight"]+100];
         //-----添加点
-        //网络点
-        graphData["nodes"].push({
-            nodeType: "NetWork",
-            name: "NetWork",
-            x: 0,
-            y: graphConfig["routerYoffset"]*Math.floor((routerIndex-1)/columnCount)/2,
-            value:[0 ,graphConfig["routerYoffset"]*Math.floor((routerIndex-1)/columnCount)/2 ],
-            symbol: icon_cable,
-            symbolSize: graphConfig["symbolSize"],
-            label: {
-                position:'bottom',
-            },
-        });
+        var totalCpuUsage = 0;
+        var totalMemoryUsage = 0;
+        var totalDiskCapacityUsage = 0;
+        var totalNetSendSpeed = 0;
+        var totalNetReceiveSpeed = 0;
+
         for(var router in nodeData){
             //路由点
             var currentRouter = nodeData[router];
@@ -296,8 +290,8 @@
                 var hostNetReceiveSpeed = 0;
                 if(hostSampleData.hasOwnProperty(currentHost["hostName"])){
                     hostCpuUsage = hostSampleData[currentHost["hostName"]]["cpuUsage"];
-                    hostMemoryUsage = hostSampleData[currentHost["hostName"]]["memoryUsage"][0] / hostSampleData[currentHost["hostName"]]["memoryUsage"][1];
-                    hostDiskCapacityUsage = 1 - hostSampleData[currentHost["hostName"]]["allDiskTotalFreeSize"] / hostSampleData[currentHost["hostName"]]["allDiskTotalSize"];
+                    hostMemoryUsage = hostSampleData[currentHost["hostName"]]["memoryUsage"][0] / hostSampleData[currentHost["hostName"]]["memoryUsage"][1] *100;
+                    hostDiskCapacityUsage = (1 - hostSampleData[currentHost["hostName"]]["allDiskTotalFreeSize"] / hostSampleData[currentHost["hostName"]]["allDiskTotalSize"])*100;
                     hostNetSendSpeed = hostSampleData[currentHost["hostName"]]["netSendSpeed"];
                     hostNetReceiveSpeed = hostSampleData[currentHost["hostName"]]["netReceiveSpeed"];
                 }
@@ -306,6 +300,12 @@
                 routerDiskCapacityUsage += hostDiskCapacityUsage;
                 routerNetSendSpeed += hostNetSendSpeed;
                 routerNetReceiveSpeed += hostNetReceiveSpeed;
+
+                totalCpuUsage += hostCpuUsage;
+                totalMemoryUsage += hostMemoryUsage;
+                totalDiskCapacityUsage += hostDiskCapacityUsage;
+                totalNetSendSpeed += hostNetSendSpeed;
+                totalNetReceiveSpeed += hostNetReceiveSpeed;
 
                 graphData["nodes"].push({
                     nodeType: "host",
@@ -376,8 +376,41 @@
                 target: "NetWork",
             });
         }
+
+        totalCpuUsage = (totalCpuUsage/hostConfigData.length).toFixed(2);
+        totalMemoryUsage = (totalMemoryUsage/hostConfigData.length).toFixed(2);
+        totalDiskCapacityUsage = (totalDiskCapacityUsage/hostConfigData.length).toFixed(2);
+        totalNetSendSpeed = (totalNetSendSpeed/hostConfigData.length).toFixed(2);
+        totalNetReceiveSpeed = (totalNetReceiveSpeed/hostConfigData.length).toFixed(2);
+        graphData["networkAverageWorkLoad"]={
+            cpuUsage:totalCpuUsage,
+            memoryUsage:totalMemoryUsage,
+            diskCapacityUsage:totalDiskCapacityUsage,
+            netSendSpeed:totalNetSendSpeed,
+            netReceiveSpeed:totalNetReceiveSpeed,
+        };
+
+        //网络点
+        graphData["nodes"].push({
+            nodeType: "NetWork",
+            name: "NetWork",
+            x: 0,
+            y: graphConfig["routerYoffset"]*Math.floor((routerIndex-1)/columnCount)/2,
+            value:[0 ,graphConfig["routerYoffset"]*Math.floor((routerIndex-1)/columnCount)/2 ],
+            symbol: icon_cable,
+            symbolSize: graphConfig["symbolSize"],
+            label: {
+                position:'bottom',
+            },
+            cpuUsage:totalCpuUsage,
+            memoryUsage:totalMemoryUsage,
+            diskCapacityUsage:totalDiskCapacityUsage,
+            netSendSpeed:totalNetSendSpeed,
+            netReceiveSpeed:totalNetReceiveSpeed,
+        });
         return graphData;
     }
+
 </script>
 
 <script>
@@ -388,141 +421,47 @@
     //Host名
     var hostIpList = [];
 
+    //拓扑图数据
+    var graphData;
+
     //趋势图数据
-    var trendChartData = [[],[],[],[],[],[]];
+    var trendChartData = [[],[],[],[],[]];
+
+    //趋势图表
+    var TrendChart = echarts.init(document.getElementById("TrendChart"));
 
     //加载后执行
     window.onload=function (){
         //初始化SummaryChart
-        {
-            SummaryChart.setOption(FGetSummaryChartOption());
-            refreshSummary(true);
-        }
+        SummaryChart.setOption(FGetSummaryChartOption());
+        refreshSummary(true);
 
         //趋势图
-        {
-            TrendChart.setOption(FGetTrendChartOption(true));
-        }
+        TrendChart.setOption(FGetTrendChartOption(true));
 
-        //获取拓扑图数据
+        //获取拓扑图配置数据
+        FSendGetRequest(false, "/getHostsRouter", function (resultData) {
+            hostConfigData =resultData;
+        });
+        //获取节点负载数据
+        FSendGetRequest(false, "/getHostInfo/AllHostDetail", function (resultData) {
+            hostSampleData =resultData;
+        });
+        //拓扑图刷新
+        refreshTopologyChart();
+        //趋势图更新
+        refreshTrendChartData();
+
+        //循环刷新拓扑图，趋势图
         {
-            FSendGetRequest(false, "/getHostInfo/AllHostDetail", function (resultData) {
-                hostSampleData =resultData;
-                refreshTrendChartData();
-            });
             setInterval(function (){
                 FSendGetRequest(false, "/getHostInfo/AllHostDetail", function (resultData) {
                     hostSampleData =resultData;
+                    refreshTopologyChart();
                     refreshTrendChartData();
                 })
             },20000);
-
-
-            FSendGetRequest(false, "/getHostsRouter", function (resultData) {
-                hostConfigData =resultData;
-            });
         }
-        //拓扑图
-        {
-            var graphData = initConfigData();
-            var option = {
-                grid: {
-                    left: '0%',
-                    right: '100%',
-                    top: '0%',
-                    width: '100%',
-                },
-                tooltip: {
-                    //triggerOn: 'click',
-                    formatter: function(params){
-                        if(params.data.nodeType === "router"){
-                            var currentRouter = params.data.name;
-                            return "路由: "+currentRouter+"</br>" + getToolTip(params.data);
-                        }
-                        else if(params.data.nodeType === "host"){
-                            var currentIp = params.data.name;
-                            return  "IP: "+currentIp+"</br>"+ getToolTip(params.data);
-                        }
-                        else if(params.data.nodeType === "NetWork"){
-                            return "网络";
-                        }
-                        else{
-                            return "";
-                        }
-                    },
-                },
-                xAxis: {
-                    show: false,
-                    type: 'value',
-                    min:graphData["xAxis"][0],
-                    max:graphData["xAxis"][1],
-                },
-                yAxis: {
-                    inverse:true,
-                    show: false,
-                    type: 'value',
-                    min:graphData["yAxis"][0],
-                    max:graphData["yAxis"][1],
-                },
-                series: [
-                    {
-                        coordinateSystem: 'cartesian2d',
-                        type: 'graph',
-                        layout: 'none',
-                        symbolSize: 50,
-                        roam: true,
-                        label: {
-                            //fontSize: 14,
-                            show: true,
-                            formatter: function(params){
-                                if(params.data.nodeType === "router"){
-                                    return `${params.data.name}`;
-                                }
-                                else if(params.data.nodeType === "host"){
-                                    return `${params.data.name}`;
-                                }
-                                else{
-                                    return `${params.data.name}`;
-                                }
-                            }
-                        },
-                        edgeSymbol: ['circle', 'arrow'],
-                        edgeSymbolSize: [4, 10],
-                        edgeLabel: {
-                            fontSize: 20
-                        },
-                        data: graphData["nodes"],
-                        links: graphData["links"],
-                        lineStyle: {
-                            type: 'dashed',
-                            width: 4,
-                            color: '#000000',
-                        }
-                    },
-                    {
-                        type: 'lines',
-                        polyline: true,
-                        coordinateSystem: 'cartesian2d',
-                        lineStyle: {
-                            type: 'solid',
-                            width: 6,
-                            color: '#000000',
-                        },
-                        data: graphData["lines"],
-                    },
-                ]
-            };
-            var topologyChartHtml = document.getElementById("TopologyChart");
-            var chartParent = topologyChartHtml.parentNode;
-            topologyChartHtml.style.height = graphData["graphHeight"] + 'px';
-            topologyChartHtml.style.width = graphData["graphWidth"] + "px";
-            topologyChartHtml.style.minWidth = chartParent.clientWidth+ "px" ;
-            chartParent.style.height = graphData["graphHeight"] + 'px';
-            var topologyChart = echarts.init(topologyChartHtml);
-            topologyChart.setOption(option);
-        }
-
-
 
         //更新HostInfo数据.
         {
@@ -538,6 +477,105 @@
                 });
             },20000);
         }
+    }
+
+    function refreshTopologyChart(){
+        graphData = initConfigData();
+        var option = {
+            grid: {
+                left: '0%',
+                right: '100%',
+                top: '0%',
+                width: '100%',
+            },
+            tooltip: {
+                //triggerOn: 'click',
+                formatter: function(params){
+                    if(params.data.nodeType === "router"){
+                        var currentRouter = params.data.name;
+                        return "路由: "+currentRouter+"</br>" + getToolTip(params.data);
+                    }
+                    else if(params.data.nodeType === "host"){
+                        var currentIp = params.data.name;
+                        return  "IP: "+currentIp+"</br>"+ getToolTip(params.data);
+                    }
+                    else if(params.data.nodeType === "NetWork"){
+                        return "网络";
+                    }
+                    else{
+                        return "";
+                    }
+                },
+            },
+            xAxis: {
+                show: false,
+                type: 'value',
+                min:graphData["xAxis"][0],
+                max:graphData["xAxis"][1],
+            },
+            yAxis: {
+                inverse:true,
+                show: false,
+                type: 'value',
+                min:graphData["yAxis"][0],
+                max:graphData["yAxis"][1],
+            },
+            series: [
+                {
+                    coordinateSystem: 'cartesian2d',
+                    type: 'graph',
+                    layout: 'none',
+                    symbolSize: 50,
+                    roam: true,
+                    label: {
+                        //fontSize: 14,
+                        show: true,
+                        formatter: function(params){
+                            if(params.data.nodeType === "router"){
+                                return `${params.data.name}`;
+                            }
+                            else if(params.data.nodeType === "host"){
+                                return `${params.data.name}`;
+                            }
+                            else{
+                                return `${params.data.name}`;
+                            }
+                        }
+                    },
+                    edgeSymbol: ['circle', 'arrow'],
+                    edgeSymbolSize: [4, 10],
+                    edgeLabel: {
+                        fontSize: 20
+                    },
+                    data: graphData["nodes"],
+                    links: graphData["links"],
+                    lineStyle: {
+                        type: 'dashed',
+                        width: 4,
+                        color: '#000000',
+                    }
+                },
+                {
+                    type: 'lines',
+                    polyline: true,
+                    coordinateSystem: 'cartesian2d',
+                    lineStyle: {
+                        type: 'solid',
+                        width: 6,
+                        color: '#000000',
+                    },
+                    data: graphData["lines"],
+                },
+            ]
+        };
+        var topologyChartHtml = document.getElementById("TopologyChart");
+        var chartParent = topologyChartHtml.parentNode;
+        topologyChartHtml.style.height = graphData["graphHeight"] + 'px';
+        topologyChartHtml.style.width = graphData["graphWidth"] + "px";
+        topologyChartHtml.style.minWidth = chartParent.clientWidth+ "px" ;
+        chartParent.style.height = graphData["graphHeight"] + 'px';
+        var topologyChart = echarts.init(topologyChartHtml);
+        topologyChart.setOption(option);
     }
 
     function refreshSummary(init){
@@ -570,15 +608,14 @@
 
     //刷新Chart-Data-TrendChart
     function refreshTrendChartData(){
+        var currentDate = new Date();
+        trendChartData[0].push([currentDate,graphData["networkAverageWorkLoad"]["cpuUsage"]]);
+        trendChartData[1].push([currentDate,graphData["networkAverageWorkLoad"]["memoryUsage"]]);
+        trendChartData[2].push([currentDate,graphData["networkAverageWorkLoad"]["diskCapacityUsage"]]);
+        trendChartData[3].push([currentDate,graphData["networkAverageWorkLoad"]["netSendSpeed"]]);
+        trendChartData[4].push([currentDate,graphData["networkAverageWorkLoad"]["netReceiveSpeed"]]);
 
-        /*trendChartData[0].push([]);
-        trendChartData[1];
-        trendChartData[2];
-        trendChartData[3];
-        trendChartData[4];
-        trendChartData[5];*/
-
-        var subChartIndex = [0,1,2,2,3,3];
+        var subChartIndex = [0,1,2,3,3];
         var option = {
             series: []
         };
