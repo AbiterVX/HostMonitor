@@ -4,6 +4,7 @@ package com.hust.hostmonitor_data_collector.utils;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.csvreader.CsvWriter;
+import com.hust.hostmonitor_data_collector.utils.DiskPredict.DiskPredict;
 import com.hust.hostmonitor_data_collector.utils.SSHConnect.HostConfigData;
 
 import com.hust.hostmonitor_data_collector.utils.linuxsample.Entity.DiskInfo;
@@ -17,6 +18,8 @@ import org.python.modules._hashlib;
 import com.hust.hostmonitor_data_collector.utils.SSHConnect.JschSSHManager;
 import com.hust.hostmonitor_data_collector.utils.SSHConnect.SSHManager;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.List;
@@ -39,7 +42,7 @@ public class DataSampleManager {
     private OSType localOSType;
     //Host 配置信息
     public List<HostConfigData> hostList;
-
+    public final SimpleDateFormat sdf =new SimpleDateFormat("yyyy-MM-dd");
     //单例
     private volatile static DataSampleManager dataSampleManager;
     public static DataSampleManager getInstance(){
@@ -80,16 +83,23 @@ public class DataSampleManager {
         OSType osType = getOSType(hostConfigData);
         if(osType.equals(OSType.LINUX)){
             sampleData.put("ip",hostConfigData.ip);
+            System.out.println("hostName");
             //hostName
             {
                 List<String> cmdResult=cmdExecutor.runCommand("hostname",hostConfigData);
+                if(cmdResult.size()==0){
+                    sampleData.put("connected",false);
+                    return sampleData;
+                }
                 sampleData.put("hostName",cmdResult.get(0).trim());
             }
+            System.out.println("osName");
             //osName
             {
                 List<String> cmdResult = cmdExecutor.runCommand("cat /proc/version",hostConfigData);
                 sampleData.put("osName",cmdResult.get(0).trim());
             }
+            System.out.println("diskName");
             //diskInfo
             {
                 //diskName
@@ -100,12 +110,12 @@ public class DataSampleManager {
                 for(String string:devs) {
                     String[] tokens = string.split("\\s+");
                     String devsName = tokens[0];
-                    System.out.println(devsName);
+                    //System.out.println(devsName);
                     String Model = "unknown", Serial = "unknown";
                     long size = Long.parseLong(tokens[3]);
                     List<String> diskInfo = cmdExecutor.runCommand("hdparm -i /dev/" + devsName, hostConfigData);
                     for (String info : diskInfo) {
-                        System.out.println(info);
+                        //System.out.println(info);
                         if (info.contains("Model")) {
                             tokens = info.split(",");
                             for (String token : tokens) {
@@ -135,6 +145,7 @@ public class DataSampleManager {
                 }
                 sampleData.put("allDiskTotalSize",LinuxDataProcess.doubleTo2bits_double(totalsize*1.0/1024/1024/1024));
             }
+            System.out.println("cpuInfoList");
             //cpuInfoList
             {
                 List<String> cmdResult = cmdExecutor.runCommand("cat /proc/cpuinfo",hostConfigData);
@@ -149,6 +160,7 @@ public class DataSampleManager {
                         }
                 }
             }
+            System.out.println("gpuInfo");
             //gpuInfo
             {
                 List<LinuxGPU> cardList = new ArrayList();
@@ -357,6 +369,9 @@ public class DataSampleManager {
 
     //节点性能采样
     public void sampleHostData(HostConfigData hostConfigData,JSONObject sampleData){
+        if(!sampleData.getBoolean("connected")){
+            return;
+        }
         OSType osType = getOSType(hostConfigData);
         if(osType.equals(OSType.LINUX)){
             LinuxPeriodRecord record=new LinuxPeriodRecord();
@@ -712,6 +727,9 @@ public class DataSampleManager {
 
     //节点进程采样
     public void sampleHostProcess(HostConfigData hostConfigData,JSONObject sampleData){
+        if(!sampleData.getBoolean("connected")){
+            return;
+        }
         OSType osType = getOSType(hostConfigData);
         if(osType.equals(OSType.LINUX)){
             JSONArray processInfoList=new JSONArray();
@@ -845,8 +863,6 @@ public class DataSampleManager {
                     }
                 }
             }
-
-
             //以Json格式存数据
             String smartDiskInfoCmd = "smartctl -i ";
             String smartDataSampleCmd = "smartctl -A ";
@@ -889,7 +905,6 @@ public class DataSampleManager {
                 }
             }
         }
-        System.out.println(diskData.toString());
 
         //获取当前时间:
         String currentDate = "";
@@ -908,66 +923,86 @@ public class DataSampleManager {
             }
         }
 
-        //TODO 写文件路径修改，直接写到服务器端的收集文件里，避免了文件传送
-        String sampleDataFilePath=System.getProperty("user.dir")+"/DiskPredict/client/data.csv";
-        CsvWriter csvWriter = new CsvWriter(sampleDataFilePath,',', Charset.forName("GBK"));
-        try {
-            //Smart属性个数
-            int smartCount = 256;
-            //获取表头
-            List<String> headers = new ArrayList<>();
-            {
-                String[] staticHeaders = {"date", "serial_number", "model", "serialAlternative", "failure", "is_ssd", "pt_d"};
-                for(String staticHeader:staticHeaders){
-                    headers.add(staticHeader);
-                }
-
-                String[] smartTagAttributes = {"_normalized","_raw"};
-                for(int i=0;i<smartCount;i++){
-                    for(String attribute: smartTagAttributes){
-                        headers.add("smart_"+ Integer.toString(i) + attribute);
-                    }
-                }
-            }
-
-            //写入header头
-            csvWriter.writeRecord(headers.toArray(new String[0]));
-
-            //写入数据
-            Set<String> serialNumberList = diskData.keySet();
-            for(String serialNumber:serialNumberList){
-                JSONObject currentDiskData = diskData.getJSONObject(serialNumber);
-                List<String> rowData = new ArrayList<>();
-                {
-                    rowData.add(currentDate);
-                    rowData.add(serialNumber);
-                    rowData.add(currentDiskData.getString("Device Model"));
-                    rowData.add("");
-                    rowData.add("0");
-                    rowData.add("0");
-                    rowData.add(pt_d);
-                    JSONObject smartData = currentDiskData.getJSONObject("SmartData");
-                    //@Todo 0到255
-                    for(int i=0;i<smartCount;i++){
-                        JSONObject currentSmart = smartData.getJSONObject(Integer.toString(i));
-                        if(currentSmart != null){
-                            rowData.add(currentSmart.getString("VALUE"));
-                            rowData.add(currentSmart.getString("RAW_VALUE"));
-                        }
-                        else{
-                            rowData.add("");
-                            rowData.add("");
-                        }
-                    }
-                }
-                csvWriter.writeRecord(rowData.toArray(new String[0]));
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            csvWriter.close();
+        Calendar calendar= Calendar.getInstance();
+        String sampleDataFilePath=System.getProperty("user.dir")+"/DiskPredict/original_data/"+ calendar.get(Calendar.YEAR);
+        File file=new File(sampleDataFilePath);
+        if(!file.exists()){
+            file.mkdir();
         }
+        sampleDataFilePath=sampleDataFilePath+"/"+(calendar.get(Calendar.MONTH)+1);
+        file=new File(sampleDataFilePath);
+        if(!file.exists()){
+            file.mkdir();
+        }
+        sampleDataFilePath=sampleDataFilePath+"/"+sdf.format(calendar.getTime())+".csv";
+        file=new File(sampleDataFilePath);
 
+        if(!file.exists()){
+            CsvWriter csvWriter = new CsvWriter(sampleDataFilePath,',', Charset.forName("GBK"));
+            try {
+                //Smart属性个数
+                int smartCount = 256;
+                //获取表头
+                List<String> headers = new ArrayList<>();
+                {
+                    String[] staticHeaders = {"date", "serial_number", "model", "serialAlternative", "failure", "is_ssd", "pt_d"};
+                    for(String staticHeader:staticHeaders){
+                        headers.add(staticHeader);
+                    }
+
+                    String[] smartTagAttributes = {"_normalized","_raw"};
+                    for(int i=0;i<smartCount;i++){
+                        for(String attribute: smartTagAttributes){
+                            headers.add("smart_"+ Integer.toString(i) + attribute);
+                        }
+                    }
+                }
+
+                //写入header头
+                csvWriter.writeRecord(headers.toArray(new String[0]));
+
+                //写入数据
+                Set<String> serialNumberList = diskData.keySet();
+                for(String serialNumber:serialNumberList){
+                    JSONObject currentDiskData = diskData.getJSONObject(serialNumber);
+                    List<String> rowData = new ArrayList<>();
+                    {
+                        rowData.add(currentDate);
+                        rowData.add(serialNumber);
+                        rowData.add(currentDiskData.getString("Device Model"));
+                        rowData.add("");
+                        rowData.add("0");
+                        rowData.add("0");
+                        rowData.add(pt_d);
+                        JSONObject smartData = currentDiskData.getJSONObject("SmartData");
+                        //@Todo 0到255
+                        for(int i=0;i<smartCount;i++){
+                            JSONObject currentSmart = smartData.getJSONObject(Integer.toString(i));
+                            if(currentSmart != null){
+                                rowData.add(currentSmart.getString("VALUE"));
+                                rowData.add(currentSmart.getString("RAW_VALUE"));
+                            }
+                            else{
+                                rowData.add("");
+                                rowData.add("");
+                            }
+                        }
+                    }
+                    csvWriter.writeRecord(rowData.toArray(new String[0]));
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                csvWriter.close();
+            }
+        }
+        else{
+            if(integratedFile.exists()) {
+
+                DiskPredict.diskSampleDataIntegration(path + sdf.format(calendar.getTime()) + ".csv", path + hostName + ".csv");
+
+            }
+        }
     }
 
     //IO测试

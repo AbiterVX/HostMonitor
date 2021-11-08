@@ -160,7 +160,54 @@ public class HybridDataCollectorService implements DataCollectorService{
             }
         }
     };
-    //定时器采样任务
+    //ssh定时任务 节点smart信息采集
+    private TimerTask smartSampleTask=new TimerTask() {
+        @Override
+        public void run() {
+            CountDownLatch latch=new CountDownLatch(dataSampleManager.hostList.size());
+            for(HostConfigData hostConfigData:dataSampleManager.hostList){
+                if(sshSampleData.containsKey(hostConfigData.ip)){
+                    executorService.execute(new Runnable() {
+                        @Override
+                        public void run() {
+                            JSONObject nodeObject=sshSampleData.get(hostConfigData.ip);
+                            if(!nodeObject.getBoolean("connected")){
+                                latch.countDown();
+                                return;
+                            }
+                            dataSampleManager.sampleHostSmart(hostConfigData);
+                            latch.countDown();
+                        }
+                    });
+
+                }
+                else{
+                    executorService.execute(new Runnable() {
+                        @Override
+                        public void run() {
+                            JSONObject initObject=dataSampleManager.sampleHostHardwareData (hostConfigData) ;
+                            sshSampleData.put(hostConfigData.ip,initObject);
+                            if(!initObject.getBoolean("connected")){
+                                latch.countDown();
+                                return;
+                            }
+                            dataSampleManager.sampleHostProcess(hostConfigData,initObject);
+                            latch.countDown();
+                        }
+                    });
+                }
+                logger.info("[DSManager]"+hostConfigData.ip+" smart sample");
+            }
+            try {
+                latch.await();
+                logger.info("[DSManager] smart sample finish");
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+                logger.error("[DSManager] smart sample latch error");
+            }
+        }
+    };
+    // 定时器采样任务
     private final TimerTask diskPredictTask= new TimerTask() {
         @Override
         public void run() {
@@ -257,18 +304,25 @@ public class HybridDataCollectorService implements DataCollectorService{
         dataPath=System.getProperty("user.dir")+"/DiskPredict/";
         logger.info("Check select in Config.json [1]SSH Commands [2]OSHI/选择采样模式:[1]SSH远程执行指令[2]OSHI");
         logger.info("Default:SSH Commands/默认使用SSH远程执行指令");
+        Calendar calendar=Calendar.getInstance();
+        calendar.set(Calendar.HOUR_OF_DAY, 1);
+        calendar.set(Calendar.MINUTE,0);
+        calendar.set(Calendar.SECOND,0);
+        Date date=calendar.getTime();
+        if(date.before(new Date())){
+            date=addDay(date,1);
+        }
         if(sampleSelect==1){
             sshSampleData=new HashMap<>();
             hostsSampleData=sshSampleData;
             for(HostConfigData hostConfigData:sshHostList){
 
                 JSONObject initObject=dataSampleManager.sampleHostHardwareData(hostConfigData);
-
                 sshSampleData.put(hostConfigData.ip,initObject);
             }
             mainTimer.schedule(performanceSampleTask,7*1000,sampleInterval);
             mainTimer.schedule(processSampleTask,13*1000,sampleInterval);
-
+            mainTimer.schedule(smartSampleTask,date,24*3600*1000);
         }
         else if(sampleSelect==2){
 
@@ -278,17 +332,8 @@ public class HybridDataCollectorService implements DataCollectorService{
             dataReceiver.startListening();
             mainTimer.schedule(dataPersistenceTask,sampleInterval/2,sampleInterval-offset);
         }
-
         summaryInfo=configDataManager.getSummaryFormat();
         loadPartition=configDataManager.getLoadPartitionFormat();
-        Calendar calendar=Calendar.getInstance();
-        calendar.set(Calendar.HOUR_OF_DAY, 1);
-        calendar.set(Calendar.MINUTE,0);
-        calendar.set(Calendar.SECOND,0);
-        Date date=calendar.getTime();
-        if(date.before(new Date())){
-            date=addDay(date,1);
-        }
         mainTimer.schedule(diskPredictTask,date,predictInterval);
     }
     private Date addDay(Date date,int num){
@@ -297,10 +342,6 @@ public class HybridDataCollectorService implements DataCollectorService{
         calendar.add(Calendar.DAY_OF_MONTH,num);
         return  calendar.getTime();
     }
-
-
-
-
     //-----外部服务接口-----
 
     @Override
@@ -899,7 +940,6 @@ public class HybridDataCollectorService implements DataCollectorService{
     }
     @Override
     public String remoteTest(String nodeIp){
-
         //客户端版本
         if(sampleSelect==2) {
             TestInitiator testInitiator = new TestInitiator(nodeIp);
@@ -910,6 +950,10 @@ public class HybridDataCollectorService implements DataCollectorService{
         }
         else if(sampleSelect==1){
             HostConfigData testConfig=null;
+            JSONObject sampleObject=sshSampleData.get(nodeIp);
+            if(!sampleObject.getBoolean("connected")){
+                return "node connection error,test fail!";
+            }
             for(HostConfigData hostConfigData:sshHostList){
                 if(hostConfigData.ip.equals(nodeIp)){
                     testConfig=hostConfigData;
@@ -926,9 +970,6 @@ public class HybridDataCollectorService implements DataCollectorService{
         return "sampleSelect Error";
     }
 
-    public String providerTest(String userName, String password, Timestamp timestamp){
-        return userDao.signUp(userName,password,timestamp);
-    }
 
     @Override
     public void setAllDiskDFPState(String hostIp, boolean b) {

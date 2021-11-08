@@ -116,6 +116,9 @@ public class CIMWin32_WMI {
             res = JSON.parseArray(info.toString());
         } catch (JSONException e) {
             e.printStackTrace();
+            JSONObject tempObject = JSON.parseObject(info.toString());
+            res=new JSONArray();
+            res.add(tempObject);
         }
         return res;
     }
