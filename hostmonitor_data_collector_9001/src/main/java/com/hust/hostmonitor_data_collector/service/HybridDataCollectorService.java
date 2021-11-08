@@ -22,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.File;
 import java.sql.Timestamp;
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -33,6 +34,8 @@ import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
+import static com.alibaba.fastjson.util.TypeUtils.castToDouble;
 
 
 public class HybridDataCollectorService implements DataCollectorService{
@@ -933,18 +936,25 @@ public class HybridDataCollectorService implements DataCollectorService{
     public String getAllHostsInfoDetail() {
         JSONObject result = new JSONObject();
         Set<String> ipSet = hostsSampleData.keySet();
+        DecimalFormat decimalFormat = new DecimalFormat("#.##");
         for(String currentIp :ipSet){
             JSONObject currentSampleData = hostsSampleData.get(currentIp);
             JSONObject hostResultData = new JSONObject();
             {
                 hostResultData.put("cpuUsage",currentSampleData.getDouble("cpuUsage"));
-                hostResultData.put("memoryUsage",currentSampleData.getJSONArray("memoryUsage"));
+                JSONArray memoryJSON = currentSampleData.getJSONArray("memoryUsage");
+                Double memoryUsage = memoryJSON.getDouble(0) / memoryJSON.getDouble(1)*100;
+                memoryUsage = castToDouble(decimalFormat.format(memoryUsage));
+                hostResultData.put("memoryUsage",memoryUsage);
                 hostResultData.put("allDiskTotalFreeSize",currentSampleData.getDouble("allDiskTotalFreeSize"));
                 hostResultData.put("allDiskTotalSize",currentSampleData.getDouble("allDiskTotalSize"));
                 hostResultData.put("netSendSpeed",currentSampleData.getDouble("netSendSpeed"));
                 hostResultData.put("netReceiveSpeed",currentSampleData.getDouble("netReceiveSpeed"));
                 hostResultData.put("diskReadBytes",currentSampleData.getDouble("diskReadBytes"));
                 hostResultData.put("diskWriteBytes",currentSampleData.getDouble("diskWriteBytes"));
+
+                Double diskCapacityUsage = (1-currentSampleData.getDouble("allDiskTotalFreeSize")/currentSampleData.getDouble("allDiskTotalSize"))*100;
+                hostResultData.put("diskCapacityUsage",castToDouble(decimalFormat.format(diskCapacityUsage)));
             }
             result.put(currentIp,hostResultData);
         }

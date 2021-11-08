@@ -62,8 +62,10 @@ var srcHtml = [
 
 function FInitNav(){
     //标题
-    document.getElementById("PageTitle").innerText = "数据中心资源监控";
-    document.getElementById("Title").innerText = "数据中心资源监控";
+    var titleName = "舰船数据中心资源智能运维系统";
+    //"数据中心资源监控"
+    document.getElementById("PageTitle").innerText = titleName;
+    document.getElementById("Title").innerText = titleName;
 
     //折叠栏
     document.getElementById("NavCollapse1").innerHTML = icon_file + '故障预测';

@@ -1135,7 +1135,7 @@ var summaryChartOption = {
         type: 'gauge',
         startAngle: 90,
         endAngle: -270,
-        radius: '90%',
+        radius: '86%',
         center: ['16%', '54%'],
         pointer: {
             show: false
@@ -1153,7 +1153,7 @@ var summaryChartOption = {
         },
         axisLine: {
             lineStyle: {
-                width: 40
+                width: 25
             }
         },
         splitLine: {
@@ -1173,20 +1173,20 @@ var summaryChartOption = {
                 value: 0,
                 name: '低负载',
                 title: {
-                    offsetCenter: ['0%', '-55%']
+                    offsetCenter: ['0%', '-58%']
                 },
                 detail: {
-                    offsetCenter: ['0%', '-40%']
+                    offsetCenter: ['0%', '-38%']
                 }
             },
             {
                 value: 0,
                 name: '中负载',
                 title: {
-                    offsetCenter: ['0%', '-15%']
+                    offsetCenter: ['0%', '-12%']
                 },
                 detail: {
-                    offsetCenter: ['0%', '0%']
+                    offsetCenter: ['0%', '8%']
                 }
             },
             {
@@ -1194,21 +1194,21 @@ var summaryChartOption = {
                 count:0,
                 name: '高负载',
                 title: {
-                    offsetCenter: ['0%', '22%']
+                    offsetCenter: ['0%', '32%']
                 },
                 detail: {
-                    offsetCenter: ['0%', '40%']
+                    offsetCenter: ['0%', '52%']
                 }
             }
         ],
         title: {
             fontWeight: 'bold',
-            fontSize: 18,
+            fontSize: 15,
         },
         detail: {
-            width: 60,
-            height: 10,
-            fontSize: 16,
+            width: 30,
+            height: 8,
+            fontSize: 12,
             color: 'auto',
             borderColor: 'auto',
             borderRadius: 5,
@@ -1220,7 +1220,7 @@ var summaryChartOption = {
         name: '节点数量:',
         type: 'pie',
         center: ['16%', '54%'],
-        radius: ['64%', '90%'],
+        radius: ['62%', '85%'],
         label: {
             show:false,
             position: 'inner',
@@ -1331,27 +1331,65 @@ function FRefreshDFPSummaryChart(currentChart,currentData){
 }
 
 //获取ChartOption-TrendChart
-function FGetTrendChartOption(verticalLayout){
-    var titleName = [];
-    var seriesName = [];
-    var unitLabel = [];
-    if(verticalLayout === true){
-        titleName = ["CPU利用率","内存利用率","存储容量","网络IO"];
-        unitLabel =["%","%","%","Kb/s"];
-        seriesName = ["CPU利用率","内存利用率","存储容量","网络接受","网络发送"];
-    }
-    else{
-        titleName = ["CPU利用率","内存利用率","硬盘IO","网络IO"];
-        unitLabel =["%","%","Kb/s","Kb/s"];
-        seriesName = ["CPU利用率","内存利用率","硬盘读取","硬盘写入","网络接受","网络发送"];
-    }
-
-
+function FGetTrendChartOption(){
+    var titleName = ["CPU利用率","内存利用率","硬盘IO","网络IO"];
+    var unitLabel =["%","%","Kb/s","Kb/s"];
+    var seriesName = ["CPU利用率","内存利用率","硬盘读取","硬盘写入","网络接受","网络发送"];
 
     var trendChartOption = {
-        title:[],
+        title: [
+            {
+                text: titleName[0],
+                left: '0%',
+                top: '0px',
+            },
+            {
+                text: titleName[1],
+                left: '50%',
+                top: '0px',
+            },
+            {
+                text: titleName[2],
+                left: '0%',
+                top: '360px',
+            },
+            {
+                text: titleName[3],
+                left: '50%',
+                top: '360px',
+            },
+        ],
         /*legend: {},*/
-        grid:[],
+        grid: [
+            {
+                left: '1%',
+                right: '51%',
+                top: '50px',
+                height:'300px',
+                containLabel: true
+            },
+            {
+                left: '51%',
+                right: '1%',
+                top: '50px',
+                height:'300px',
+                containLabel: true
+            },
+            {
+                left: '1%',
+                right: '51%',
+                top: '430px',
+                height:'300px',
+                containLabel: true
+            },
+            {
+                left: '51%',
+                right: '1%',
+                top: '430px',
+                height:'300px',
+                containLabel: true
+            },
+        ],
         tooltip: {
             trigger: 'axis',
             formatter: function(params){
@@ -1366,120 +1404,6 @@ function FGetTrendChartOption(verticalLayout){
         yAxis: [],
         series: [],
     };
-
-    //Title Grid
-    if(verticalLayout === true){
-        trendChartOption["title"] = [
-            {
-                text: titleName[0],
-                left: '0%',
-                top: '0px',
-            },
-            {
-                text: titleName[1],
-                left: '0%',
-                top: '360px',
-            },
-            {
-                text: titleName[2],
-                left: '0%',
-                top: '740px',
-            },
-            {
-                text: titleName[3],
-                left: '0%',
-                top: '1120px',
-            },
-        ];
-        trendChartOption["grid"] =[
-            {
-                left: '1%',
-                right: '99%',
-                top: '50px',
-                height:'300px',
-                width: '98%',
-                containLabel: true
-            },
-            {
-                left: '1%',
-                right: '99%',
-                top: '430px',
-                height:'300px',
-                width: '98%',
-                containLabel: true
-            },
-            {
-                left: '1%',
-                right: '99%',
-                top: '810px',
-                height:'300px',
-                width: '98%',
-                containLabel: true
-            },
-            {
-                left: '1%',
-                right: '99%',
-                top: '1190px',
-                height:'300px',
-                width: '98%',
-                containLabel: true
-            },
-        ];
-    }
-    else{
-        trendChartOption["title"] =  [
-            {
-                text: titleName[0],
-                left: '0%',
-                top: '0px',
-            },
-            {
-                text: titleName[1],
-                left: '50%',
-                top: '0px',
-            },
-            {
-                text: titleName[2],
-                left: '0%',
-                top: '360px',
-            },
-            {
-                text: titleName[3],
-                left: '50%',
-                top: '360px',
-            },
-        ];
-        trendChartOption["grid"]= [
-            {
-                left: '1%',
-                right: '51%',
-                top: '50px',
-                height:'300px',
-                containLabel: true
-            },
-            {
-                left: '51%',
-                right: '1%',
-                top: '50px',
-                height:'300px',
-                containLabel: true
-            },
-            {
-                left: '1%',
-                right: '51%',
-                top: '430px',
-                height:'300px',
-                containLabel: true
-            },
-            {
-                left: '51%',
-                right: '1%',
-                top: '430px',
-                height:'300px',
-                containLabel: true
-            },
-        ];
-    }
 
     //series数据格式
     for(var i=0;i<seriesName.length;i++){
@@ -1532,6 +1456,137 @@ function FGetTrendChartOption(verticalLayout){
 
     return trendChartOption;
 }
+
+function FGetMultiTrendChartOption(seriesName){
+    var titleName = ["CPU利用率","内存利用率","存储容量","网络IO"];
+    var unitLabel =["%","%","%","Kb/s"];
+    //var seriesName = ["CPU利用率","内存利用率","存储容量","网络接受","网络发送"];
+
+    var trendChartOption = {
+        title:[
+            {
+                text: titleName[0],
+                left: '0%',
+                top: '0px',
+            },
+            {
+                text: titleName[1],
+                left: '0%',
+                top: '360px',
+            },
+            {
+                text: titleName[2],
+                left: '0%',
+                top: '740px',
+            },
+            {
+                text: titleName[3],
+                left: '0%',
+                top: '1120px',
+            },
+        ],
+        /*legend: {},*/
+        grid:[
+            {
+                left: '1%',
+                right: '99%',
+                top: '50px',
+                height:'300px',
+                width: '98%',
+                containLabel: true
+            },
+            {
+                left: '1%',
+                right: '99%',
+                top: '430px',
+                height:'300px',
+                width: '98%',
+                containLabel: true
+            },
+            {
+                left: '1%',
+                right: '99%',
+                top: '810px',
+                height:'300px',
+                width: '98%',
+                containLabel: true
+            },
+            {
+                left: '1%',
+                right: '99%',
+                top: '1190px',
+                height:'300px',
+                width: '98%',
+                containLabel: true
+            },
+        ],
+        tooltip: {
+            trigger: 'axis',
+            formatter: function(params){
+                var returnTxt = "时间: "+ FGetDateTime(params[0].value[0]) +"<br/>";
+                for(var i =0; i< params.length; i++){
+                    returnTxt += params[i].marker+" "+params[i].seriesName+ " "+params[i].value[1] + unitLabel[params[i].axisIndex] + "<br/>";
+                }
+                return returnTxt;
+            }
+        },
+        xAxis: [],
+        yAxis: [],
+        series: [],
+    };
+
+    //series数据格式
+    for(var i=0;i<seriesName.length;i++){
+        trendChartOption["series"].push({
+            name:seriesName[i],
+            smooth:true,
+            type: 'line',
+            showSymbol: false,
+            hoverAnimation: false,
+            data: [],
+        });
+    }
+
+    //坐标轴格式
+    for(var i=0;i<titleName.length;i++){
+        trendChartOption["xAxis"].push({
+            type: 'time',
+            splitLine: {
+                show: false
+            },
+            axisLabel: {
+                formatter: {
+                    year: '{yyyy}年',
+                    month: '{MM}月',
+                    day: '{MM}月{dd}日',
+                    hour: '{HH}:{mm}',
+                    minute: '{HH}:{mm}',
+                    second: '{HH}:{mm}:{ss}',
+                    millisecond: '{HH}:{mm}:{ss} ',
+                    none: '{yyyy}-{MM}-{dd} {HH}:{mm}:{ss}'
+                }
+            },
+            gridIndex: i,
+        });
+        var tempYAxisOption = {
+            type: 'value',
+            splitLine: {
+                show: true
+            },
+            axisLabel: {
+                formatter: '{value}'+ unitLabel[i]
+            },
+            gridIndex: i,
+        };
+        if(unitLabel[i] === "%"){
+            tempYAxisOption["max"] = 100;
+        }
+        trendChartOption["yAxis"].push(tempYAxisOption);
+    }
+
+    return trendChartOption;
+}
+
 
 //获取CHartOption-DFPSummaryChart
 function FGetDFPSummaryChartOption(){

@@ -27,28 +27,26 @@
     <script src="../bootstrap-table/bootstrap-table-zh-CN.min.js"></script>
 </head>
 <body>
-    <div class="card" >
+    <div class="card">
         <h2 class="card-header h2">系统概况</h2>
         <div class="card-body">
-            <div style="margin-bottom: 20px;">
+            <div style="margin-bottom: 10px;">
                 <table id="summaryPart" data-show-header="false"></table>
             </div>
-            <div >
-                <div id="SummaryChart" style="width: 100%;height: 300px;"></div>
-            </div>
+            <div id="SummaryChart" style="width: 100%;height: 200px;"></div>
         </div>
     </div>
-    <div style="width:100%;height: 40px;"></div>
+    <div style="width:100%;height: 20px;"></div>
 
     <div class="card" >
-        <h2 class="card-header h2">节点网络拓扑图</h2>
+        <h2 class="card-header h2">节点分布图</h2>
         <div class="card-body">
             <div class="media text-muted pt-3" style="min-height:300px;height:auto;overflow-x:scroll;overflow-y: hidden;position: relative">
                 <div id="TopologyChart" style="min-height: 300px;position: absolute"></div>
             </div>
         </div>
     </div>
-    <div style="width:100%;height: 40px;"></div>
+    <div style="width:100%;height: 20px;"></div>
 
     <div class="card" >
         <h2 class="card-header h2">节点资源使用情况</h2>
@@ -56,7 +54,7 @@
             <div id="TrendChart" style="width: 100%;height: 1600px;"></div>
         </div>
     </div>
-    <div style="width:100%;height: 40px;"></div>
+    <div style="width:100%;height: 20px;"></div>
 
     <!--标题-->
     <!--<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
@@ -172,11 +170,11 @@
     //悬浮提示文字
     function getToolTip(nodeData){
         var result = "";
-        result+= "CPU利用率: " + getColoredTxt(nodeData["cpuUsage"],threshold["cpuUsage"])+"%</br>" +
-            "内存利用率: " + getColoredTxt(nodeData["memoryUsage"],threshold["memoryUsage"])+"%</br>" +
-            "存储容量:     " + getColoredTxt(nodeData["diskCapacityUsage"],threshold["diskCapacityUsage"])+"%</br>" +
-            "网络接受:     " + getColoredTxt(nodeData["netSendSpeed"],threshold["netSendSpeed"])+"</br>" +
-            "网络发送:     " + getColoredTxt(nodeData["netReceiveSpeed"],threshold["netReceiveSpeed"])+"</br>" ;
+        result+= "CPU利用率:" + getColoredTxt(nodeData["cpuUsage"],threshold["cpuUsage"])+"%</br>" +
+            "内存利用率:" + getColoredTxt(parseFloat(nodeData["memoryUsage"]),threshold["memoryUsage"])+"%</br>" +
+            "存储容量:" + getColoredTxt(parseFloat(nodeData["diskCapacityUsage"]),threshold["diskCapacityUsage"])+"%</br>" +
+            "网络接受:" + getColoredTxt(nodeData["netSendSpeed"],threshold["netSendSpeed"])+"kb/s</br>" +
+            "网络发送:" + getColoredTxt(nodeData["netReceiveSpeed"],threshold["netReceiveSpeed"])+"kb/s</br>" ;
         return result;
     }
     //拓扑图数据
@@ -258,10 +256,12 @@
 
             routerIndex +=1;
         }
-        graphData["graphHeight"] =  graphConfig["routerYoffset"]* (Math.floor(routerIndex/2)+1.5);
+        graphData["graphHeight"] =  graphConfig["routerYoffset"]* (Math.ceil(routerIndex/2)+1.5);
         graphData["graphWidth"] = 2*graphConfig["routerXoffset"]+(graphWidth[0] + graphWidth[1])*2.5;
-        graphData["xAxis"] = [-graphWidth[0]-100-graphConfig["routerXoffset"],graphWidth[1]+100+graphConfig["routerXoffset"]];
-        graphData["yAxis"] = [-200,graphData["graphHeight"]+100];
+
+        graphData["xAxis"] = [-(graphWidth[0]+100+graphConfig["routerXoffset"]),graphWidth[1]+100+graphConfig["routerXoffset"]];
+        graphData["yAxis"] = [-120,graphConfig["routerYoffset"]* (Math.ceil(routerIndex/2))];
+
         //-----添加点
         var totalCpuUsage = 0;
         var totalMemoryUsage = 0;
@@ -290,8 +290,8 @@
                 var hostNetReceiveSpeed = 0;
                 if(hostSampleData.hasOwnProperty(currentHost["hostName"])){
                     hostCpuUsage = hostSampleData[currentHost["hostName"]]["cpuUsage"];
-                    hostMemoryUsage = hostSampleData[currentHost["hostName"]]["memoryUsage"][0] / hostSampleData[currentHost["hostName"]]["memoryUsage"][1] *100;
-                    hostDiskCapacityUsage = (1 - hostSampleData[currentHost["hostName"]]["allDiskTotalFreeSize"] / hostSampleData[currentHost["hostName"]]["allDiskTotalSize"])*100;
+                    hostMemoryUsage = hostSampleData[currentHost["hostName"]]["memoryUsage"];
+                    hostDiskCapacityUsage = hostSampleData[currentHost["hostName"]]["diskCapacityUsage"];
                     hostNetSendSpeed = hostSampleData[currentHost["hostName"]]["netSendSpeed"];
                     hostNetReceiveSpeed = hostSampleData[currentHost["hostName"]]["netReceiveSpeed"];
                 }
@@ -420,12 +420,10 @@
     var hostInfo1Table = document.getElementById("hostInfo1Table");
     //Host名
     var hostIpList = [];
-
     //拓扑图数据
     var graphData;
-
     //趋势图数据
-    var trendChartData = [[],[],[],[],[]];
+    var trendChartData = {};
 
     //趋势图表
     var TrendChart = echarts.init(document.getElementById("TrendChart"));
@@ -436,13 +434,25 @@
         SummaryChart.setOption(FGetSummaryChartOption());
         refreshSummary(true);
 
-        //趋势图
-        TrendChart.setOption(FGetTrendChartOption(true));
-
-        //获取拓扑图配置数据
+        //获取Host配置数据
         FSendGetRequest(false, "/getHostsRouter", function (resultData) {
             hostConfigData =resultData;
         });
+
+        //趋势图
+        {
+            var finalSeriesName = [];
+            var seriesName = ["-CPU利用率","-内存利用率","-存储容量","-网络IO"];
+            for(var i=0;i<hostConfigData.length;i++){
+                var currentIp = hostConfigData[i]["ip"];
+                trendChartData[currentIp] = [[],[],[],[]];
+                for(var j=0;j<seriesName.length;j++){
+                    finalSeriesName.push(currentIp+seriesName[i]);
+                }
+            }
+            TrendChart.setOption(FGetMultiTrendChartOption(finalSeriesName));
+        }
+
         //获取节点负载数据
         FSendGetRequest(false, "/getHostInfo/AllHostDetail", function (resultData) {
             hostSampleData =resultData;
@@ -609,23 +619,40 @@
     //刷新Chart-Data-TrendChart
     function refreshTrendChartData(){
         var currentDate = new Date();
-        trendChartData[0].push([currentDate,graphData["networkAverageWorkLoad"]["cpuUsage"]]);
-        trendChartData[1].push([currentDate,graphData["networkAverageWorkLoad"]["memoryUsage"]]);
-        trendChartData[2].push([currentDate,graphData["networkAverageWorkLoad"]["diskCapacityUsage"]]);
-        trendChartData[3].push([currentDate,graphData["networkAverageWorkLoad"]["netSendSpeed"]]);
-        trendChartData[4].push([currentDate,graphData["networkAverageWorkLoad"]["netReceiveSpeed"]]);
-
-        var subChartIndex = [0,1,2,3,3];
-        var option = {
-            series: []
-        };
-        for(var i=0;i<trendChartData.length;i++){
-            option["series"].push({
-                data:trendChartData[i],
-                xAxisIndex: subChartIndex[i],
-                yAxisIndex: subChartIndex[i],
-            });
+        //var seriesName = ["-CPU利用率","-内存利用率","-存储容量","-网络IO"];
+        for(var i=0;i<hostConfigData.length;i++){
+            var currentIp = hostConfigData[i]["ip"];
+            if(hostSampleData.hasOwnProperty(currentIp)){
+                trendChartData[currentIp][0].push([ currentDate,hostSampleData[currentIp]["cpuUsage"] ]);
+                trendChartData[currentIp][1].push([ currentDate,hostSampleData[currentIp]["memoryUsage"] ]);
+                trendChartData[currentIp][2].push([ currentDate,hostSampleData[currentIp]["diskCapacityUsage"] ]);
+                trendChartData[currentIp][3].push([ currentDate,hostSampleData[currentIp]["netSendSpeed"]+hostSampleData[currentIp]["netReceiveSpeed"] ]);
+            }
+            else{
+                trendChartData[currentIp][0].push([ currentDate,0 ]);
+                trendChartData[currentIp][1].push([ currentDate,0 ]);
+                trendChartData[currentIp][2].push([ currentDate,0 ]);
+                trendChartData[currentIp][3].push([ currentDate,0 ]);
+            }
         }
+
+        var subChartIndex = [0,1,2,3];
+        var option = { series: [] };
+        var seriesName = ["-CPU利用率","-内存利用率","-存储容量","-网络IO"];
+        for(var i=0;i<hostConfigData.length;i++){
+            var currentIp = hostConfigData[i]["ip"];
+            for(var j=0;j<subChartIndex.length;j++){
+                option["series"].push({
+                    name:currentIp+seriesName[j],
+                    data:trendChartData[currentIp][j],
+                    xAxisIndex: subChartIndex[j],
+                    yAxisIndex: subChartIndex[j],
+                });
+            }
+        }
+
+
+
         TrendChart.setOption(option);
     }
 
