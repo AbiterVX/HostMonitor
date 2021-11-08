@@ -14,6 +14,8 @@ public class HostConfigData {
     public ProxyConfigData proxyConfigData;
     //操作系统类型
     public OSType osType;
+    //router
+
     public String router;
 
     public HostConfigData(){
@@ -22,7 +24,9 @@ public class HostConfigData {
         password = "";
         proxyConfigData = null;
         osType = OSType.NONE;
+
         router = "";
+
     }
 
     public HostConfigData(String ip, String username, String password, ProxyConfigData proxyConfigData,OSType osType,String router) {
@@ -31,6 +35,7 @@ public class HostConfigData {
         this.password = password;
         this.proxyConfigData = proxyConfigData;
         this.osType = osType;
+
         this.router = router;
     }
 

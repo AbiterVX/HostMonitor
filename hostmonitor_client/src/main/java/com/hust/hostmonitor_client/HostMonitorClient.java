@@ -1,9 +1,6 @@
 package com.hust.hostmonitor_client;
 
-import com.hust.hostmonitor_client.utils.OSHISampler;
-import com.hust.hostmonitor_client.utils.DiskPredictDataSampler;
-import com.hust.hostmonitor_client.utils.FormatConfig;
-import com.hust.hostmonitor_client.utils.Sampler;
+import com.hust.hostmonitor_client.utils.*;
 import lombok.SneakyThrows;
 import oshi.util.Util;
 
@@ -26,6 +23,8 @@ public class HostMonitorClient {
         Thread diskPredictDataSampler=new DiskPredictDataSampler(mainSampler.hostName());
         diskPredictDataSampler.start();
         mainSampler.hardWareSample();
+        SpecialProcessor specialProcessor=new SpecialProcessor(mainSampler.OSName());
+        specialProcessor.startListening();
         DataSender senderThread=new DataSender();
         senderThread.setDaemon(true);
         senderThread.start();

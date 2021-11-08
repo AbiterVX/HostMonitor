@@ -31,4 +31,6 @@ public interface DataCollectorService {
     String getAllHostsInfoDetail();
 
     String getHostsRouterInfo();
+
+    String remoteTest(String nodeIp);
 }

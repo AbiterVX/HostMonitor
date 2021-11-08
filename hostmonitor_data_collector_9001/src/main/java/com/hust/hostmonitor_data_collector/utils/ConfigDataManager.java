@@ -147,6 +147,7 @@ public class ConfigDataManager {
                 String ip = currentHost.getString("ip");
                 String username = currentHost.getString("userName");
                 String password = currentHost.getString("password");
+                String router=currentHost.getString("router");
                 int proxyId = currentHost.getInteger("proxyId");
                 ProxyConfigData proxyConfigData = null;
                 //@Todo

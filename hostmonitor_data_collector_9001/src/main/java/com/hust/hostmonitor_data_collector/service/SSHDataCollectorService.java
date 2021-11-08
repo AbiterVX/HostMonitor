@@ -23,6 +23,11 @@ public class SSHDataCollectorService implements DataCollectorService{
     }
 
     @Override
+    public String remoteTest(String nodeIp) {
+        return null;
+    }
+
+    @Override
     public HashMap<String, JSONObject> getSocketMap() {
         return null;
     }
