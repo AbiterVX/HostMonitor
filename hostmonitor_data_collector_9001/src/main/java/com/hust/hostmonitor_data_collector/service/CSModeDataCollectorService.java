@@ -27,6 +27,11 @@ public class CSModeDataCollectorService implements DataCollectorService{
     }
 
     @Override
+    public String remoteTest(String nodeIp) {
+        return null;
+    }
+
+    @Override
     public String getHostInfoDashboardAll() {
         return null;
     }

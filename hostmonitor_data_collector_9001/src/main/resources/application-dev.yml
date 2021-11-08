@@ -2,13 +2,13 @@ server:
   port: 9001
 
 spring:
-  profiles:
-      active: dev
-      # dev 阿里云mysql数据库 配置文件改 0
-      # test 本地达梦数据库 配置文件改 1
-      # prod 701达梦数据库 配置文件改 1
   application:
     name: hostmonitor-data-collector
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://39.105.123.116:3306/StorageDeviceMonitor?useSSL=false&useUnicode=true&characterEncoding=utf-8&allowMultiQueries=true&useJDBCCompliantTimezoneShift=true&serverTimezone=Asia/Shanghai
+    username: root
+    password: b511
   mail:
     host: smtp.163.com
     username: abitervx@163.com

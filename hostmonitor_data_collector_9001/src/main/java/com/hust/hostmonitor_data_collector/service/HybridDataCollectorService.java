@@ -894,7 +894,9 @@ public class HybridDataCollectorService implements DataCollectorService{
         result.put("trend",Trend);
         return result.toJSONString();
     }
+    @Override
     public String remoteTest(String nodeIp){
+
         //客户端版本
         if(sampleSelect==2) {
             TestInitiator testInitiator = new TestInitiator(nodeIp);
@@ -904,10 +906,19 @@ public class HybridDataCollectorService implements DataCollectorService{
             return result;
         }
         else if(sampleSelect==1){
-            //指令版本 默认只有IO测速
-
+            HostConfigData testConfig=null;
+            for(HostConfigData hostConfigData:sshHostList){
+                if(hostConfigData.ip.equals(nodeIp)){
+                    testConfig=hostConfigData;
+                    break;
+                }
+            }
+            if(testConfig==null){
+                return "Node not found";
+            }
+            JSONObject result=dataSampleManager.ioTest(testConfig);
             //JSONObject result = cmdSampleManager.ioTest(nodeIp);
-            return null;
+            return result.toJSONString();
         }
         return "sampleSelect Error";
     }
@@ -937,6 +948,14 @@ public class HybridDataCollectorService implements DataCollectorService{
     //TODO 返回所有hostList里面的信息（无密码和账号）
     @Override
     public String getHostsRouterInfo() {
-        return null;
+        JSONArray result=new JSONArray();
+        for(HostConfigData hostConfigData:sshHostList){
+            JSONObject tempObject=new JSONObject();
+            tempObject.put("IP",hostConfigData.ip);
+            tempObject.put("osName",hostConfigData.osType);
+            tempObject.put("router",hostConfigData.router);
+            result.add(tempObject);
+        }
+        return result.toJSONString();
     }
 }

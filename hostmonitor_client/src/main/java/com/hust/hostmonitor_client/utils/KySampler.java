@@ -250,7 +250,7 @@ public class KySampler implements Sampler{
 
     @Override
     public String getHostName() {
-        return null;
+        return dataObject.getString("hostName");
     }
 
     @Override

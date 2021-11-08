@@ -140,4 +140,12 @@ public class DataSampleController {
         String string=dataCollectorService.getHostsRouterInfo();
         return string;
     }
+
+    @PostMapping(value="/diskSpeedTest",produces = "application/json;charset=UTF-8")
+    @ResponseBody
+    public String remoteTest(@RequestBody JSONObject jsonParam){
+        String nodeIp=jsonParam.getString("IP");
+        String result=dataCollectorService.remoteTest(nodeIp);
+        return result;
+    }
 }

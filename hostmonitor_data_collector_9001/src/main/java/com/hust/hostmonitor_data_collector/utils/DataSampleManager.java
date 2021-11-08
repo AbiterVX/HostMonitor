@@ -975,7 +975,7 @@ public class DataSampleManager {
         JSONObject ioTestData = new JSONObject();
         OSType osType = getOSType(hostConfigData);
         if(osType.equals(OSType.LINUX)){
-            String cmdFilePath=System.getProperty("user.dir")+"/SpeedTest.sh";
+            String cmdFilePath="/root/SpeedTest.sh";
             List<String> cmdResult = cmdExecutor.runCommand(cmdFilePath,hostConfigData);
             ioTestData.put("writeSpeed",cmdResult.get(0));
             ioTestData.put("readSpeed",cmdResult.get(1));

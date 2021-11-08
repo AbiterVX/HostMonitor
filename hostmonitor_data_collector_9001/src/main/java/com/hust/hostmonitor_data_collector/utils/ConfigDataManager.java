@@ -147,6 +147,7 @@ public class ConfigDataManager {
                 String ip = currentHost.getString("ip");
                 String username = currentHost.getString("userName");
                 String password = currentHost.getString("password");
+                String router=currentHost.getString("router");
                 int proxyId = currentHost.getInteger("proxyId");
                 ProxyConfigData proxyConfigData = null;
                 //@Todo
@@ -165,7 +166,7 @@ public class ConfigDataManager {
                 if(proxyMap.containsKey(proxyId)){
                     proxyConfigData = proxyMap.get(proxyId);
                 }
-                hostConfigDataList.add(new HostConfigData(ip,username,password,proxyConfigData,osType));
+                hostConfigDataList.add(new HostConfigData(ip,username,password,proxyConfigData,osType,router));
             }
         }
         return hostConfigDataList;
