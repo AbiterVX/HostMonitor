@@ -995,8 +995,12 @@ public class HybridDataCollectorService implements DataCollectorService{
             {
                 hostResultData.put("cpuUsage",currentSampleData.getDouble("cpuUsage"));
                 JSONArray memoryJSON = currentSampleData.getJSONArray("memoryUsage");
-                Double memoryUsage = memoryJSON.getDouble(0) / memoryJSON.getDouble(1)*100;
-                memoryUsage = castToDouble(decimalFormat.format(memoryUsage));
+                double memoryUsage = 0;
+                if(memoryJSON.getDouble(1) !=0){
+                    memoryUsage = memoryJSON.getDouble(0) / memoryJSON.getDouble(1)*100;
+                    memoryUsage = castToDouble(decimalFormat.format(memoryUsage));
+                }
+
                 hostResultData.put("memoryUsage",memoryUsage);
                 hostResultData.put("allDiskTotalFreeSize",currentSampleData.getDouble("allDiskTotalFreeSize"));
                 hostResultData.put("allDiskTotalSize",currentSampleData.getDouble("allDiskTotalSize"));
