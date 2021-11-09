@@ -53,7 +53,7 @@ function FGetLoadingImg(){
 }
 
 var customPartition = [30,70,100];
-var customPartitionColor = ['#92cc76','#fac859','#ee6767'];
+var customPartitionColor = ['#00000b','#fac859','#ee6767'];
 
 var dfpModelNames = ["随机森林"];
 var diskType = ["HDD","SSD"];
@@ -63,7 +63,7 @@ var userValid = ["禁用","启用"];
 function FTableColorFormatter(partitionList,colorList,value,displayValue){
     var color = "";
     for(var i=0;i<partitionList.length;i++){
-        if(value < partitionList[i]){
+        if(value <= partitionList[i]){
             color = colorList[i];
             break;
         }
@@ -72,7 +72,7 @@ function FTableColorFormatter(partitionList,colorList,value,displayValue){
 }
 
 function FTableColorFormaterCustomColor(value){
-    return '<span style="font-weight:bold;color:#5571C6FF">'+value+'</span>';
+    return '<span style="font-weight:bold;color:#00000b">'+value+'</span>';
 }
 
 //表格标题
