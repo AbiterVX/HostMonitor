@@ -68,12 +68,19 @@ public class EthzSSHManager implements SSHManager {
     }
     //执行ch.ethz.ssh2指令
     @Override
-    public List<String> runCommand(String command, HostConfigData hostConfigData) {
+    public List<String> runCommand(String command, HostConfigData hostConfigData,boolean isSudo) {
         List<String> result = new ArrayList<>();
         //远程调用
         Session session = getEthzSession(hostConfigData);
         if(session != null){
             try {
+                if(isSudo){
+                    String passwordPrefix="echo '";
+                    passwordPrefix+= hostConfigData.password;
+                    passwordPrefix+="' |sudo -S ";
+                    command=passwordPrefix+command;
+                }
+
                 //执行指令
                 session.execCommand(command);
                 //输出

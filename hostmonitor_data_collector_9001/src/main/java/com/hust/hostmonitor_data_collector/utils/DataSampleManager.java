@@ -13,13 +13,16 @@ import com.hust.hostmonitor_data_collector.utils.linuxsample.Entity.LinuxPeriodR
 import com.hust.hostmonitor_data_collector.utils.linuxsample.Entity.Pair;
 import com.hust.hostmonitor_data_collector.utils.linuxsample.LinuxDataProcess;
 import com.hust.hostmonitor_data_collector.utils.linuxsample.LinuxGPU;
+import org.apache.commons.io.FileUtils;
 import org.python.modules._hashlib;
 
 import com.hust.hostmonitor_data_collector.utils.SSHConnect.JschSSHManager;
 import com.hust.hostmonitor_data_collector.utils.SSHConnect.SSHManager;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.List;
@@ -83,29 +86,26 @@ public class DataSampleManager {
         OSType osType = getOSType(hostConfigData);
         if(osType.equals(OSType.LINUX)){
             sampleData.put("ip",hostConfigData.ip);
-            System.out.println("hostName");
             //hostName
             {
-                List<String> cmdResult=cmdExecutor.runCommand("hostname",hostConfigData);
+                List<String> cmdResult=cmdExecutor.runCommand("hostname",hostConfigData,false);
                 if(cmdResult.size()==0){
                     sampleData.put("connected",false);
                     return sampleData;
                 }
                 sampleData.put("hostName",cmdResult.get(0).trim());
             }
-            System.out.println("osName");
             //osName
             {
-                List<String> cmdResult = cmdExecutor.runCommand("cat /proc/version",hostConfigData);
+                List<String> cmdResult = cmdExecutor.runCommand("cat /proc/version",hostConfigData,false);
                 sampleData.put("osName",cmdResult.get(0).trim());
             }
-            System.out.println("diskName");
             //diskInfo
             {
                 //diskName
                 //diskCapacitySize
                 //diskModel
-                List<String> devs=cmdExecutor.runCommand("lsblk -bnd",hostConfigData);
+                List<String> devs=cmdExecutor.runCommand("lsblk -bnd",hostConfigData,false);
                 long totalsize=0;
                 for(String string:devs) {
                     String[] tokens = string.split("\\s+");
@@ -113,7 +113,7 @@ public class DataSampleManager {
                     //System.out.println(devsName);
                     String Model = "unknown", Serial = "unknown";
                     long size = Long.parseLong(tokens[3]);
-                    List<String> diskInfo = cmdExecutor.runCommand("hdparm -i /dev/" + devsName, hostConfigData);
+                    List<String> diskInfo = cmdExecutor.runCommand("hdparm -i /dev/" + devsName, hostConfigData,true);
                     for (String info : diskInfo) {
                         //System.out.println(info);
                         if (info.contains("Model")) {
@@ -133,7 +133,14 @@ public class DataSampleManager {
                     }
                     JSONObject newDiskInfo=configDataManager.getSampleFormat("diskInfo");
                     {
-                        newDiskInfo.put("diskName",Serial.trim());
+                        String completeDiskName=null;
+                        if(Serial.trim().equals("unknown")){
+                            completeDiskName=devsName+":"+sampleData.getString("hostName")+"-unknown";
+                        }
+                        else {
+                            completeDiskName=devsName+":"+Serial.trim();
+                        }
+                        newDiskInfo.put("diskName",completeDiskName);
                         newDiskInfo.put("diskModel",Model.trim());
                         newDiskInfo.put("diskTotalSize",LinuxDataProcess.doubleTo2bits_double(size*1.0f/1024/1024/1024));
                         newDiskInfo.put("type",1);
@@ -145,10 +152,9 @@ public class DataSampleManager {
                 }
                 sampleData.put("allDiskTotalSize",LinuxDataProcess.doubleTo2bits_double(totalsize*1.0/1024/1024/1024));
             }
-            System.out.println("cpuInfoList");
             //cpuInfoList
             {
-                List<String> cmdResult = cmdExecutor.runCommand("cat /proc/cpuinfo",hostConfigData);
+                List<String> cmdResult = cmdExecutor.runCommand("cat /proc/cpuinfo",hostConfigData,false);
 
                 for(String rowData:cmdResult){
                         if(rowData.contains("model name")) {
@@ -160,11 +166,10 @@ public class DataSampleManager {
                         }
                 }
             }
-            System.out.println("gpuInfo");
             //gpuInfo
             {
                 List<LinuxGPU> cardList = new ArrayList();
-                List<String> lspci = cmdExecutor.runCommand("lspci -vnnm",hostConfigData);
+                List<String> lspci = cmdExecutor.runCommand("lspci -vnnm",hostConfigData,false);
                 String name = "unknown";
                 String deviceId = "unknown";
                 String vendor = "unknown";
@@ -221,17 +226,16 @@ public class DataSampleManager {
                         sampleData.getJSONArray("gpuInfoList").add(newGpuInfo);
                 }
             }
-        return sampleData;
         }
         else if(osType.equals(OSType.WINDOWS)){
             //hostName
             {
-                List<String> cmdResult = cmdExecutor.runCommand("hostname",hostConfigData);
+                List<String> cmdResult = cmdExecutor.runCommand("hostname",hostConfigData,false);
                 sampleData.put("hostName",cmdResult.get(0));
             }
             //osName
             {
-                List<String> cmdResult = cmdExecutor.runCommand("ver",hostConfigData);
+                List<String> cmdResult = cmdExecutor.runCommand("ver",hostConfigData,false);
                 if(cmdResult.size()>=2){
                     sampleData.put("osName",cmdResult.get(1));
                 }
@@ -242,7 +246,7 @@ public class DataSampleManager {
                 Map<String,String> logicalDiskMap = new HashMap<>();
                 //物理盘信息：序列号，Model，获取逻辑分区与物理盘的映射
                 {
-                    List<String> cmdResult = cmdExecutor.runCommand("powershell -command \"Get-Partition | % {New-Object PSObject -Property @{'PartitionNumber'=$_.PartitionNumber; 'DiskNumber'=$_.DiskNumber; 'SerialNumber'=(Get-Disk $_.DiskNumber).SerialNumber; 'DiskModel'=(Get-Disk $_.DiskNumber).Model;'PartitionSize'=$_.Size; 'DriveLetter'=$_.DriveLetter;}}\"",hostConfigData);
+                    List<String> cmdResult = cmdExecutor.runCommand("powershell -command \"Get-Partition | % {New-Object PSObject -Property @{'PartitionNumber'=$_.PartitionNumber; 'DiskNumber'=$_.DiskNumber; 'SerialNumber'=(Get-Disk $_.DiskNumber).SerialNumber; 'DiskModel'=(Get-Disk $_.DiskNumber).Model;'PartitionSize'=$_.Size; 'DriveLetter'=$_.DriveLetter;}}\"",hostConfigData,false);
                     JSONArray diskInfoList = sampleData.getJSONArray("diskInfoList");
                     String serialNumber = "";
                     long partitionSize =0;
@@ -287,7 +291,7 @@ public class DataSampleManager {
                 long allDiskTotalSize=0;
                 long allDiskTotalFreeSize =0;
                 {
-                    List<String> cmdResult = cmdExecutor.runCommand("wmic logicaldisk get size,freespace,caption",hostConfigData);
+                    List<String> cmdResult = cmdExecutor.runCommand("wmic logicaldisk get size,freespace,caption",hostConfigData,false);
                     cmdResult.remove(0);
                     for(String rowData:cmdResult){
                         if(!rowData.equals("")){
@@ -327,7 +331,7 @@ public class DataSampleManager {
             }
             //cpuInfoList
             {
-                List<String> cmdResult = cmdExecutor.runCommand("powershell -command \"Get-WmiObject Win32_Processor\"",hostConfigData);
+                List<String> cmdResult = cmdExecutor.runCommand("powershell -command \"Get-WmiObject Win32_Processor\"",hostConfigData,false);
                 for(String rowData:cmdResult){
                     if(rowData.startsWith("Name")){
                         JSONObject newCpuInfo = configDataManager.getSampleFormat("cpuInfo");
@@ -341,7 +345,7 @@ public class DataSampleManager {
             }
             //gpuInfo
             {
-                List<String> cmdResult = cmdExecutor.runCommand("wmic PATH Win32_VideoController GET Name,Adapterram",hostConfigData);
+                List<String> cmdResult = cmdExecutor.runCommand("wmic PATH Win32_VideoController GET Name,Adapterram",hostConfigData,false);
                 cmdResult.remove(0);
                 for(String rowData:cmdResult){
                     if(!rowData.equals("")){
@@ -364,9 +368,19 @@ public class DataSampleManager {
         sampleData.put("lastUpdateTime",new Timestamp(System.currentTimeMillis()));
         sampleData.put("connected",true);
         sampleData.put("hasPersistent",false);
+        System.out.println(sampleData.toJSONString());
         return sampleData;
     }
-
+    private String readFile(String filePath){
+        String resultData = "";
+        File file = new File(System.getProperty("user.dir"),filePath);
+        try {
+            resultData = FileUtils.readFileToString(file, "UTF-8");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return resultData;
+    }
     //节点性能采样
     public void sampleHostData(HostConfigData hostConfigData,JSONObject sampleData){
         if(!sampleData.getBoolean("connected")){
@@ -377,8 +391,9 @@ public class DataSampleManager {
             LinuxPeriodRecord record=new LinuxPeriodRecord();
             //TODO
             //String scriptPath=System.getProperty("user.dir")+"/ConfigData/Client/SampleCommand.sh";
-            List<String> sampleInfo=cmdExecutor.runCommand("/root/SampleCommand.sh",hostConfigData);
-            List<String> mountUsageInfo = cmdExecutor.runCommand("df",hostConfigData); //查询结果使用量为KB
+            String sampleCommands=readFile("Scripts/SampleCommand.sh");  //test  //SampleCommand
+            List<String> sampleInfo=cmdExecutor.runCommand( sampleCommands,hostConfigData,false);  //test  //SampleCommand,hostConfigData);
+            List<String> mountUsageInfo = cmdExecutor.runCommand("df",hostConfigData,false); //查询结果使用量为KB
             HashMap<String, Pair<Long,Long>> mountUsage=new HashMap<>();
             for (int i=0;i<mountUsageInfo.size();i++
             ) {
@@ -391,7 +406,7 @@ public class DataSampleManager {
                 mountUsage.put(parts[5],new Pair<Long,Long>(used,usable));
             }
             mountUsageInfo=null;//释放
-            List<String> CPUInfo = cmdExecutor.runCommand("cat /proc/stat | grep cpu",hostConfigData);
+            List<String> CPUInfo = cmdExecutor.runCommand("cat /proc/stat | grep cpu",hostConfigData,false);
             {
                 for (String string : CPUInfo) {
                     String[] tokens = string.split("\\s+");
@@ -441,7 +456,7 @@ public class DataSampleManager {
                         tempDiskInfo.diskWriteSpeed = writeSpeed;
                         tempDiskInfo.diskUsedRadio = utilRadio;
                         ArrayList<String> mountPoints = new ArrayList<>();
-                        List<String> devMountInfo = cmdExecutor.runCommand("lsblk /dev/" + diskName,hostConfigData);
+                        List<String> devMountInfo = cmdExecutor.runCommand("lsblk /dev/" + diskName,hostConfigData,false);
                         for (String mountString : devMountInfo) {
                             if (mountString.contains("NAME")) {
                                 continue;
@@ -506,6 +521,10 @@ public class DataSampleManager {
                 for(int j=0;j<DiskStoreList.size();j++){
                     DiskInfo tempDiskInfo=DiskStoreList.get(j);
                     int i=findDiskIndex(tempDiskInfo.diskName,sampleData);
+                    if(i==-1){
+                        System.out.println(tempDiskInfo.diskName +" not found.");
+                        continue;
+                    }
                     double usage2bits=0.0;
                     try {
                         usage2bits = LinuxDataProcess.doubleTo2bits_double(tempDiskInfo.diskUsedRadio);
@@ -521,13 +540,13 @@ public class DataSampleManager {
                     sampleData.getJSONArray("diskInfoList").getJSONObject(i).put("diskTotalFreeSize",LinuxDataProcess.doubleTo2bits_double((singleTotalSize-singleUsedSize)));
                     double ReadRates = tempDiskInfo.diskReadSpeed;
                     double WriteRates = tempDiskInfo.diskWriteSpeed;
-                    sampleData.getJSONArray("diskInfoList").getJSONObject(j).put("diskIOPS", tempDiskInfo.diskIOPS);
-                    sampleData.getJSONArray("diskInfoList").getJSONObject(j).put("diskReadSpeed", LinuxDataProcess.doubleTo2bits_double(ReadRates));
-                    sampleData.getJSONArray("diskInfoList").getJSONObject(j).put("diskWriteSpeed", LinuxDataProcess.doubleTo2bits_double(WriteRates));
-                    sampleData.getJSONArray("diskInfoList").getJSONObject(j).put("diskRead",0);
-                    sampleData.getJSONArray("diskInfoList").getJSONObject(j).put("diskReadBytes",0);
-                    sampleData.getJSONArray("diskInfoList").getJSONObject(j).put("diskWrite",0);
-                    sampleData.getJSONArray("diskInfoList").getJSONObject(j).put("diskWriteBytes",0);
+                    sampleData.getJSONArray("diskInfoList").getJSONObject(i).put("diskIOPS", tempDiskInfo.diskIOPS);
+                    sampleData.getJSONArray("diskInfoList").getJSONObject(i).put("diskReadSpeed", LinuxDataProcess.doubleTo2bits_double(ReadRates));
+                    sampleData.getJSONArray("diskInfoList").getJSONObject(i).put("diskWriteSpeed", LinuxDataProcess.doubleTo2bits_double(WriteRates));
+                    sampleData.getJSONArray("diskInfoList").getJSONObject(i).put("diskRead",0);
+                    sampleData.getJSONArray("diskInfoList").getJSONObject(i).put("diskReadBytes",0);
+                    sampleData.getJSONArray("diskInfoList").getJSONObject(i).put("diskWrite",0);
+                    sampleData.getJSONArray("diskInfoList").getJSONObject(i).put("diskWriteBytes",0);
                 }
                 sampleData.put("allDiskTotalFreeSize",LinuxDataProcess.doubleTo2bits_double(sampleData.getDouble("allDiskTotalSize")-totalUsedSize));
             }
@@ -537,7 +556,7 @@ public class DataSampleManager {
             {
                 {
                     //Cpu Usage
-                    List<String> cmdResult = cmdExecutor.runCommand("wmic cpu get loadpercentage", hostConfigData);
+                    List<String> cmdResult = cmdExecutor.runCommand("wmic cpu get loadpercentage", hostConfigData,false);
                     cmdResult.remove(0);
                     int currentIndex = 0;
                     float averageCpuUsage = 0;
@@ -554,7 +573,7 @@ public class DataSampleManager {
                 }
                 //Cpu Temperature
                 {
-                    List<String> cmdResult = cmdExecutor.runCommand("wmic /namespace:\\\\root\\wmi PATH MSAcpi_ThermalZoneTemperature get CriticalTripPoint, CurrentTemperature",hostConfigData);
+                    List<String> cmdResult = cmdExecutor.runCommand("wmic /namespace:\\\\root\\wmi PATH MSAcpi_ThermalZoneTemperature get CriticalTripPoint, CurrentTemperature",hostConfigData,false);
                     cmdResult.remove(0);
                     int currentIndex = 0;
                     float averageCpuTemperature = 0;
@@ -574,7 +593,7 @@ public class DataSampleManager {
                 long[] ReceiveBytes = {0,0};
                 int sampleDelayMS = 200;
                 {
-                    List<String> cmdResult = cmdExecutor.runCommand("chcp 437 && netstat -e && chcp 936",hostConfigData);
+                    List<String> cmdResult = cmdExecutor.runCommand("chcp 437 && netstat -e && chcp 936",hostConfigData,false);
                     for(String rowData:cmdResult){
                         if(rowData.startsWith("Bytes")){
                             String[] bytes = rowData.split("\\s+");
@@ -592,7 +611,7 @@ public class DataSampleManager {
                     }
                 }
                 {
-                    List<String> cmdResult = cmdExecutor.runCommand("chcp 437 && netstat -e && chcp 936",hostConfigData);
+                    List<String> cmdResult = cmdExecutor.runCommand("chcp 437 && netstat -e && chcp 936",hostConfigData,false);
                     for(String rowData:cmdResult){
                         if(rowData.startsWith("Bytes")){
                             String[] bytes = rowData.split("\\s+");
@@ -612,7 +631,7 @@ public class DataSampleManager {
                 //分区的IO详情
                 Map<String,JSONObject> partitionInfoMap = new HashMap<>();
                 {
-                    List<String> cmdResult = cmdExecutor.runCommand("powershell -command \"Get-WmiObject -query { SELECT * FROM Win32_PerfFormattedData_PerfDisk_LogicalDisk}\"",hostConfigData);
+                    List<String> cmdResult = cmdExecutor.runCommand("powershell -command \"Get-WmiObject -query { SELECT * FROM Win32_PerfFormattedData_PerfDisk_LogicalDisk}\"",hostConfigData,false);
                     for(int i=0;i<2;i++){
                         cmdResult.remove(0);
                     }
@@ -693,7 +712,7 @@ public class DataSampleManager {
             {
                 long totalMemory = 0;
                 long freeMemory = 0;
-                List<String> cmdResult = cmdExecutor.runCommand("wmic OS GET FreePhysicalMemory /value && wmic ComputerSystem GET TotalPhysicalMemory  /value",hostConfigData);
+                List<String> cmdResult = cmdExecutor.runCommand("wmic OS GET FreePhysicalMemory /value && wmic ComputerSystem GET TotalPhysicalMemory  /value",hostConfigData,false);
                 for(String rowData:cmdResult){
                     if(!rowData.equals("")){
                         String[] memoryData = rowData.split("=");
@@ -715,6 +734,7 @@ public class DataSampleManager {
         sampleData.put("lastUpdateTime",new Timestamp(System.currentTimeMillis()));
         sampleData.put("connected",true);
         sampleData.put("hasPersistent",false);
+        System.out.println(sampleData.toJSONString());
     }
     private int findDiskIndex(String diskName,JSONObject dataObject){
         for(int i=0;i<dataObject.getJSONArray("diskInfoList").size();i++){
@@ -722,7 +742,7 @@ public class DataSampleManager {
                 return i;
             }
         }
-        return 0;
+        return -1;
     }
 
     //节点进程采样
@@ -733,7 +753,7 @@ public class DataSampleManager {
         OSType osType = getOSType(hostConfigData);
         if(osType.equals(OSType.LINUX)){
             JSONArray processInfoList=new JSONArray();
-            List<String> ProcessInfo = cmdExecutor.runCommand("top -b -n 1 ",hostConfigData);
+            List<String> ProcessInfo = cmdExecutor.runCommand("top -b -n 1 ",hostConfigData,false);
             boolean reachProcesses=false;
             for(String string:ProcessInfo){
                 if(string.contains("PID")){
@@ -773,7 +793,7 @@ public class DataSampleManager {
         }
         else if(osType.equals(OSType.WINDOWS)){
             JSONArray processInfoList = new JSONArray();
-            List<String> cmdResult = cmdExecutor.runCommand("powershell -command \"Get-WmiObject -query { SELECT CreatingProcessID,Name,ElapsedTime,workingset,percentProcessorTime,ioReadBytesPersec,ioWriteBytesPersec  FROM Win32_PerfFormattedData_PerfProc_Process  }\"",hostConfigData);
+            List<String> cmdResult = cmdExecutor.runCommand("powershell -command \"Get-WmiObject -query { SELECT CreatingProcessID,Name,ElapsedTime,workingset,percentProcessorTime,ioReadBytesPersec,ioWriteBytesPersec  FROM Win32_PerfFormattedData_PerfProc_Process  }\"",hostConfigData,false);
             int creatingProcessID = 0;
             String name = "";
             long elapsedTime = 0;
@@ -843,7 +863,7 @@ public class DataSampleManager {
                 String getDiskListCmd = "";
                 if(osType.equals(OSType.WINDOWS)){
                     getDiskListCmd = "wmic logicaldisk get deviceid";
-                    List<String> cmdResult = cmdExecutor.runCommand(getDiskListCmd,hostConfigData);
+                    List<String> cmdResult = cmdExecutor.runCommand(getDiskListCmd,hostConfigData,false);
                     cmdResult.remove(0);
                     for(String currentStr:cmdResult){
                         if(!currentStr.equals("")){
@@ -853,7 +873,7 @@ public class DataSampleManager {
                 }
                 else if(osType.equals(OSType.LINUX)){
                     getDiskListCmd = "lsblk -bnd";
-                    List<String> cmdResult = cmdExecutor.runCommand(getDiskListCmd,hostConfigData);
+                    List<String> cmdResult = cmdExecutor.runCommand(getDiskListCmd,hostConfigData,false);
                     for(String currentStr:cmdResult) {
                         String[] rawData = currentStr.split("\\s+");
                         System.out.println(rawData.length);
@@ -869,7 +889,7 @@ public class DataSampleManager {
             for(String currentDiskName: diskList){
                 JSONObject currentDiskData = new JSONObject();
                 {
-                    List<String> cmdResult = cmdExecutor.runCommand(smartDiskInfoCmd + currentDiskName,hostConfigData);
+                    List<String> cmdResult = cmdExecutor.runCommand(smartDiskInfoCmd + currentDiskName,hostConfigData,false);
                     for (int i = 0; i < 4; i++) {
                         cmdResult.remove(0);
                     }
@@ -885,7 +905,7 @@ public class DataSampleManager {
                     diskData.put(serialNumber,currentDiskData);
                     JSONObject smartData = new JSONObject();
                     {
-                        List<String> cmdResult = cmdExecutor.runCommand(smartDataSampleCmd + currentDiskName,hostConfigData);
+                        List<String> cmdResult = cmdExecutor.runCommand(smartDataSampleCmd + currentDiskName,hostConfigData,false);
                         for (int i = 0; i < 7; i++) {
                             cmdResult.remove(0);
                         }
@@ -936,12 +956,12 @@ public class DataSampleManager {
         }
         sampleDataFilePath=sampleDataFilePath+"/"+sdf.format(calendar.getTime())+".csv";
         file=new File(sampleDataFilePath);
-
+        int smartCount = 256;
         if(!file.exists()){
             CsvWriter csvWriter = new CsvWriter(sampleDataFilePath,',', Charset.forName("GBK"));
             try {
                 //Smart属性个数
-                int smartCount = 256;
+
                 //获取表头
                 List<String> headers = new ArrayList<>();
                 {
@@ -997,26 +1017,59 @@ public class DataSampleManager {
             }
         }
         else{
-            if(integratedFile.exists()) {
-
-                DiskPredict.diskSampleDataIntegration(path + sdf.format(calendar.getTime()) + ".csv", path + hostName + ".csv");
-
+            try {
+                FileOutputStream innerFileStream=new FileOutputStream(sampleDataFilePath,true);
+                CsvWriter csvWriter = new CsvWriter(innerFileStream,',', Charset.forName("GBK"));
+                //写入数据
+                Set<String> serialNumberList = diskData.keySet();
+                for(String serialNumber:serialNumberList){
+                    JSONObject currentDiskData = diskData.getJSONObject(serialNumber);
+                    List<String> rowData = new ArrayList<>();
+                    {
+                        rowData.add(currentDate);
+                        rowData.add(serialNumber);
+                        rowData.add(currentDiskData.getString("Device Model"));
+                        rowData.add("");
+                        rowData.add("0");
+                        rowData.add("0");
+                        rowData.add(pt_d);
+                        JSONObject smartData = currentDiskData.getJSONObject("SmartData");
+                        //@Todo 0到255
+                        for(int i=0;i<smartCount;i++){
+                            JSONObject currentSmart = smartData.getJSONObject(Integer.toString(i));
+                            if(currentSmart != null){
+                                rowData.add(currentSmart.getString("VALUE"));
+                                rowData.add(currentSmart.getString("RAW_VALUE"));
+                            }
+                            else{
+                                rowData.add("");
+                                rowData.add("");
+                            }
+                        }
+                    }
+                    csvWriter.writeRecord(rowData.toArray(new String[0]));
+                }
+                csvWriter.close();
+                innerFileStream.close();
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
             }
         }
     }
-
     //IO测试
     public JSONObject ioTest(HostConfigData hostConfigData){
         JSONObject ioTestData = new JSONObject();
         OSType osType = getOSType(hostConfigData);
         if(osType.equals(OSType.LINUX)){
-            String cmdFilePath="/root/SpeedTest.sh";
-            List<String> cmdResult = cmdExecutor.runCommand(cmdFilePath,hostConfigData);
+            String sampleCommands=readFile("Scripts/SpeedCommand.sh");  //test  //SampleCommand
+            List<String> cmdResult = cmdExecutor.runCommand(sampleCommands,hostConfigData,false);
             ioTestData.put("writeSpeed",cmdResult.get(0));
             ioTestData.put("readSpeed",cmdResult.get(1));
         }
         else if(osType.equals(OSType.WINDOWS)){
-            List<String> cmdResult = cmdExecutor.runCommand("winsat disk",hostConfigData);
+            List<String> cmdResult = cmdExecutor.runCommand("winsat disk",hostConfigData,false);
             for(String currentOutput: cmdResult){
                 String[] rawData = currentOutput.split("\\s+");
                 if(currentOutput.contains("Disk  Sequential 64.0 Read")){
@@ -1039,8 +1092,6 @@ public class DataSampleManager {
         dataSampleManager.sampleHostData(null,sampleData);
         //dataSampleManager.sampleHostProcess(null,sampleData);
         System.out.println(sampleData);
-
-
         JSONObject ioTestData = dataSampleManager.ioTest(null);
         System.out.println(ioTestData);
     }

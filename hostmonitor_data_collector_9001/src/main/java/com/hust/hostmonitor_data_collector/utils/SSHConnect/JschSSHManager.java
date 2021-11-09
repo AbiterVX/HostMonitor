@@ -60,7 +60,7 @@ public class JschSSHManager implements SSHManager {
 
     //执行JSCH指令
     @Override
-    public List<String> runCommand(String command, HostConfigData hostConfigInfo){
+    public List<String> runCommand(String command, HostConfigData hostConfigInfo,boolean isSudo){
         List<String> result = new ArrayList<String>();
         int returnCode = 0;
         Session session = getJSCHSession(hostConfigInfo);
@@ -73,6 +73,12 @@ public class JschSSHManager implements SSHManager {
             //打开通道，设置通道类型，和执行的命令
             Channel channel = session.openChannel("exec");
             channelExec = (ChannelExec)channel;
+            if(isSudo){
+                String passwordPrefix="echo '";
+                passwordPrefix+= hostConfigInfo.password;
+                passwordPrefix+="' |sudo -S ";
+                command=passwordPrefix+command;
+            }
             channelExec.setCommand(command);
 
             channelExec.setInputStream(null);

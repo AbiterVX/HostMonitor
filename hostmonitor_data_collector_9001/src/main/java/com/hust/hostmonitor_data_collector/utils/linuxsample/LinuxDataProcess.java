@@ -25,7 +25,7 @@ public class LinuxDataProcess {
     private static CmdExecutor cmdExecutor=new CmdExecutor();
     public static long queryLspciMemorySize(String lookupDevice, HostConfigData hostConfigData) {
         long vram = 0L;
-        List<String> lspciMem = cmdExecutor.runCommand("lspci -v -s " + lookupDevice,hostConfigData);
+        List<String> lspciMem = cmdExecutor.runCommand("lspci -v -s " + lookupDevice,hostConfigData,false);
         Iterator var4 = lspciMem.iterator();
 
         while(var4.hasNext()) {

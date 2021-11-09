@@ -56,7 +56,7 @@ public class CmdExecutor {
         //SSH默认连接方式为JSCH。
         sshManager = new JschSSHManager();
     }
-    public List<String> runCommand(String cmd, HostConfigData hostConfigData) {
+    public List<String> runCommand(String cmd, HostConfigData hostConfigData,boolean isSudo) {
         if(hostConfigData == null){
             //本地执行
             List<String> cmdResult = new CmdLocalExecutor("cmd /c "+cmd).cmdResult;
@@ -64,7 +64,7 @@ public class CmdExecutor {
         }
         else{
             //远程执行
-            List<String> cmdResult = sshManager.runCommand(cmd,hostConfigData);
+            List<String> cmdResult = sshManager.runCommand(cmd,hostConfigData,isSudo);
             return cmdResult;
         }
     }

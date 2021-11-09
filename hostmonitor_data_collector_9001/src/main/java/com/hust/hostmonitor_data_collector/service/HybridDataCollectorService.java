@@ -233,6 +233,9 @@ public class HybridDataCollectorService implements DataCollectorService{
         logger.info("[Persistence]DataHostsSize "+hostsSampleData.size());
         for(Map.Entry<String, JSONObject> entry: hostsSampleData.entrySet()){
             JSONObject tempObject=entry.getValue();
+            if(!tempObject.getBoolean("connected")){
+                continue;
+            }
             if(!tempObject.getBoolean("hasPersistent")){  //TODO
                 double memUsage;
                 if(tempObject.getJSONArray("memoryUsage").getDouble(1)==0){
@@ -320,8 +323,8 @@ public class HybridDataCollectorService implements DataCollectorService{
                 JSONObject initObject=dataSampleManager.sampleHostHardwareData(hostConfigData);
                 sshSampleData.put(hostConfigData.ip,initObject);
             }
-            mainTimer.schedule(performanceSampleTask,7*1000,sampleInterval);
-            mainTimer.schedule(processSampleTask,13*1000,sampleInterval);
+            mainTimer.schedule(performanceSampleTask,20*1000,sampleInterval);
+            mainTimer.schedule(processSampleTask,60*1000,sampleInterval);
             mainTimer.schedule(smartSampleTask,date,24*3600*1000);
         }
         else if(sampleSelect==2){
