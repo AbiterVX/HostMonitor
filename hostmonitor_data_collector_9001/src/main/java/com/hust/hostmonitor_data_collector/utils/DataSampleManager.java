@@ -391,7 +391,7 @@ public class DataSampleManager {
             LinuxPeriodRecord record=new LinuxPeriodRecord();
             //String scriptPath=System.getProperty("user.dir")+"/ConfigData/Client/SampleCommand.sh";
             String sampleCommands=readFile("Scripts/SampleCommand.sh");  //test  //SampleCommand
-            sampleCommands.replaceAll("\r","");
+            sampleCommands=sampleCommands.replaceAll("\r\n","\n");
             List<String> sampleInfo=cmdExecutor.runCommand( sampleCommands,hostConfigData,false);  //test  //SampleCommand,hostConfigData);
             List<String> mountUsageInfo = cmdExecutor.runCommand("df",hostConfigData,false); //查询结果使用量为KB
             HashMap<String, Pair<Long,Long>> mountUsage=new HashMap<>();
@@ -1064,7 +1064,7 @@ public class DataSampleManager {
         OSType osType = getOSType(hostConfigData);
         if(osType.equals(OSType.LINUX)){
             String sampleCommands=readFile("Scripts/SpeedCommand.sh");  //test  //SampleCommand
-            sampleCommands.replaceAll("\\r\\n","\\n");
+            sampleCommands=sampleCommands.replaceAll("\r\n","\n");
             List<String> cmdResult = cmdExecutor.runCommand(sampleCommands,hostConfigData,false);
             ioTestData.put("writeSpeed",cmdResult.get(0));
             ioTestData.put("readSpeed",cmdResult.get(1));
