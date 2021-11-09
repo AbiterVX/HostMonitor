@@ -992,7 +992,15 @@ public class DataSampleManager {
                         rowData.add(currentDiskData.getString("Device Model"));
                         rowData.add("");
                         rowData.add("0");
-                        rowData.add("0");
+
+                        //是否为SSD
+                        if(currentDiskData.getString("Rotation Rate").equals("Solid State Device")){
+                            rowData.add("1");
+                        }
+                        else{
+                            rowData.add("0");
+                        }
+
                         rowData.add(pt_d);
                         JSONObject smartData = currentDiskData.getJSONObject("SmartData");
                         //@Todo 0到255
