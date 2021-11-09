@@ -112,8 +112,8 @@ public class KySampler implements Sampler{
         KylinPeriodRecord record= CommandSampler.getPeriodRecord();
         //Memory利用率
         JSONArray memoryUsage=new JSONArray();
-        memoryUsage.add(FormatUtils.doubleTo2bits_double((record.getMemTotal()- record.getMemAvailable())*1.0/1024/1024));
-        memoryUsage.add(FormatUtils.doubleTo2bits_double(record.getMemTotal()*1.0/1024/1024));
+        memoryUsage.add(FormatUtils.doubleTo2bits_double((record.getMemTotal()- record.getMemAvailable())*1.0/1024));
+        memoryUsage.add(FormatUtils.doubleTo2bits_double(record.getMemTotal()*1.0/1024));
         dataObject.put("memoryUsage",memoryUsage);
         //Cpu利用率,但是是单个CPU的实现 第一次采样无法计算
         if(isTheFirstTimeToSample){

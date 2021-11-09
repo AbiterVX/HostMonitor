@@ -135,7 +135,7 @@ public class DataSampleManager {
                     {
                         String completeDiskName=null;
                         if(Serial.trim().equals("unknown")){
-                            completeDiskName=devsName+":"+sampleData.getString("hostName")+"-unknown";
+                            completeDiskName=devsName+":-unknown-"+hostConfigData.userName+"@"+hostConfigData.ip;
                         }
                         else {
                             completeDiskName=devsName+":"+Serial.trim();
@@ -389,9 +389,9 @@ public class DataSampleManager {
         OSType osType = getOSType(hostConfigData);
         if(osType.equals(OSType.LINUX)){
             LinuxPeriodRecord record=new LinuxPeriodRecord();
-            //TODO
             //String scriptPath=System.getProperty("user.dir")+"/ConfigData/Client/SampleCommand.sh";
             String sampleCommands=readFile("Scripts/SampleCommand.sh");  //test  //SampleCommand
+            sampleCommands.replaceAll("\\r\\n","\\n");
             List<String> sampleInfo=cmdExecutor.runCommand( sampleCommands,hostConfigData,false);  //test  //SampleCommand,hostConfigData);
             List<String> mountUsageInfo = cmdExecutor.runCommand("df",hostConfigData,false); //查询结果使用量为KB
             HashMap<String, Pair<Long,Long>> mountUsage=new HashMap<>();
@@ -504,15 +504,15 @@ public class DataSampleManager {
             //Memory
             {
                 JSONArray memoryUsage = new JSONArray();
-                memoryUsage.add(LinuxDataProcess.doubleTo2bits_double((record.getMemTotal() - record.getMemAvailable())*1.0/1024/1024) );
-                memoryUsage.add(LinuxDataProcess.doubleTo2bits_double(record.getMemTotal() * 1.0 / 1024 / 1024 ));
+                memoryUsage.add(LinuxDataProcess.doubleTo2bits_double((record.getMemTotal() - record.getMemAvailable())*1.0/1024) );
+                memoryUsage.add(LinuxDataProcess.doubleTo2bits_double(record.getMemTotal() * 1.0 / 1024 ));
                 sampleData.put("memoryUsage",memoryUsage);
             }
 
             //NetIO
             {
-                sampleData.put("netSendSpeed",LinuxDataProcess.doubleTo2bits_double(record.getNetSend()*1.0f/1024/1024));
-                sampleData.put("netReceiveSpeed",LinuxDataProcess.doubleTo2bits_double(record.getNetReceive()*1.0f/1024/1024));
+                sampleData.put("netSendSpeed",LinuxDataProcess.doubleTo2bits_double(record.getNetSend()*1.0f/1024));
+                sampleData.put("netReceiveSpeed",LinuxDataProcess.doubleTo2bits_double(record.getNetReceive()*1.0f/1024));
             }
             //Disk
             {
@@ -1064,6 +1064,7 @@ public class DataSampleManager {
         OSType osType = getOSType(hostConfigData);
         if(osType.equals(OSType.LINUX)){
             String sampleCommands=readFile("Scripts/SpeedCommand.sh");  //test  //SampleCommand
+            sampleCommands.replaceAll("\\r\\n","\\n");
             List<String> cmdResult = cmdExecutor.runCommand(sampleCommands,hostConfigData,false);
             ioTestData.put("writeSpeed",cmdResult.get(0));
             ioTestData.put("readSpeed",cmdResult.get(1));
