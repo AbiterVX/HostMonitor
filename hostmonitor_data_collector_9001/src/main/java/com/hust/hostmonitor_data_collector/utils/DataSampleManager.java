@@ -391,7 +391,7 @@ public class DataSampleManager {
             LinuxPeriodRecord record=new LinuxPeriodRecord();
             //String scriptPath=System.getProperty("user.dir")+"/ConfigData/Client/SampleCommand.sh";
             String sampleCommands=readFile("Scripts/SampleCommand.sh");  //test  //SampleCommand
-            sampleCommands.replaceAll("\\r\\n","\\n");
+            sampleCommands.replaceAll("\r","");
             List<String> sampleInfo=cmdExecutor.runCommand( sampleCommands,hostConfigData,false);  //test  //SampleCommand,hostConfigData);
             List<String> mountUsageInfo = cmdExecutor.runCommand("df",hostConfigData,false); //查询结果使用量为KB
             HashMap<String, Pair<Long,Long>> mountUsage=new HashMap<>();
