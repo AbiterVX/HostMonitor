@@ -1217,7 +1217,7 @@ var summaryChartOption = {
         }
     },
     pieOption: {
-        name: '节点数量:',
+        name: '数量:',
         type: 'pie',
         center: ['16%', '54%'],
         radius: ['62%', '85%'],
@@ -1278,11 +1278,14 @@ var summaryChartOption = {
 //获取ChartOption-SummaryChart
 function FGetSummaryChartOption(){
     var option = JSON.parse(JSON.stringify(summaryChartOption["option"]));
+    var pieOptionName = ["CPU个数:","内存个数:","硬盘个数:"];
     for(var i=0;i<3;i++){
         var tempGaugeOption = JSON.parse(JSON.stringify(summaryChartOption["gaugeOption"]));
         var tempPieOption = JSON.parse(JSON.stringify(summaryChartOption["pieOption"]));
         tempGaugeOption["center"] = summaryChartOption["centerOption"][i];
         tempPieOption["center"] = summaryChartOption["centerOption"][i];
+        tempPieOption["name"] = pieOptionName[i];
+
         option["series"].push(tempGaugeOption);
         option["series"].push(tempPieOption);
     }
@@ -1300,13 +1303,11 @@ function FRefreshSummaryChartData(currentChart,currentData){
         for(var j=0;j<3;j++){
             percentage.push( (currentData[i][j]/sum* 100).toFixed(1) ) ;
         }
-        //alert(percentage);
         for(var j=0;j<3;j++){
             option["series"][i*2]["data"][j]["value"] = percentage[j];
             option["series"][i*2+1]["data"][j]["value"] = currentData[i][j];
         }
     }
-    //alert(JSON.stringify(option));
     currentChart.setOption(option);
 }
 

@@ -1011,8 +1011,12 @@ public class HybridDataCollectorService implements DataCollectorService{
                 hostResultData.put("diskReadBytes",currentSampleData.getDouble("diskReadBytes"));
                 hostResultData.put("diskWriteBytes",currentSampleData.getDouble("diskWriteBytes"));
 
-                Double diskCapacityUsage = (1-currentSampleData.getDouble("allDiskTotalFreeSize")/currentSampleData.getDouble("allDiskTotalSize"))*100;
-                hostResultData.put("diskCapacityUsage",castToDouble(decimalFormat.format(diskCapacityUsage)));
+                double diskCapacityUsage = 0;
+                if(currentSampleData.getDouble("allDiskTotalSize") !=0){
+                    diskCapacityUsage = (1-currentSampleData.getDouble("allDiskTotalFreeSize")/currentSampleData.getDouble("allDiskTotalSize"))*100;
+                    diskCapacityUsage = castToDouble(decimalFormat.format(diskCapacityUsage));
+                }
+                hostResultData.put("diskCapacityUsage",diskCapacityUsage);
             }
             result.put(currentIp,hostResultData);
         }

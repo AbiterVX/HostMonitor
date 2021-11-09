@@ -256,11 +256,11 @@
 
             routerIndex +=1;
         }
-        graphData["graphHeight"] =  graphConfig["routerYoffset"]* (Math.ceil(routerIndex/2)+1.5);
+        graphData["graphHeight"] =  graphConfig["routerYoffset"]* (Math.ceil(routerIndex/2)+1);
         graphData["graphWidth"] = 2*graphConfig["routerXoffset"]+(graphWidth[0] + graphWidth[1])*2.5;
 
         graphData["xAxis"] = [-(graphWidth[0]+100+graphConfig["routerXoffset"]),graphWidth[1]+100+graphConfig["routerXoffset"]];
-        graphData["yAxis"] = [-120,graphConfig["routerYoffset"]* (Math.ceil(routerIndex/2))];
+        graphData["yAxis"] = [-100,graphConfig["routerYoffset"]* (Math.ceil(routerIndex/2))-100];
 
         //-----添加点
         var totalCpuUsage = 0;
@@ -437,6 +437,29 @@
         //获取Host配置数据
         FSendGetRequest(false, "/getHostsRouter", function (resultData) {
             hostConfigData =resultData;
+
+            /*testHostConfig = [
+                {ip:"2.0.0.1", router:"127.0.0.3",},
+                {ip:"2.0.0.2", router:"127.0.0.3",},
+                {ip:"2.0.0.3", router:"127.0.0.3",},
+                {ip:"2.0.0.4", router:"127.0.0.3",},
+                {ip:"2.0.0.5", router:"127.0.0.3",},
+                {ip:"2.0.0.6", router:"127.0.0.3",},
+
+                {ip:"3.0.0.1", router:"127.0.0.4",},
+                {ip:"3.0.0.2", router:"127.0.0.4",},
+                {ip:"3.0.0.3", router:"127.0.0.4",},
+                {ip:"3.0.0.4", router:"127.0.0.4",},
+                {ip:"3.0.0.5", router:"127.0.0.4",},
+                {ip:"4.0.0.1", router:"127.0.0.4",},
+                {ip:"4.0.0.2", router:"127.0.0.4",},
+                {ip:"4.0.0.3", router:"127.0.0.4",},
+            ];
+
+            for(var i=0;i<testHostConfig.length;i++){
+                hostConfigData.push(testHostConfig[i]);
+            }*/
+
         });
 
         //趋势图

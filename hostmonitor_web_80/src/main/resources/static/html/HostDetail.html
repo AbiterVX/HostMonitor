@@ -101,10 +101,11 @@
     //加载后执行
     window.onload=function (){
         //当前HostIndex
-        var currentHostIndex = window.sessionStorage.getItem("currentHostIndex");
+        currentHostIndex = window.sessionStorage.getItem("currentHostIndex");
         if(currentHostIndex == null) {
             currentHostIndex = 0;
         }
+
 
         //初始化-DropDown-IP
         FInitDropDown("HostIpDropDownMenu","HostIpDropDownBtn",mainInfo["hostIp"],"dropDownSelectHostIp",currentHostIndex);

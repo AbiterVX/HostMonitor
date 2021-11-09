@@ -160,11 +160,20 @@ function FRefreshDataHostInfo(hostName,uiRefreshCallbackFunc){
         hostInfo["diskInfoList"] = resultData["diskInfoList"];
 
         for(var j=0;j<hostInfo["diskInfoList"].length;j++){
-            hostInfo["diskInfoList"][j]["diskCapacitySize"] = [hostInfo["diskInfoList"][j]["diskTotalSize"]-hostInfo["diskInfoList"][j]["diskTotalFreeSize"],hostInfo["diskInfoList"][j]["diskTotalSize"]];
-            hostInfo["diskInfoList"][j]["diskCapacityUsage"] = (hostInfo["diskInfoList"][j]["diskCapacitySize"][0] / hostInfo["diskInfoList"][j]["diskCapacitySize"][1]*100).toFixed(2);
-            hostInfo["hostInfo2"]["diskCapacityTotalUsage"][0] += hostInfo["diskInfoList"][j]["diskTotalSize"] - hostInfo["diskInfoList"][j]["diskTotalFreeSize"];
-            hostInfo["hostInfo2"]["diskCapacityTotalUsage"][0] += hostInfo["diskInfoList"][j]["diskTotalSize"];
+            hostInfo["diskInfoList"][j]["diskCapacitySize"] = [(hostInfo["diskInfoList"][j]["diskTotalSize"]-hostInfo["diskInfoList"][j]["diskTotalFreeSize"]).toFixed(2),
+                                                                hostInfo["diskInfoList"][j]["diskTotalSize"]];
+            if(hostInfo["diskInfoList"][j]["diskCapacitySize"][1] === 0){
+                hostInfo["diskInfoList"][j]["diskCapacityUsage"] = 0;
+            }
+            else{
+                hostInfo["diskInfoList"][j]["diskCapacityUsage"] = (hostInfo["diskInfoList"][j]["diskCapacitySize"][0] / hostInfo["diskInfoList"][j]["diskCapacitySize"][1]*100).toFixed(2);
+            }
+
+            //hostInfo["hostInfo2"]["diskCapacityTotalUsage"][0] += hostInfo["diskInfoList"][j]["diskTotalSize"] - hostInfo["diskInfoList"][j]["diskTotalFreeSize"];
+            //hostInfo["hostInfo2"]["diskCapacityTotalUsage"][1] += hostInfo["diskInfoList"][j]["diskTotalSize"];
         }
+        hostInfo["hostInfo2"]["diskCapacityTotalUsage"][0] = (resultData["allDiskTotalSize"] - resultData["allDiskTotalFreeSize"]).toFixed(2);
+        hostInfo["hostInfo2"]["diskCapacityTotalUsage"][1] = resultData["allDiskTotalSize"].toFixed(2);
 
         //connected
         hostInfo["connected"] = resultData["connected"];
