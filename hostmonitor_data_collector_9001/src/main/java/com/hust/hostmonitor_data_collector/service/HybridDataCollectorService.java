@@ -242,7 +242,7 @@ public class HybridDataCollectorService implements DataCollectorService{
                     memUsage=0;
                 }
                 else{
-                    memUsage=tempObject.getJSONArray("memoryUsage").getDouble(0)/tempObject.getJSONArray("memoryUsage").getDouble(1);
+                    memUsage=tempObject.getJSONArray("memoryUsage").getDouble(0)/tempObject.getJSONArray("memoryUsage").getDouble(1)*100.0;
                 }
 
                 double DiskReadRates=0;
@@ -272,9 +272,8 @@ public class HybridDataCollectorService implements DataCollectorService{
                                 tempDiskObject.getString("diskModel"),
                                 tempObject.getString("ip"));
                     }
-                    //System.out.println("["+diskSerial+"]"+tempObject.getTimestamp("lastUpdateTime"));
-                    diskFailureMapper.insertDiskSampleInfo(diskSerial, tempObject.getTimestamp("lastUpdateTime"),tempDiskObject.getDoubleValue("diskIOPS"),
-                            tempDiskObject.getDoubleValue("diskReadSpeed"),tempDiskObject.getDoubleValue("diskWriteSpeed"));
+                    //diskFailureMapper.insertDiskSampleInfo(diskSerial, tempObject.getTimestamp("lastUpdateTime"),tempDiskObject.getDoubleValue("diskIOPS"),
+                            //tempDiskObject.getDoubleValue("diskReadSpeed"),tempDiskObject.getDoubleValue("diskWriteSpeed"));
                 }
             }
         }
