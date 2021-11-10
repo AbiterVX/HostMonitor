@@ -324,12 +324,13 @@ public class HybridDataCollectorService implements DataCollectorService{
             }
             mainTimer.schedule(performanceSampleTask,20*1000,sampleInterval);
             mainTimer.schedule(processSampleTask,60*1000,sampleInterval);
-            mainTimer.schedule(smartSampleTask,date,24*3600*1000);
+            //mainTimer.schedule(smartSampleTask,date,24*3600*1000);
+            mainTimer.schedule(smartSampleTask,0,24*3600*1000);
         }
         else if(sampleSelect==2){
 
             socketSampleData=new HashMap<>();
-            hostsSampleData=sshSampleData;
+            hostsSampleData=socketSampleData;
             dataReceiver=new DataReceiver(this);
             dataReceiver.startListening();
             mainTimer.schedule(dataPersistenceTask,sampleInterval/2,sampleInterval-offset);
@@ -356,10 +357,10 @@ public class HybridDataCollectorService implements DataCollectorService{
         int windowsCount=0,linuxCount=0,HDDCount=0,SSDCount=0,connectedCount=0;
         float[][] loadCount = new float[][]{{0,0,0},{0,0,0},{0,0,0}};
         JSONArray hostIp=new JSONArray();
-        for(Map.Entry<String,JSONObject> hostInfo: sshSampleData.entrySet()){
+        for(Map.Entry<String,JSONObject> hostInfo: hostsSampleData.entrySet()){
             JSONObject hostInfoJson = hostInfo.getValue();
             hostIp.add(hostInfo.getKey());
-            totalSumCapacity+=hostInfoJson.getDoubleValue("diskTotalSize");
+            totalSumCapacity+=hostInfoJson.getDoubleValue("allDiskTotalSize");
             if(hostInfoJson.getString("osName").toLowerCase().contains(("windows").toLowerCase())){
                 windowsCount++;
             }

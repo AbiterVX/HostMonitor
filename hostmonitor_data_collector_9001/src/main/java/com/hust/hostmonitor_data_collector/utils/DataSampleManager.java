@@ -108,6 +108,9 @@ public class DataSampleManager {
                 List<String> devs=cmdExecutor.runCommand("lsblk -bnd",hostConfigData,false);
                 long totalsize=0;
                 for(String string:devs) {
+                    if(string.contains("loop")){
+                        continue;
+                    }
                     String[] tokens = string.split("\\s+");
                     String devsName = tokens[0];
                     //System.out.println(devsName);
@@ -143,9 +146,25 @@ public class DataSampleManager {
                         newDiskInfo.put("diskName",completeDiskName);
                         newDiskInfo.put("diskModel",Model.trim());
                         newDiskInfo.put("diskTotalSize",LinuxDataProcess.doubleTo2bits_double(size*1.0f/1024/1024/1024));
-                        newDiskInfo.put("type",1);
-                        //TODO 加入smart信息对照
-
+                        newDiskInfo.put("type",0);
+                        JSONObject currentDiskData = new JSONObject();
+                        {
+                            List<String> cmdResult = cmdExecutor.runCommand("smartctl -i /dev/"+devsName,hostConfigData,true);
+                            if(cmdResult.get(3).contains("Unable to")){
+                                continue;
+                            }
+                            for (int i = 0; i < 4; i++) {
+                                cmdResult.remove(0);
+                            }
+                            cmdResult.remove(cmdResult.size() - 1);
+                            for(String currentOutput: cmdResult){
+                                String[] rawData = currentOutput.split(":\\s+");
+                                if(rawData[0].contains("Rotation Rate")){
+                                    newDiskInfo.put("type",rawData[1].equals("Solid State Device")? 1:0);
+                                    break;
+                                }
+                            }
+                        }
                     }
                     sampleData.getJSONArray("diskInfoList").add(newDiskInfo);
                     totalsize+=size;
@@ -773,7 +792,7 @@ public class DataSampleManager {
                 }
                 double cpuUsage=Double.parseDouble(tokens[8]);
                 double memoryUsage=Double.parseDouble(tokens[9]);
-                //时间算法有问题，以后再debug
+                //TODO 时间算法有问题，以后再debug
                 String[] times=tokens[10].split(":");
                 long time=new Date().getTime();
                 long useTime=new Double(Integer.parseInt(times[0])*60*1000+Double.parseDouble(times[1])*1000).longValue();
@@ -785,8 +804,12 @@ public class DataSampleManager {
                 newProcess.put("memoryUsage",memoryUsage);
                 newProcess.put("diskReadSpeed",0.0f);
                 newProcess.put("diskWriteSpeed",0.0f);
-                //TODO 进程过滤
-                processInfoList.add(newProcess);
+                if(cpuUsage==0&&memoryUsage==0){
+                    continue;
+                }
+                else {
+                    processInfoList.add(newProcess);
+                }
             }
             sampleData.put("processInfoList",processInfoList);
 
@@ -875,10 +898,13 @@ public class DataSampleManager {
                     getDiskListCmd = "lsblk -bnd";
                     List<String> cmdResult = cmdExecutor.runCommand(getDiskListCmd,hostConfigData,false);
                     for(String currentStr:cmdResult) {
+                        if(currentStr.contains("loop")){
+                            continue;
+                        }
                         String[] rawData = currentStr.split("\\s+");
-                        System.out.println(rawData.length);
+                        //System.out.println(rawData.length);
                         diskList.add("/dev/"+rawData[0]);
-                        System.out.println("/dev/"+rawData[0]);
+                        //System.out.println("/dev/"+rawData[0]);
 
                     }
                 }
@@ -889,7 +915,10 @@ public class DataSampleManager {
             for(String currentDiskName: diskList){
                 JSONObject currentDiskData = new JSONObject();
                 {
-                    List<String> cmdResult = cmdExecutor.runCommand(smartDiskInfoCmd + currentDiskName,hostConfigData,false);
+                    List<String> cmdResult = cmdExecutor.runCommand(smartDiskInfoCmd + currentDiskName,hostConfigData,true);
+                    if(cmdResult.get(3).contains("Unable to")){
+                        continue;
+                    }
                     for (int i = 0; i < 4; i++) {
                         cmdResult.remove(0);
                     }
@@ -905,7 +934,7 @@ public class DataSampleManager {
                     diskData.put(serialNumber,currentDiskData);
                     JSONObject smartData = new JSONObject();
                     {
-                        List<String> cmdResult = cmdExecutor.runCommand(smartDataSampleCmd + currentDiskName,hostConfigData,false);
+                        List<String> cmdResult = cmdExecutor.runCommand(smartDataSampleCmd + currentDiskName,hostConfigData,true);
                         for (int i = 0; i < 7; i++) {
                             cmdResult.remove(0);
                         }
@@ -961,11 +990,10 @@ public class DataSampleManager {
             CsvWriter csvWriter = new CsvWriter(sampleDataFilePath,',', Charset.forName("GBK"));
             try {
                 //Smart属性个数
-
                 //获取表头
                 List<String> headers = new ArrayList<>();
                 {
-                    String[] staticHeaders = {"date", "serial_number", "model", "serialAlternative", "failure", "is_ssd", "pt_d"};
+                    String[] staticHeaders = {"date", "serial_number", "model", "ip", "failure", "is_ssd", "pt_d"};
                     for(String staticHeader:staticHeaders){
                         headers.add(staticHeader);
                     }
@@ -980,52 +1008,13 @@ public class DataSampleManager {
 
                 //写入header头
                 csvWriter.writeRecord(headers.toArray(new String[0]));
-
-                //写入数据
-                Set<String> serialNumberList = diskData.keySet();
-                for(String serialNumber:serialNumberList){
-                    JSONObject currentDiskData = diskData.getJSONObject(serialNumber);
-                    List<String> rowData = new ArrayList<>();
-                    {
-                        rowData.add(currentDate);
-                        rowData.add(serialNumber);
-                        rowData.add(currentDiskData.getString("Device Model"));
-                        rowData.add("");
-                        rowData.add("0");
-
-                        //是否为SSD
-                        if(currentDiskData.getString("Rotation Rate").equals("Solid State Device")){
-                            rowData.add("1");
-                        }
-                        else{
-                            rowData.add("0");
-                        }
-
-                        rowData.add(pt_d);
-                        JSONObject smartData = currentDiskData.getJSONObject("SmartData");
-                        //@Todo 0到255
-                        for(int i=0;i<smartCount;i++){
-                            JSONObject currentSmart = smartData.getJSONObject(Integer.toString(i));
-                            if(currentSmart != null){
-                                rowData.add(currentSmart.getString("VALUE"));
-                                rowData.add(currentSmart.getString("RAW_VALUE"));
-                            }
-                            else{
-                                rowData.add("");
-                                rowData.add("");
-                            }
-                        }
-                    }
-                    csvWriter.writeRecord(rowData.toArray(new String[0]));
-                }
             } catch (Exception e) {
                 e.printStackTrace();
             } finally {
                 csvWriter.close();
             }
         }
-        else{
-            try {
+        try {
                 FileOutputStream innerFileStream=new FileOutputStream(sampleDataFilePath,true);
                 CsvWriter csvWriter = new CsvWriter(innerFileStream,',', Charset.forName("GBK"));
                 //写入数据
@@ -1037,9 +1026,15 @@ public class DataSampleManager {
                         rowData.add(currentDate);
                         rowData.add(serialNumber);
                         rowData.add(currentDiskData.getString("Device Model"));
-                        rowData.add("");
+                        rowData.add(hostConfigData.ip);
                         rowData.add("0");
-                        rowData.add("0");
+                        //是否为SSD
+                        if(currentDiskData.getString("Rotation Rate").equals("Solid State Device")){
+                            rowData.add("1");
+                        }
+                        else{
+                            rowData.add("0");
+                        }
                         rowData.add(pt_d);
                         JSONObject smartData = currentDiskData.getJSONObject("SmartData");
                         //@Todo 0到255
@@ -1064,7 +1059,6 @@ public class DataSampleManager {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-        }
     }
     //IO测试
     public JSONObject ioTest(HostConfigData hostConfigData){
