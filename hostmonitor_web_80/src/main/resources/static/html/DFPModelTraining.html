@@ -175,7 +175,7 @@
 
     //加载后执行
     window.onload=function (){
-        FSendGetRequest(false,"/Dispersed/getDFPTrainRecord/List",function (resultData){
+        FSendGetRequest(false,"/getDFPTrainRecord/List",function (resultData){
             $('#buildRecords').bootstrapTable({
                 columns: tableColumns["buildRecords"],
                 data: resultData,

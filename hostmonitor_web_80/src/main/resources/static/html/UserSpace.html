@@ -182,7 +182,7 @@
             tempUserInfo["operateUserID"] = user["userID"];
             tempUserInfo["operateUserPassword"] = user["password"];
 
-            FSendPostRequest(false,"/Dispersed/updateUserInfo",JSON.stringify(tempUserInfo),function (resultData){
+            FSendPostRequest(false,"/updateUserInfo",JSON.stringify(tempUserInfo),function (resultData){
                 userSignIn(user["userID"],user["password"],function (resultData2){
                     refreshUserInfoUI();
                 });
@@ -201,7 +201,7 @@
                     newPassword:newPassword.value,
                 };
 
-                FSendPostRequest(false,"/Dispersed/updateUserPassword",JSON.stringify(paramData),function (resultData){
+                FSendPostRequest(false,"/updateUserPassword",JSON.stringify(paramData),function (resultData){
                     userSignIn(user["userID"],newPassword.value,function (resultData2){});
                     newPassword.value ="";
                     confirmPassword.value ="";

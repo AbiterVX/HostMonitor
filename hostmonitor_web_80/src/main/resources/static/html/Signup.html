@@ -105,7 +105,7 @@
                 userName:UserName.value,
                 password:Password.value,
             };
-            FSendPostRequest(false,"/Dispersed/SignUp",JSON.stringify(paramData),function (resultData){
+            FSendPostRequest(false,"/SignUp",JSON.stringify(paramData),function (resultData){
                 confirmBtn.hidden = false;
                 userIdDisplay.hidden = false;
                 signupBtn.hidden = true;

@@ -263,9 +263,12 @@ public class HybridDataCollectorService implements DataCollectorService{
                 JSONArray diskArray=tempObject.getJSONArray("diskInfoList");
                 for(int i=0;i<diskArray.size();i++){
                     JSONObject tempDiskObject=diskArray.getJSONObject(i);
-                    String diskSerial=diskFailureMapper.queryDiskHardwareExists(tempDiskObject.getString("diskName"));
-                    if(diskSerial==null){
-                        diskSerial=tempDiskObject.getString("diskName");
+                    String diskSerial=tempDiskObject.getString("diskName");
+                    if(diskSerial.contains(":")){
+                        diskSerial=diskSerial.split(":")[1];
+                    }
+                    String diskSerialInDB=diskFailureMapper.queryDiskHardwareExists(diskSerial);
+                    if(diskSerialInDB==null){
                         diskFailureMapper.insertDiskHardwareInfo(diskSerial,tempObject.getString("hostName"),
                                 tempDiskObject.getDoubleValue("diskTotalSize"),
                                 tempDiskObject.getIntValue("type")>0? true:false,

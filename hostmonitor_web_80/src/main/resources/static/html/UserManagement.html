@@ -219,7 +219,7 @@
             tempUserInfo["operateUserID"] = user["userName"];
             tempUserInfo["operateUserPassword"] = user["password"];
 
-            FSendPostRequest(false,"/Dispersed/updateUserInfo",JSON.stringify(tempUserInfo),function (resultData){
+            FSendPostRequest(false,"/updateUserInfo",JSON.stringify(tempUserInfo),function (resultData){
                 FGetUserList(function (UserListResultData){
                     refreshUserManagementTable(false,UserListResultData);
                     $('#UserInfoModal').modal('hide');

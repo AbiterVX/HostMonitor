@@ -146,7 +146,7 @@
 
     //加载后执行
     window.onload=function (){
-        FSendGetRequest(false,"/Dispersed/SystemSetting/Get",function (resultData){
+        FSendGetRequest(false,"/SystemSetting/Get",function (resultData){
             refreshSystemSettingDisplay(resultData);
         });
     }
@@ -163,7 +163,7 @@
             BackupEmergency: BackupEmergency.checked,
             BackupFailureRateThreshold: BackupFailureRateThreshold.value,
         };
-        FSendPostRequest(false,"/Dispersed/SystemSetting/Reset",JSON.stringify(paramData),function (resultData){
+        FSendPostRequest(false,"/SystemSetting/Reset",JSON.stringify(paramData),function (resultData){
             refreshSystemSettingDisplay();
         });
     }
