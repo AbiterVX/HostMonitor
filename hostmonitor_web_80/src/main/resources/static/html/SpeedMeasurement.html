@@ -121,7 +121,7 @@
         var parameterData = {
             IP: current_ip,
         };
-        FSendPostRequest(true,"/Dispersed/diskSpeedTest",JSON.stringify(parameterData),function (resultData){
+        FSendPostRequest(true,"/diskSpeedTest",JSON.stringify(parameterData),function (resultData){
             resultData = JSON.parse(resultData);
             if(resultData != null && resultData !== "") {
                 for (var i = 0; i < smInfoList.length; i++) {
