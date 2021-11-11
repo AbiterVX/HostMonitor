@@ -32,15 +32,15 @@ var minRequireUserType = [
 ];
 
 var innerHTMLList = [
-    icon_home + '资源监控',
-    icon_bar + '节点详情',
+    icon_home + '资源整体概况',
+    icon_bar + '节点资源详情',
     icon_empty + icon_bar + '数据分析',
     icon_empty + icon_file + '故障查询',
     icon_empty + icon_file + '模型训练',
     icon_file + '系统设置',
-    icon_file + '用户管理',
-    icon_file + '测速',
-    icon_file + '备份',
+    icon_file + '系统用户管理',
+    icon_file + '节点测速',
+    icon_file + '数据备份',
 ];
 
 var signInSrc = "/Signin";

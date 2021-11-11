@@ -126,10 +126,13 @@
 
     //[DropDown]选择-HostIp
     function dropDownSelectHostIp(index){
+
         if(index !== currentHostIndex){
             //下拉按钮-设置当前显示Txt
             var ip =hostIPList[index];
-            document.getElementById("ipDropDownBtn").innerText = ip;
+            document.getElementById("HostIpDropDownBtn").innerText = ip;
+
+
             //设置
             currentHostIndex = index;
             //初始化-DropDown-ip

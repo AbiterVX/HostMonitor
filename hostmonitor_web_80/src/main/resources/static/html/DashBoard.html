@@ -423,7 +423,7 @@
     //拓扑图数据
     var graphData;
     //趋势图数据
-    var trendChartData = {};
+    var trendChartData = [[],[],[],[],[]];
 
     //趋势图表
     var TrendChart = echarts.init(document.getElementById("TrendChart"));
@@ -437,7 +437,6 @@
         //获取Host配置数据
         FSendGetRequest(false, "/getHostsRouter", function (resultData) {
             hostConfigData =resultData;
-
             /*testHostConfig = [
                 {ip:"2.0.0.1", router:"127.0.0.3",},
                 {ip:"2.0.0.2", router:"127.0.0.3",},
@@ -459,21 +458,11 @@
             for(var i=0;i<testHostConfig.length;i++){
                 hostConfigData.push(testHostConfig[i]);
             }*/
-
         });
 
         //趋势图
         {
-            var finalSeriesName = [];
-            var seriesName = ["-CPU利用率","-内存利用率","-存储容量","-网络IO"];
-            for(var i=0;i<hostConfigData.length;i++){
-                var currentIp = hostConfigData[i]["ip"];
-                trendChartData[currentIp] = [[],[],[],[]];
-                for(var j=0;j<seriesName.length;j++){
-                    finalSeriesName.push(currentIp+seriesName[i]);
-                }
-            }
-            TrendChart.setOption(FGetMultiTrendChartOption(finalSeriesName));
+            TrendChart.setOption(FGetHostDynamicChartOption(hostIpList));
         }
 
         //获取节点负载数据
@@ -493,7 +482,7 @@
                     refreshTopologyChart();
                     refreshTrendChartData();
                 })
-            },20000);
+            },10000);
         }
 
         //更新HostInfo数据.
@@ -641,41 +630,38 @@
 
     //刷新Chart-Data-TrendChart
     function refreshTrendChartData(){
-        var currentDate = new Date();
-        //var seriesName = ["-CPU利用率","-内存利用率","-存储容量","-网络IO"];
-        for(var i=0;i<hostConfigData.length;i++){
-            var currentIp = hostConfigData[i]["ip"];
+
+        var subChartIndex = [0,1,2,3,3];
+        var option = {
+            series: []
+        };
+
+        trendChartData = [[],[],[],[],[]];
+        for(var i=0;i<hostIpList.length;i++){
+            var currentIp = hostIpList[i];
             if(hostSampleData.hasOwnProperty(currentIp)){
-                trendChartData[currentIp][0].push([ currentDate,hostSampleData[currentIp]["cpuUsage"] ]);
-                trendChartData[currentIp][1].push([ currentDate,hostSampleData[currentIp]["memoryUsage"] ]);
-                trendChartData[currentIp][2].push([ currentDate,hostSampleData[currentIp]["diskCapacityUsage"] ]);
-                trendChartData[currentIp][3].push([ currentDate,hostSampleData[currentIp]["netSendSpeed"]+hostSampleData[currentIp]["netReceiveSpeed"] ]);
+                trendChartData[0].push(hostSampleData[currentIp]["cpuUsage"]);
+                trendChartData[1].push(hostSampleData[currentIp]["memoryUsage"]);
+                trendChartData[2].push(hostSampleData[currentIp]["diskCapacityUsage"]);
+                trendChartData[3].push(hostSampleData[currentIp]["netSendSpeed"]);
+                trendChartData[4].push(hostSampleData[currentIp]["netReceiveSpeed"]);
             }
             else{
-                trendChartData[currentIp][0].push([ currentDate,0 ]);
-                trendChartData[currentIp][1].push([ currentDate,0 ]);
-                trendChartData[currentIp][2].push([ currentDate,0 ]);
-                trendChartData[currentIp][3].push([ currentDate,0 ]);
+                trendChartData[0].push(0);
+                trendChartData[1].push(0);
+                trendChartData[2].push(0);
+                trendChartData[3].push(0);
+                trendChartData[4].push(0);
             }
         }
 
-        var subChartIndex = [0,1,2,3];
-        var option = { series: [] };
-        var seriesName = ["-CPU利用率","-内存利用率","-存储容量","-网络IO"];
-        for(var i=0;i<hostConfigData.length;i++){
-            var currentIp = hostConfigData[i]["ip"];
-            for(var j=0;j<subChartIndex.length;j++){
-                option["series"].push({
-                    name:currentIp+seriesName[j],
-                    data:trendChartData[currentIp][j],
-                    xAxisIndex: subChartIndex[j],
-                    yAxisIndex: subChartIndex[j],
-                });
-            }
+        for(var i=0;i<trendChartData.length;i++){
+            option["series"].push({
+                data:trendChartData[i],
+                xAxisIndex: subChartIndex[i],
+                yAxisIndex: subChartIndex[i],
+            });
         }
-
-
-
         TrendChart.setOption(option);
     }
 
