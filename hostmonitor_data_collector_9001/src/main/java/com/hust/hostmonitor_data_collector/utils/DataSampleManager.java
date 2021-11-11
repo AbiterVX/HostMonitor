@@ -148,21 +148,21 @@ public class DataSampleManager {
                         newDiskInfo.put("diskTotalSize",LinuxDataProcess.doubleTo2bits_double(size*1.0f/1024/1024/1024));
                         newDiskInfo.put("type",0);
                         JSONObject currentDiskData = new JSONObject();
-                        {
-                            List<String> cmdResult = cmdExecutor.runCommand("smartctl -i /dev/"+devsName,hostConfigData,true);
-                            if(cmdResult.get(3).contains("Unable to")){
-                                continue;
-                            }
-                            for (int i = 0; i < 4; i++) {
-                                cmdResult.remove(0);
-                            }
-                            cmdResult.remove(cmdResult.size() - 1);
-                            for(String currentOutput: cmdResult){
-                                String[] rawData = currentOutput.split(":\\s+");
-                                if(rawData[0].contains("Rotation Rate")){
-                                    newDiskInfo.put("type",rawData[1].equals("Solid State Device")? 1:0);
-                                    break;
-                                }
+                        List<String> cmdResult = cmdExecutor.runCommand("smartctl -i /dev/"+devsName,hostConfigData,true);
+                        if(cmdResult.get(3).contains("Unable to")){
+                            sampleData.getJSONArray("diskInfoList").add(newDiskInfo);
+                            totalsize+=size;
+                            continue;
+                        }
+                        for (int i = 0; i < 4; i++) {
+                            cmdResult.remove(0);
+                        }
+                        cmdResult.remove(cmdResult.size() - 1);
+                        for(String currentOutput: cmdResult){
+                            String[] rawData = currentOutput.split(":\\s+");
+                            if(rawData[0].contains("Rotation Rate")){
+                                newDiskInfo.put("type",rawData[1].equals("Solid State Device")? 1:0);
+                                break;
                             }
                         }
                     }

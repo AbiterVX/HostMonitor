@@ -254,12 +254,16 @@ public class HybridDataCollectorService implements DataCollectorService{
                 if( tempObject.getDouble("cpuUsage")==0){
                     continue;
                 }
-                dispersedMapper.insertNewRecord(tempObject.getString("hostName"),tempObject.getString("ip"),
-                        tempObject.getTimestamp("lastUpdateTime")/*这里可能要改时间*/,memUsage,
-                        tempObject.getDouble("cpuUsage"),
-                        tempObject.getDouble("netReceiveSpeed"),
-                        tempObject.getDouble("netSendSpeed"),DiskReadRates,DiskWriteRates);
-                entry.getValue().put("hasPersistent",true);
+                synchronized (tempObject) {
+                    if(!tempObject.getBoolean("hasPersistent")) {
+                        dispersedMapper.insertNewRecord(tempObject.getString("hostName"), tempObject.getString("ip"),
+                                tempObject.getTimestamp("lastUpdateTime")/*这里可能要改时间*/, memUsage,
+                                tempObject.getDouble("cpuUsage"),
+                                tempObject.getDouble("netReceiveSpeed"),
+                                tempObject.getDouble("netSendSpeed"), DiskReadRates, DiskWriteRates);
+                        entry.getValue().put("hasPersistent", true);
+                    }
+                }
                 JSONArray diskArray=tempObject.getJSONArray("diskInfoList");
                 for(int i=0;i<diskArray.size();i++){
                     JSONObject tempDiskObject=diskArray.getJSONObject(i);
