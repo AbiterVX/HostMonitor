@@ -176,7 +176,6 @@
     }
     //显示用户详情
     function displayUserInfo(row,index){
-
         currentUserInfo = row;
         UserID.value = row["userID"];
         UserName.value = row["userName"];
@@ -186,7 +185,6 @@
         UserState.checked = row["validState"];
         emailValid.checked = row["emailValidState"];
         smsValid.checked = row["phoneValidState"];
-
 
         $('#UserInfoModal').modal('show');
     }
@@ -224,13 +222,9 @@
                     refreshUserManagementTable(false,UserListResultData);
                     $('#UserInfoModal').modal('hide');
                 });
-
             });
         }
-
     }
-
-
 </script>
 </html>
 

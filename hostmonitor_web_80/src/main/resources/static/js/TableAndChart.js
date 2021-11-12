@@ -53,7 +53,7 @@ function FGetLoadingImg(){
 }
 
 var customPartition = [30,70,100];
-var customPartitionColor = ['#00000b','#fac859','#ee6767'];
+var customPartitionColor = ['#00000b','#fa9759','#ee6767'];
 
 var dfpModelNames = ["随机森林"];
 var diskType = ["HDD","SSD"];
@@ -68,11 +68,12 @@ function FTableColorFormatter(partitionList,colorList,value,displayValue){
             break;
         }
     }
-    return '<span style="font-weight:bold;color:'+ color +'">'+displayValue+'</span>';
+    return '<span style="color:'+ color +'">'+displayValue+'</span>';
+    //font-weight:bold;
 }
 
 function FTableColorFormaterCustomColor(value){
-    return '<span style="font-weight:bold;color:#00000b">'+value+'</span>';
+    return '<span style="color:#00000b">'+value+'</span>';
 }
 
 //表格标题
@@ -288,6 +289,17 @@ const tableColumns = {
             title: '硬盘名称',
             width: 100,
             sortable: true,
+            formatter : function (value, row, index) {
+                var tag = "";
+                if( row.type ===1 ){
+                    tag = "[SSD]";
+                }
+                else{
+                    tag = "[HDD]";
+                }
+                return  '<span style="font-weight:bold;color:black">'+tag+'</span>'+value;
+            }
+
         },
         {
             field: 'diskCapacitySize',
@@ -1458,11 +1470,10 @@ function FGetTrendChartOption(){
     return trendChartOption;
 }
 
-function FGetMultiTrendChartOption(seriesName){
+function FGetHostDynamicChartOption(hostList){
     var titleName = ["CPU利用率","内存利用率","存储容量","网络IO"];
     var unitLabel =["%","%","%","Kb/s"];
-    //var seriesName = ["CPU利用率","内存利用率","存储容量","网络接受","网络发送"];
-
+    var seriesName = ["CPU利用率","内存利用率","存储容量","网络接受","网络发送"];
     var trendChartOption = {
         title:[
             {
@@ -1524,9 +1535,11 @@ function FGetMultiTrendChartOption(seriesName){
         tooltip: {
             trigger: 'axis',
             formatter: function(params){
-                var returnTxt = "时间: "+ FGetDateTime(params[0].value[0]) +"<br/>";
+                //alert(JSON.stringify(params));
+
+                var returnTxt = "节点: "+ params[0].axisValue +"<br/>";
                 for(var i =0; i< params.length; i++){
-                    returnTxt += params[i].marker+" "+params[i].seriesName+ " "+params[i].value[1] + unitLabel[params[i].axisIndex] + "<br/>";
+                    returnTxt += params[i].marker+" "+params[i].seriesName+ " "+params[i].value + unitLabel[params[i].axisIndex] + "<br/>";
                 }
                 return returnTxt;
             }
@@ -1540,7 +1553,6 @@ function FGetMultiTrendChartOption(seriesName){
     for(var i=0;i<seriesName.length;i++){
         trendChartOption["series"].push({
             name:seriesName[i],
-            smooth:true,
             type: 'line',
             showSymbol: false,
             hoverAnimation: false,
@@ -1551,20 +1563,15 @@ function FGetMultiTrendChartOption(seriesName){
     //坐标轴格式
     for(var i=0;i<titleName.length;i++){
         trendChartOption["xAxis"].push({
-            type: 'time',
+            type: 'category',
+            data: hostList,
             splitLine: {
                 show: false
             },
             axisLabel: {
-                formatter: {
-                    year: '{yyyy}年',
-                    month: '{MM}月',
-                    day: '{MM}月{dd}日',
-                    hour: '{HH}:{mm}',
-                    minute: '{HH}:{mm}',
-                    second: '{HH}:{mm}:{ss}',
-                    millisecond: '{HH}:{mm}:{ss} ',
-                    none: '{yyyy}-{MM}-{dd} {HH}:{mm}:{ss}'
+                formatter: function(params,index){
+                    var returnTxt = index;
+                    return returnTxt;
                 }
             },
             gridIndex: i,
@@ -1587,6 +1594,7 @@ function FGetMultiTrendChartOption(seriesName){
 
     return trendChartOption;
 }
+
 
 
 //获取CHartOption-DFPSummaryChart
