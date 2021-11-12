@@ -174,7 +174,6 @@ public class DataSampleManager {
             //cpuInfoList
             {
                 List<String> cmdResult = cmdExecutor.runCommand("cat /proc/cpuinfo",hostConfigData,false);
-
                 for(String rowData:cmdResult){
                         if(rowData.contains("model name")) {
                             JSONObject newCpuInfo = configDataManager.getSampleFormat("cpuInfo");
@@ -429,13 +428,24 @@ public class DataSampleManager {
             {
                 for (String string : CPUInfo) {
                     String[] tokens = string.split("\\s+");
-                    if (tokens[0].equals("cpu")) {
-                        long total = Long.parseLong(tokens[1]) + Long.parseLong(tokens[2]) + Long.parseLong(tokens[3]) + Long.parseLong(tokens[4])
-                                + Long.parseLong(tokens[5]) + Long.parseLong(tokens[6]) + Long.parseLong(tokens[7]);
-                        long used = Long.parseLong(tokens[1]) + Long.parseLong(tokens[2]) + Long.parseLong(tokens[3]) +
-                                Long.parseLong(tokens[6]) + Long.parseLong(tokens[7]);
-                        record.setCPUused(used);
-                        record.setCPUtotal(total);
+
+                    if (tokens[0].contains("cpu")) {
+                        if(tokens[0].equals("cpu")){
+                            long total = Long.parseLong(tokens[1]) + Long.parseLong(tokens[2]) + Long.parseLong(tokens[3]) + Long.parseLong(tokens[4])
+                                    + Long.parseLong(tokens[5]) + Long.parseLong(tokens[6]) + Long.parseLong(tokens[7]);
+                            long used = Long.parseLong(tokens[1]) + Long.parseLong(tokens[2]) + Long.parseLong(tokens[3]) +
+                                    Long.parseLong(tokens[6]) + Long.parseLong(tokens[7]);
+                            record.setAllCPUtotal(total);
+                            record.setAllCPUused(used);
+                        }
+                        if(tokens.length>3){
+                            long total = Long.parseLong(tokens[1]) + Long.parseLong(tokens[2]) + Long.parseLong(tokens[3]) + Long.parseLong(tokens[4])
+                                    + Long.parseLong(tokens[5]) + Long.parseLong(tokens[6]) + Long.parseLong(tokens[7]);
+                            long used = Long.parseLong(tokens[1]) + Long.parseLong(tokens[2]) + Long.parseLong(tokens[3]) +
+                                    Long.parseLong(tokens[6]) + Long.parseLong(tokens[7]);
+                            record.getCPUused().add(used);
+                            record.getCPUtotal().add(total);
+                        }
                     }
                 }
 
@@ -500,24 +510,48 @@ public class DataSampleManager {
             }
             //CPU
             {
-                if(sampleData.containsKey("lastTotalTicks"))
+                if(sampleData.getJSONArray("cpuInfoList").getJSONObject(0).containsKey("lastTotalTicks"))
                 {
-                    long oldTotalTicks = sampleData.getLong("lastTotalTicks");
-                    long oldUsedTicks = sampleData.getLong("lastUsedTicks");
-                    long newTotalTicks=record.getCPUtotal();
-                    long newUsedTicks=record.getCPUused();
-                    double cpuUsage = (newUsedTicks - oldUsedTicks)* 1.0f / (newTotalTicks - oldTotalTicks) ;
-                    double cpuUsage2bits = LinuxDataProcess.doubleTo2bits_double(cpuUsage * 100);
-                    sampleData.getJSONArray("cpuInfoList").getJSONObject(0).put("cpuUsage", cpuUsage2bits);
-                    sampleData.put("cpuUsage", cpuUsage2bits);
-                    sampleData.put("lastTotalTicks",newTotalTicks);
-                    sampleData.put("lastUsedTicks",newUsedTicks);
+                    int cpuSize=sampleData.getJSONArray("cpuInfoList").size();
+                    for(int i=0;i<cpuSize;i++) {
+                        long oldTotalTicks = sampleData.getJSONArray("cpuInfoList").getJSONObject(i).getLong("lastTotalTicks");
+                        long oldUsedTicks = sampleData.getJSONArray("cpuInfoList").getJSONObject(i).getLong("lastUsedTicks");
+                        long newTotalTicks = record.getCPUtotal().get(i);
+                        long newUsedTicks = record.getCPUused().get(i);
+                        double cpuUsage = 0;
+                        if (newTotalTicks - oldTotalTicks == 0) {
+                        } else {
+                            cpuUsage = (newUsedTicks - oldUsedTicks) * 1.0f / (newTotalTicks - oldTotalTicks);
+                        }
+                        double cpuUsage2bits = LinuxDataProcess.doubleTo2bits_double(cpuUsage * 100);
+                        sampleData.getJSONArray("cpuInfoList").getJSONObject(i).put("cpuUsage", cpuUsage2bits);
+                        sampleData.getJSONArray("cpuInfoList").getJSONObject(i).put("lastTotalTicks",record.getCPUtotal().get(i));
+                        sampleData.getJSONArray("cpuInfoList").getJSONObject(i).put("lastUsedTicks",record.getCPUused().get(i));
+                    }
+                    {
+                        long oldTotalTicks = sampleData.getLong("lastTotalTicks");
+                        long oldUsedTicks = sampleData.getLong("lastUsedTicks");
+                        long newTotalTicks=record.getAllCPUtotal();
+                        long newUsedTicks=record.getAllCPUused();
+                        double cpuUsage = (newUsedTicks - oldUsedTicks)* 1.0f / (newTotalTicks - oldTotalTicks) ;
+                        double cpuUsage2bits = LinuxDataProcess.doubleTo2bits_double(cpuUsage * 100);
+                        sampleData.put("cpuUsage", cpuUsage2bits);
+                        sampleData.put("lastTotalTicks",newTotalTicks);
+                        sampleData.put("lastUsedTicks",newUsedTicks);
+                    }
                 }
                 else {
-                    sampleData.getJSONArray("cpuInfoList").getJSONObject(0).put("cpuUsage", LinuxDataProcess.doubleTo2bits_double(0.0 * 100));
-                    sampleData.put("cpuUsage",  LinuxDataProcess.doubleTo2bits_double(0.0 * 100));
-                    sampleData.put("lastTotalTicks",record.getCPUtotal());
-                    sampleData.put("lastUsedTicks",record.getCPUused());
+                    int cpuSize=sampleData.getJSONArray("cpuInfoList").size();
+                    for(int i=0;i<cpuSize;i++){
+                        sampleData.getJSONArray("cpuInfoList").getJSONObject(i).put("cpuUsage", LinuxDataProcess.doubleTo2bits_double(0.0 * 100));
+                        sampleData.getJSONArray("cpuInfoList").getJSONObject(i).put("lastTotalTicks",record.getCPUtotal().get(i));
+                        sampleData.getJSONArray("cpuInfoList").getJSONObject(i).put("lastUsedTicks",record.getCPUused().get(i));
+                    }
+                    {
+                        sampleData.put("cpuUsage",  LinuxDataProcess.doubleTo2bits_double(0.0 * 100));
+                        sampleData.put("lastTotalTicks",record.getAllCPUtotal());
+                        sampleData.put("lastUsedTicks",record.getAllCPUused());
+                    }
                 }
             }
             //Memory
@@ -791,6 +825,7 @@ public class DataSampleManager {
                     continue;
                 }
                 double cpuUsage=Double.parseDouble(tokens[8]);
+                cpuUsage=cpuUsage/sampleData.getJSONArray("cpuInfoList").size();
                 double memoryUsage=Double.parseDouble(tokens[9]);
                 //TODO 时间算法有问题，以后再debug
                 String[] times=tokens[10].split(":");
@@ -1085,7 +1120,11 @@ public class DataSampleManager {
         }
         return ioTestData;
     }
-
+    private void checkCommandResult(List<String> result,JSONObject tempObject){
+        if(result.size()==0){
+            tempObject.put("connected",false);
+        }
+    }
 
     public static void main(String[] args) {
         DataSampleManager dataSampleManager = DataSampleManager.getInstance();

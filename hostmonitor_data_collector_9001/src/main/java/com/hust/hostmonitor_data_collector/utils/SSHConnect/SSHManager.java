@@ -8,5 +8,5 @@ import java.util.List;
  */
 public interface SSHManager {
     //执行指令
-    public List<String> runCommand(String command, HostConfigData hostConfigInfo,boolean isSudo);
+    public List<String> runCommand(String command, HostConfigData hostConfigInfo,boolean isSudo) ;
 }

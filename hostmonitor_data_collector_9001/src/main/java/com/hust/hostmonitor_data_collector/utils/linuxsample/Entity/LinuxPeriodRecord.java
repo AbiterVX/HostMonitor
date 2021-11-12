@@ -6,8 +6,27 @@ public class LinuxPeriodRecord {
     private long memTotal;
     private long memFree;
     private long memAvailable;
-    private long CPUtotal;
-    private long CPUused;
+    private ArrayList<Long> CPUtotal;
+    private ArrayList<Long> CPUused;
+    private Long AllCPUtotal;
+    private Long AllCPUused;
+
+    public Long getAllCPUtotal() {
+        return AllCPUtotal;
+    }
+
+    public void setAllCPUtotal(Long allCPUtotal) {
+        AllCPUtotal = allCPUtotal;
+    }
+
+    public Long getAllCPUused() {
+        return AllCPUused;
+    }
+
+    public void setAllCPUused(Long allCPUused) {
+        AllCPUused = allCPUused;
+    }
+
     private long NetReceive;
     private long NetSend;
     private double CPUTemperature;
@@ -15,10 +34,12 @@ public class LinuxPeriodRecord {
 
 
     public LinuxPeriodRecord() {
+        CPUtotal=new ArrayList<>();
+        CPUused=new ArrayList<>();
         disks=new ArrayList<>();
     }
 
-    public LinuxPeriodRecord(long memTotal, long memFree, long memAvailable, long CPUtotal, long CPUused, long netReceive, long netSend, double CPUTemperature, ArrayList<DiskInfo> disks) {
+    public LinuxPeriodRecord(long memTotal, long memFree, long memAvailable, ArrayList<Long> CPUtotal, ArrayList<Long> CPUused, long netReceive, long netSend, double CPUTemperature, ArrayList<DiskInfo> disks) {
         this.memTotal = memTotal;
         this.memFree = memFree;
         this.memAvailable = memAvailable;
@@ -54,19 +75,19 @@ public class LinuxPeriodRecord {
         this.memAvailable = memAvailable;
     }
 
-    public long getCPUtotal() {
+    public ArrayList<Long> getCPUtotal() {
         return CPUtotal;
     }
 
-    public void setCPUtotal(long CPUtotal) {
+    public void setCPUtotal(ArrayList<Long> CPUtotal) {
         this.CPUtotal = CPUtotal;
     }
 
-    public long getCPUused() {
+    public ArrayList<Long> getCPUused() {
         return CPUused;
     }
 
-    public void setCPUused(long CPUused) {
+    public void setCPUused(ArrayList<Long> CPUused) {
         this.CPUused = CPUused;
     }
 

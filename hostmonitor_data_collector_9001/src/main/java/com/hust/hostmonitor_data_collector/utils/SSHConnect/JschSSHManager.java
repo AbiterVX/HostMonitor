@@ -26,7 +26,7 @@ public class JschSSHManager implements SSHManager {
     }
 
     //获得Session
-    private Session getJSCHSession(HostConfigData hostConfigInfo){
+    private Session getJSCHSession(HostConfigData hostConfigInfo) {
         boolean sessionExist = sessionMap.containsKey(hostConfigInfo.ip);
         Session currentSession = null;
         try {
@@ -54,13 +54,14 @@ public class JschSSHManager implements SSHManager {
             //e.printStackTrace();
             System.out.println("        JschSSHManager->getJSCHSession,Error, IP:"+ hostConfigInfo.ip);
             currentSession = null;
+
         }
         return currentSession;
     }
 
     //执行JSCH指令
     @Override
-    public List<String> runCommand(String command, HostConfigData hostConfigInfo,boolean isSudo){
+    public List<String> runCommand(String command, HostConfigData hostConfigInfo,boolean isSudo) {
         List<String> result = new ArrayList<String>();
         int returnCode = 0;
         Session session = getJSCHSession(hostConfigInfo);

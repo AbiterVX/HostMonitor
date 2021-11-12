@@ -88,14 +88,32 @@ public class HybridDataCollectorService implements DataCollectorService{
             CountDownLatch latch=new CountDownLatch(dataSampleManager.hostList.size());
             for(HostConfigData hostConfigData:dataSampleManager.hostList){
                 if(sshSampleData.containsKey(hostConfigData.ip)){
-                    executorService.execute(new Runnable() {
-                        @Override
-                        public void run() {
-                            dataSampleManager.sampleHostData(hostConfigData,sshSampleData.get(hostConfigData.ip));
-                            latch.countDown();
-                        }
-                    });
-
+                    JSONObject targetObject=sshSampleData.get(hostConfigData.ip);
+                    if(!targetObject.getBoolean("connected")){
+                        executorService.execute(new Runnable() {
+                            @Override
+                            public void run() {
+                                JSONObject initObject=dataSampleManager.sampleHostHardwareData(hostConfigData);
+                                if(!initObject.getBoolean("connected")){
+                                    latch.countDown();
+                                }
+                                else {
+                                    sshSampleData.put(hostConfigData.ip, initObject);
+                                    dataSampleManager.sampleHostData(hostConfigData, initObject);
+                                    latch.countDown();
+                                }
+                            }
+                        });
+                    }
+                    else {
+                        executorService.execute(new Runnable() {
+                            @Override
+                            public void run() {
+                                dataSampleManager.sampleHostData(hostConfigData, sshSampleData.get(hostConfigData.ip));
+                                latch.countDown();
+                            }
+                        });
+                    }
                 }
                 else{
                     executorService.execute(new Runnable() {
@@ -129,14 +147,19 @@ public class HybridDataCollectorService implements DataCollectorService{
             CountDownLatch latch=new CountDownLatch(dataSampleManager.hostList.size());
             for(HostConfigData hostConfigData:dataSampleManager.hostList){
                 if(sshSampleData.containsKey(hostConfigData.ip)){
-                    executorService.execute(new Runnable() {
-                        @Override
-                        public void run() {
-                            dataSampleManager.sampleHostProcess(hostConfigData,sshSampleData.get(hostConfigData.ip));
-                            latch.countDown();
-                        }
-                    });
-
+                    JSONObject targetObject=sshSampleData.get(hostConfigData.ip);
+                    if(!targetObject.getBoolean("connected")){
+                        latch.countDown();
+                    }
+                    else {
+                        executorService.execute(new Runnable() {
+                            @Override
+                            public void run() {
+                                dataSampleManager.sampleHostProcess(hostConfigData, sshSampleData.get(hostConfigData.ip));
+                                latch.countDown();
+                            }
+                        });
+                    }
                 }
                 else{
                     executorService.execute(new Runnable() {
