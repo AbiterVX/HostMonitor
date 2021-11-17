@@ -149,4 +149,14 @@ public class DataSampleController {
         String result=dataCollectorService.remoteTest(nodeIp);
         return result;
     }
+
+
+    //TODO 真实磁盘损坏标记
+
+    @GetMapping(value = "/test2")
+    @ResponseBody
+    public String test(){
+        return dataCollectorService.test();
+    }
+
 }

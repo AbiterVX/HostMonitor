@@ -7,6 +7,7 @@ import com.csvreader.CsvWriter;
 import com.hust.hostmonitor_data_collector.utils.SSHConnect.HostConfigData;
 import com.hust.hostmonitor_data_collector.utils.SSHConnect.ProxyConfigData;
 import org.apache.commons.io.FileUtils;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -23,10 +24,25 @@ public class ConfigDataManager {
     private final JSONObject configJson = JSONObject.parseObject(readFile("ConfigData/Server/Config.json"));
     //系统设置
     private final String systemSettingFilePath = "ConfigData/Server/SystemSetting.json";
+    public int getDataSourceSelect(){
+        if(applicationEnv.equals("dev")){
+            return 0;
+        }
+        else if(applicationEnv.equals("test")){
+            return 1;
+        }
+        else if(applicationEnv.equals("prod")){
+            return 1;
+        }
+        else {
+            return 0;
+        }
+    };
     private JSONObject systemSetting = JSONObject.parseObject(readFile(systemSettingFilePath));
-
     //单例
     private volatile static ConfigDataManager configDataManager;
+    private String applicationEnv="dev";
+
     public static ConfigDataManager getInstance(){
         if(configDataManager ==null){
             synchronized (ConfigDataManager.class){
@@ -38,6 +54,8 @@ public class ConfigDataManager {
         return configDataManager;
     }
     private ConfigDataManager(){}
+
+
 
     //----- 读写文件
     public String readFile(String filePath){
@@ -120,7 +138,7 @@ public class ConfigDataManager {
     //更新系统设置
     public void updateSystemSetting(JSONObject currentSystemSetting){
         systemSetting = JSONObject.parseObject(currentSystemSetting.toJSONString());
-        writeFile(systemSettingFilePath,systemSetting.toString());
+        writeFile(systemSettingFilePath,currentSystemSetting.toJSONString());
     }
 
     //获取监控的节点列表
@@ -214,5 +232,9 @@ public class ConfigDataManager {
         }
 
         return loadCount;
+    }
+
+    public void setApplicationEnv(String applicationEnv) {
+        this.applicationEnv=applicationEnv;
     }
 }

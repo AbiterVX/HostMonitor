@@ -28,6 +28,16 @@ public class SSHDataCollectorService implements DataCollectorService{
     }
 
     @Override
+    public void updateSystemSetting(JSONObject newSystemSetting) {
+
+    }
+
+    @Override
+    public String test() {
+        return null;
+    }
+
+    @Override
     public HashMap<String, JSONObject> getSocketMap() {
         return null;
     }

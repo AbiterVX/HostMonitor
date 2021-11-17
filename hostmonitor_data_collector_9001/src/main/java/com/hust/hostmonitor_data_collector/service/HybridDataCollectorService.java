@@ -9,13 +9,13 @@ import com.hust.hostmonitor_data_collector.dao.DispersedMapper;
 
 import com.hust.hostmonitor_data_collector.dao.UserDao;
 import com.hust.hostmonitor_data_collector.dao.entity.*;
-import com.hust.hostmonitor_data_collector.utils.DataSampleManager;
+import com.hust.hostmonitor_data_collector.utils.*;
 import com.hust.hostmonitor_data_collector.utils.DiskPredict.DiskPredict;
 import com.hust.hostmonitor_data_collector.utils.DiskPredict.DiskPredictProgress;
 import com.hust.hostmonitor_data_collector.utils.DiskPredict.QueryResources;
 import com.hust.hostmonitor_data_collector.utils.SocketConnect.DataReceiver;
-import com.hust.hostmonitor_data_collector.utils.TestInitiator;
 import com.hust.hostmonitor_data_collector.utils.linuxsample.LinuxDataProcess;
+import org.apache.poi.ss.formula.functions.T;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,10 +26,11 @@ import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-import com.hust.hostmonitor_data_collector.utils.ConfigDataManager;
 import com.hust.hostmonitor_data_collector.utils.DataSampleManager;
 import com.hust.hostmonitor_data_collector.utils.SSHConnect.HostConfigData;
+import org.springframework.beans.factory.annotation.Value;
 
+import javax.annotation.PostConstruct;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -47,7 +48,8 @@ public class HybridDataCollectorService implements DataCollectorService{
     DiskFailureMapper diskFailureMapper;
     @Autowired
     DispersedMapper dispersedMapper;
-
+    @Value("${spring.profiles.active}")
+    String applicationEnv;
 
     //日志输出
     Logger logger= LoggerFactory.getLogger(HybridDataCollectorService.class);
@@ -75,9 +77,13 @@ public class HybridDataCollectorService implements DataCollectorService{
 
     //----- 定时作业
     //定时器
-    private Timer mainTimer = new Timer();
+    private Timer dataSampleTimer = new Timer();
+    private Timer processSampleTimer=new Timer();
+    private Timer smartSampleTimer=new Timer();
+    private Timer diskPredictTimer=new Timer();
     //定时器周期参数
-    private final long sampleInterval=10000;
+    private final long dataSampleInterval=configDataManager.getSystemSetting().getLong("sampleDataInterval");
+    private final long processSampleInterval=configDataManager.getSystemSetting().getLong("processDataInterval");
     private final int sampleStoreDelayMS=500;
     private final int offset=1000;
     private final long predictInterval=24*3600*1000;
@@ -133,6 +139,7 @@ public class HybridDataCollectorService implements DataCollectorService{
                 latch.await();
                 logger.info("[DSManager] performance sample finish");
                 storeSampleData();
+                logger.info("[DSManager] persistence finish");
             } catch (InterruptedException e) {
                 e.printStackTrace();
                 logger.error("[DSManager] performance sample latch error");
@@ -352,10 +359,10 @@ public class HybridDataCollectorService implements DataCollectorService{
                 JSONObject initObject=dataSampleManager.sampleHostHardwareData(hostConfigData);
                 sshSampleData.put(hostConfigData.ip,initObject);
             }
-            mainTimer.schedule(performanceSampleTask,20*1000,sampleInterval);
-            mainTimer.schedule(processSampleTask,60*1000,sampleInterval);
+            dataSampleTimer.schedule(performanceSampleTask,20*1000,dataSampleInterval*1000);
+            processSampleTimer.schedule(processSampleTask,60*1000,processSampleInterval*1000);
             //mainTimer.schedule(smartSampleTask,date,24*3600*1000);
-            mainTimer.schedule(smartSampleTask,0,24*3600*1000);
+            smartSampleTimer.schedule(smartSampleTask,0,24*3600*1000);
         }
         else if(sampleSelect==2){
 
@@ -363,11 +370,11 @@ public class HybridDataCollectorService implements DataCollectorService{
             hostsSampleData=socketSampleData;
             dataReceiver=new DataReceiver(this);
             dataReceiver.startListening();
-            mainTimer.schedule(dataPersistenceTask,sampleInterval/2,sampleInterval-offset);
+            dataSampleTimer.schedule(dataPersistenceTask,dataSampleInterval/2,dataSampleInterval*1000-offset);
         }
         summaryInfo=configDataManager.getSummaryFormat();
         loadPartition=configDataManager.getLoadPartitionFormat();
-        mainTimer.schedule(diskPredictTask,date,predictInterval);
+        diskPredictTimer.schedule(diskPredictTask,date,predictInterval);
     }
     private Date addDay(Date date,int num){
         Calendar calendar=Calendar.getInstance();
@@ -375,6 +382,11 @@ public class HybridDataCollectorService implements DataCollectorService{
         calendar.add(Calendar.DAY_OF_MONTH,num);
         return  calendar.getTime();
     }
+    @PostConstruct
+    public void updateConfig(){
+        configDataManager.setApplicationEnv(applicationEnv);
+    }
+
     //-----外部服务接口-----
 
     @Override
@@ -1003,6 +1015,30 @@ public class HybridDataCollectorService implements DataCollectorService{
         return "sampleSelect Error";
     }
 
+    @Override
+    public void updateSystemSetting(JSONObject newSystemSetting) {
+        int dataSampleIntervalNew=newSystemSetting.getIntValue("sampleDataInterval");
+        executorService.shutdown();
+        while(!executorService.isTerminated());
+
+        if(dataSampleIntervalNew*1000!=dataSampleInterval){
+            synchronized (hostsSampleData){
+                dataSampleTimer.cancel();
+                dataSampleTimer=new Timer();
+                dataSampleTimer.schedule(performanceSampleTask,10*1000,dataSampleIntervalNew*1000);
+            }
+        }
+        int processSampleIntervalNew=newSystemSetting.getIntValue("processDataInterval");
+        if(dataSampleIntervalNew*1000!=processSampleInterval){
+            synchronized (hostsSampleData){
+                processSampleTimer.cancel();
+                processSampleTimer=new Timer();
+                processSampleTimer.schedule(processSampleTask,10*1000,processSampleIntervalNew*1000);
+            }
+        }
+        executorService=Executors.newFixedThreadPool(sshHostList.size()*2);
+    }
+
 
     @Override
     public void setAllDiskDFPState(String hostIp, boolean b) {
@@ -1069,5 +1105,8 @@ public class HybridDataCollectorService implements DataCollectorService{
             result.add(currentHost);
         }
         return result.toJSONString();
+    }
+    public String test(){
+        return applicationEnv;
     }
 }

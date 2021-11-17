@@ -5,7 +5,7 @@ import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Select;
 
 public class DiskFailureProvider {
-    public int dataSourceSelect= ConfigDataManager.getInstance().getConfigJson().getInteger("DataSourceSelect");
+    public int dataSourceSelect= ConfigDataManager.getInstance().getDataSourceSelect();
 
     public String getDiskFailureInfo(){
         String SQL=null;

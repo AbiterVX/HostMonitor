@@ -33,4 +33,7 @@ public interface DataCollectorService {
     String getHostsRouterInfo();
 
     String remoteTest(String nodeIp);
+
+    void updateSystemSetting(JSONObject newSystemSetting);
+    String test();
 }

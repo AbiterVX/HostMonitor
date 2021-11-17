@@ -120,4 +120,9 @@ public class UserService {
     public void setSystemSetting(JSONObject currentSystemSetting){
         configDataManager.updateSystemSetting(currentSystemSetting);
     }
+
+    public String deleteUser(String userName) {
+        userDao.deleteUser(userName);
+        return "successful";
+    }
 }

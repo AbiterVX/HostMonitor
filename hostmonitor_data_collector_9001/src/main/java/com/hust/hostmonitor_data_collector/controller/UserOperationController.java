@@ -3,6 +3,7 @@ package com.hust.hostmonitor_data_collector.controller;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.hust.hostmonitor_data_collector.dao.entity.SystemUser;
+import com.hust.hostmonitor_data_collector.service.DataCollectorService;
 import com.hust.hostmonitor_data_collector.service.UserService;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -15,7 +16,8 @@ import java.util.Map;
 public class UserOperationController {
     @Resource
     UserService userService;
-
+    @Resource
+    DataCollectorService dataCollectorService;
     /**
      * 用于用户注册的接口
      *
@@ -197,12 +199,13 @@ public class UserOperationController {
         float BackupFailureRateThreshold = Float.parseFloat(params.get("BackupFailureRateThreshold"));
         int sampleDataInterval=Integer.parseInt(params.get("dataSampleInterval"));
         int processDataInterval=Integer.parseInt(params.get("processSampleInterval"));
+
         //检验
         boolean couldUpdate = false;
         if(ReportTimingInterval>=0 && BackupTimingInterval>=0 &&
                 ReportFailureRateThreshold>=0 && ReportFailureRateThreshold<=100 &&
                 BackupFailureRateThreshold>=0 && BackupFailureRateThreshold<=100
-                &&sampleDataInterval>=3 && processDataInterval>=3
+                &&sampleDataInterval>=0 && processDataInterval>=0
         ){
             couldUpdate = true;
         }
@@ -218,9 +221,12 @@ public class UserOperationController {
             newSystemSetting.put("BackupTimingInterval",BackupTimingInterval);
             newSystemSetting.put("BackupEmergency",BackupEmergency);
             newSystemSetting.put("BackupFailureRateThreshold",BackupFailureRateThreshold);
+            newSystemSetting.put("sampleDataInterval",sampleDataInterval);
+            newSystemSetting.put("processDataInterval",processDataInterval);
             userService.setSystemSetting(newSystemSetting);
+            dataCollectorService.updateSystemSetting(newSystemSetting);
         }
-        //TODO 系统操作实质性的修改
+
 
         return "Complete";
     }
@@ -231,6 +237,13 @@ public class UserOperationController {
         return userService.signUp("zhangziyuetest","hust");
     }
 
+    @PostMapping(value = "/delete")
+    @ResponseBody
+    public String delete(@RequestBody Map<String,String> params) {
+        String userName = params.get("userName");
+        System.out.println("[删除用户] "+userName);
+        return userService.deleteUser(userName);
+    }
 
 
 }

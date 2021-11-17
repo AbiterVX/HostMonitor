@@ -3,7 +3,7 @@ package com.hust.hostmonitor_data_collector.dao.provider;
 import com.hust.hostmonitor_data_collector.utils.ConfigDataManager;
 
 public class DispersedProvider {
-    public int dataSourceSelect= ConfigDataManager.getInstance().getConfigJson().getInteger("DataSourceSelect");
+    public int dataSourceSelect= ConfigDataManager.getInstance().getDataSourceSelect();
 
     public String insertNewRecord(){
         String SQL=null;

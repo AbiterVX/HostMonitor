@@ -32,6 +32,16 @@ public class CSModeDataCollectorService implements DataCollectorService{
     }
 
     @Override
+    public void updateSystemSetting(JSONObject newSystemSetting) {
+
+    }
+
+    @Override
+    public String test() {
+        return null;
+    }
+
+    @Override
     public String getHostInfoDashboardAll() {
         return null;
     }

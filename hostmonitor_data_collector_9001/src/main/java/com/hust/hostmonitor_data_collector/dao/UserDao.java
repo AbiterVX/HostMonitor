@@ -35,4 +35,7 @@ public interface UserDao {
     void updateUserPassword(@Param("user_id") String user_id, @Param("user_password") String user_password,
                             @Param("new_password") String new_password);
 
+    @DeleteProvider(type = UserProvider.class,method = "deleteUser")
+    void deleteUser(@Param("userName") String userName);
+
 }

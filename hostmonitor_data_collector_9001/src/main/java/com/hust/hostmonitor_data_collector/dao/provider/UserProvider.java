@@ -7,7 +7,7 @@ import java.sql.Timestamp;
 import java.util.Date;
 
 public class UserProvider {
-    public int dataSourceSelect= ConfigDataManager.getInstance().getConfigJson().getInteger("DataSourceSelect");
+    public int dataSourceSelect= ConfigDataManager.getInstance().getDataSourceSelect();
     public int DamengIDSeed=20003;
     public String signUp(){
         String SQL=null;
@@ -82,6 +82,18 @@ public class UserProvider {
             SQL="UPDATE storagedevicemonitor.UserTable " +
                     "SET Password=#{new_password} " +
                     "WHERE UserID=#{user_id} and Password=#{user_password}; ";
+        }
+        return SQL;
+    }
+    public String deleteUser(){
+        String SQL=null;
+        if(dataSourceSelect==0){
+            SQL="DELETE FROM UserTable "+
+                    "WHERE UserName=#{userName}; ";
+        }
+        else if(dataSourceSelect==1){
+            SQL="DELETE FROM storagedevicemonitor.UserTable "+
+                    "WHERE UserName=#{userName}; ";
         }
         return SQL;
     }

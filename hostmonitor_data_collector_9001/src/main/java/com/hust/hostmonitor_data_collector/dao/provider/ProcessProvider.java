@@ -4,7 +4,7 @@ import com.hust.hostmonitor_data_collector.utils.ConfigDataManager;
 import org.python.antlr.ast.Str;
 
 public class ProcessProvider {
-    public int dataSourceSelect= ConfigDataManager.getInstance().getConfigJson().getInteger("DataSourceSelect");
+    public int dataSourceSelect= ConfigDataManager.getInstance().getDataSourceSelect();
     public String insertProcessRecord(){
         String SQL=null;
         if(dataSourceSelect==0){
