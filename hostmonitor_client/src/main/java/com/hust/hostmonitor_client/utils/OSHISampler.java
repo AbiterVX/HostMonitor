@@ -453,9 +453,7 @@ public class OSHISampler implements Sampler{
         return dataObject.getString("hostName");
     }
     public static void main(String[] args) {
-       String test ="what fuck \r\n 666";
-       System.out.println(test);
-       test=test.replaceAll("\r\n","a");
-       System.out.println(test);
+       String test ="/dev/sda1";
+       System.out.println(test.split("/")[2].substring(0,3));
     }
 }

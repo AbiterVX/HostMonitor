@@ -4,30 +4,31 @@ server:
 spring:
   application:
     name: hostmonitor-data-collector
-    datasource:
-      driver-class-name: dm.jdbc.driver.DmDriver
-      #本地达梦数据库 url
-      url: jdbc:dm://127.0.0.1:5236/storagedevicemonitor?zeroDateTimeBehavior=convertToNull&useUnicode=true&characterEncoding=utf-8
-      #笔记本url: jdbc:dm://127.0.0.1:3306/storagedevicemonitor?zeroDateTimeBehavior=convertToNull&useUnicode=true&characterEncoding=utf-8
-      username: SYSDBA
-      password: b511123456
-  mail:
-    host: smtp.163.com
-    username: abitervx@163.com
-    password: MSCLUHETDWPAYAFQ
-    properties:
-      mail:
-        smtp:
-          auth: true
-          starttls:
-            enable: true
-            required: true
+  datasource:
+    driver-class-name: dm.jdbc.driver.DmDriver
+    #本地达梦数据库 url
+    #url: jdbc:dm://127.0.0.1:5236/storagedevicemonitor?zeroDateTimeBehavior=convertToNull&useUnicode=true&characterEncoding=utf-8
+    #笔记本
+    url: jdbc:dm://127.0.0.1:3306/storagedevicemonitor?zeroDateTimeBehavior=convertToNull&useUnicode=true&characterEncoding=utf-8
+    username: SYSDBA
+    password: b511123456
+#  mail:
+#    host: smtp.163.com
+#    username: abitervx@163.com
+#    password: MSCLUHETDWPAYAFQ
+#    properties:
+#      mail:
+#        smtp:
+#          auth: true
+#          starttls:
+#            enable: true
+#            required: true
 management:
   endpoints:
     web:
       exposure:
         include: '*'
-sms_config:
-  sms-url: http://v.juhe.cn/sms/send?mobile=%s&tpl_id=%s&tpl_value=%s&key=%s
-  tpl-id-1: 234103
-  key: a1a2f8b334adea73c4de5c848848959b
+#sms_config:
+#  sms-url: http://v.juhe.cn/sms/send?mobile=%s&tpl_id=%s&tpl_value=%s&key=%s
+#  tpl-id-1: 234103
+#  key: a1a2f8b334adea73c4de5c848848959b

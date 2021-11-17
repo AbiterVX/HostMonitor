@@ -1,16 +1,14 @@
 package com.hust.hostmonitor_data_collector.utils;
 
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.csvreader.CsvWriter;
 import com.hust.hostmonitor_data_collector.utils.DiskPredict.DiskPredict;
 import com.hust.hostmonitor_data_collector.utils.SSHConnect.HostConfigData;
 
-import com.hust.hostmonitor_data_collector.utils.linuxsample.Entity.DiskInfo;
-import com.hust.hostmonitor_data_collector.utils.linuxsample.Entity.LinuxProcess;
-import com.hust.hostmonitor_data_collector.utils.linuxsample.Entity.LinuxPeriodRecord;
-import com.hust.hostmonitor_data_collector.utils.linuxsample.Entity.Pair;
+import com.hust.hostmonitor_data_collector.utils.linuxsample.Entity.*;
 import com.hust.hostmonitor_data_collector.utils.linuxsample.LinuxDataProcess;
 import com.hust.hostmonitor_data_collector.utils.linuxsample.LinuxGPU;
 import org.apache.commons.io.FileUtils;
@@ -48,6 +46,7 @@ public class DataSampleManager {
     public final SimpleDateFormat sdf =new SimpleDateFormat("yyyy-MM-dd");
     //单例
     private volatile static DataSampleManager dataSampleManager;
+
     public static DataSampleManager getInstance(){
         if(dataSampleManager==null){
             synchronized (DataSampleManager.class){
@@ -84,41 +83,39 @@ public class DataSampleManager {
     public JSONObject sampleHostHardwareData(HostConfigData hostConfigData){
         JSONObject sampleData = configDataManager.getSampleFormat("hostInfo");
         OSType osType = getOSType(hostConfigData);
-        if(osType.equals(OSType.LINUX)){
-            sampleData.put("ip",hostConfigData.ip);
+        if(osType.equals(OSType.LINUX)) {
+            sampleData.put("ip", hostConfigData.ip);
             //hostName
             {
-                List<String> cmdResult=cmdExecutor.runCommand("hostname",hostConfigData,false);
-                if(cmdResult.size()==0){
-                    sampleData.put("connected",false);
+                List<String> cmdResult = cmdExecutor.runCommand("hostname", hostConfigData, false);
+                if (cmdResult.size() == 0) {
+                    sampleData.put("connected", false);
                     return sampleData;
                 }
-                sampleData.put("hostName",cmdResult.get(0).trim());
+                sampleData.put("hostName", cmdResult.get(0).trim());
             }
             //osName
             {
-                List<String> cmdResult = cmdExecutor.runCommand("cat /proc/version",hostConfigData,false);
-                sampleData.put("osName",cmdResult.get(0).trim());
+                List<String> cmdResult = cmdExecutor.runCommand("cat /proc/version", hostConfigData, false);
+                sampleData.put("osName", cmdResult.get(0).trim());
             }
             //diskInfo
             {
                 //diskName
                 //diskCapacitySize
                 //diskModel
-                List<String> devs=cmdExecutor.runCommand("lsblk -bnd",hostConfigData,false);
-                long totalsize=0;
-                for(String string:devs) {
-                    if(string.contains("loop")){
+                List<String> devs = cmdExecutor.runCommand("lsblk -bnd", hostConfigData, false);
+                long totalsize = 0;
+                for (String string : devs) {
+                    if (string.contains("loop")) {
                         continue;
                     }
                     String[] tokens = string.split("\\s+");
                     String devsName = tokens[0];
-                    //System.out.println(devsName);
                     String Model = "unknown", Serial = "unknown";
                     long size = Long.parseLong(tokens[3]);
-                    List<String> diskInfo = cmdExecutor.runCommand("hdparm -i /dev/" + devsName, hostConfigData,true);
+                    List<String> diskInfo = cmdExecutor.runCommand("hdparm -i /dev/" + devsName, hostConfigData, true);
                     for (String info : diskInfo) {
-                        //System.out.println(info);
                         if (info.contains("Model")) {
                             tokens = info.split(",");
                             for (String token : tokens) {
@@ -134,60 +131,67 @@ public class DataSampleManager {
                             break;
                         }
                     }
-                    JSONObject newDiskInfo=configDataManager.getSampleFormat("diskInfo");
+                    JSONObject newDiskInfo = configDataManager.getSampleFormat("diskInfo");
                     {
-                        String completeDiskName=null;
-                        if(Serial.trim().equals("unknown")){
-                            completeDiskName=devsName+":-unknown-"+hostConfigData.userName+"@"+hostConfigData.ip;
+                        String completeDiskName = null;
+                        if (Serial.trim().equals("unknown")) {
+                            completeDiskName = devsName + ":-unknown-" + hostConfigData.userName + "@" + hostConfigData.ip;
+                        } else {
+                            completeDiskName = devsName + ":" + Serial.trim();
                         }
-                        else {
-                            completeDiskName=devsName+":"+Serial.trim();
-                        }
-                        newDiskInfo.put("diskName",completeDiskName);
-                        newDiskInfo.put("diskModel",Model.trim());
-                        newDiskInfo.put("diskTotalSize",LinuxDataProcess.doubleTo2bits_double(size*1.0f/1024/1024/1024));
-                        newDiskInfo.put("type",0);
+                        newDiskInfo.put("diskName", completeDiskName);
+                        newDiskInfo.put("diskModel", Model.trim());
+                        newDiskInfo.put("diskTotalSize", LinuxDataProcess.doubleTo2bits_double(size * 1.0f / 1024 / 1024 / 1024));
+                        newDiskInfo.put("type", 0);
                         JSONObject currentDiskData = new JSONObject();
-                        List<String> cmdResult = cmdExecutor.runCommand("smartctl -i /dev/"+devsName,hostConfigData,true);
-                        if(cmdResult.get(3).contains("Unable to")){
+                        List<String> cmdResult = cmdExecutor.runCommand("smartctl -i /dev/" + devsName, hostConfigData, true);
+                        if (cmdResult.get(3).contains("Unable to")) {
                             sampleData.getJSONArray("diskInfoList").add(newDiskInfo);
-                            totalsize+=size;
+                            totalsize += size;
                             continue;
                         }
                         for (int i = 0; i < 4; i++) {
                             cmdResult.remove(0);
                         }
                         cmdResult.remove(cmdResult.size() - 1);
-                        for(String currentOutput: cmdResult){
+                        for (String currentOutput : cmdResult) {
                             String[] rawData = currentOutput.split(":\\s+");
-                            if(rawData[0].contains("Rotation Rate")){
-                                newDiskInfo.put("type",rawData[1].equals("Solid State Device")? 1:0);
+                            if (rawData[0].contains("Device Model")) {
+                                newDiskInfo.put("diskModel", rawData[1]);
+                                continue;
+                            }
+                            if (rawData[0].contains("Serial Number")) {
+                                newDiskInfo.put("diskName", devsName + ":" + rawData[1]);
+                                continue;
+                            }
+                            if (rawData[0].contains("Rotation Rate")) {
+                                newDiskInfo.put("type", rawData[1].equals("Solid State Device") ? 1 : 0);
                                 break;
                             }
                         }
                     }
                     sampleData.getJSONArray("diskInfoList").add(newDiskInfo);
-                    totalsize+=size;
+                    totalsize += size;
                 }
-                sampleData.put("allDiskTotalSize",LinuxDataProcess.doubleTo2bits_double(totalsize*1.0/1024/1024/1024));
+                sampleData.put("allDiskTotalSize", LinuxDataProcess.doubleTo2bits_double(totalsize * 1.0 / 1024 / 1024 / 1024));
             }
             //cpuInfoList
             {
-                List<String> cmdResult = cmdExecutor.runCommand("cat /proc/cpuinfo",hostConfigData,false);
-                for(String rowData:cmdResult){
-                        if(rowData.contains("model name")) {
-                            JSONObject newCpuInfo = configDataManager.getSampleFormat("cpuInfo");
-                            {
-                                newCpuInfo.put("cpuName", rowData.split(":")[1]);
-                            }
-                            sampleData.getJSONArray("cpuInfoList").add(newCpuInfo);
+                List<String> cmdResult = cmdExecutor.runCommand("cat /proc/cpuinfo", hostConfigData, false);
+                for (String rowData : cmdResult) {
+                    if (rowData.contains("model name")) {
+                        JSONObject newCpuInfo = configDataManager.getSampleFormat("cpuInfo");
+                        {
+                            newCpuInfo.put("cpuName", rowData.split(":")[1]);
                         }
+                        sampleData.getJSONArray("cpuInfoList").add(newCpuInfo);
+                    }
                 }
             }
             //gpuInfo
             {
                 List<LinuxGPU> cardList = new ArrayList();
-                List<String> lspci = cmdExecutor.runCommand("lspci -vnnm",hostConfigData,false);
+                List<String> lspci = cmdExecutor.runCommand("lspci -vnnm", hostConfigData, false);
                 String name = "unknown";
                 String deviceId = "unknown";
                 String vendor = "unknown";
@@ -196,8 +200,8 @@ public class DataSampleManager {
                 String lookupDevice = null;
                 Iterator var8 = lspci.iterator();
 
-                while(var8.hasNext()) {
-                    String line = (String)var8.next();
+                while (var8.hasNext()) {
+                    String line = (String) var8.next();
                     String[] split = line.trim().split(":", 2);
                     String prefix = split[0];
                     if (prefix.equals("Class") && line.contains("VGA")) {
@@ -208,7 +212,7 @@ public class DataSampleManager {
 
                     if (found) {
                         if (split.length < 2) {
-                            cardList.add(new LinuxGPU(name, deviceId, vendor, versionInfoList.isEmpty() ? "unknown" : String.join(", ", versionInfoList), LinuxDataProcess.queryLspciMemorySize(lookupDevice,hostConfigData)));
+                            cardList.add(new LinuxGPU(name, deviceId, vendor, versionInfoList.isEmpty() ? "unknown" : String.join(", ", versionInfoList), LinuxDataProcess.queryLspciMemorySize(lookupDevice, hostConfigData)));
                             versionInfoList.clear();
                             found = false;
                         } else {
@@ -216,13 +220,13 @@ public class DataSampleManager {
                             if (prefix.equals("Device")) {
                                 pair = LinuxDataProcess.parseLspciMachineReadable(split[1].trim());
                                 if (pair != null) {
-                                    name = (String)pair.getA();
-                                    deviceId = "0x" + (String)pair.getB();
+                                    name = (String) pair.getA();
+                                    deviceId = "0x" + (String) pair.getB();
                                 }
                             } else if (prefix.equals("Vendor")) {
                                 pair = LinuxDataProcess.parseLspciMachineReadable(split[1].trim());
                                 if (pair != null) {
-                                    vendor = (String)pair.getA() + " (0x" + (String)pair.getB() + ")";
+                                    vendor = (String) pair.getA() + " (0x" + (String) pair.getB() + ")";
                                 } else {
                                     vendor = split[1].trim();
                                 }
@@ -233,17 +237,63 @@ public class DataSampleManager {
                     }
                 }
                 if (found) {
-                    cardList.add(new LinuxGPU(name, deviceId, vendor, versionInfoList.isEmpty() ? "unknown" : String.join(", ", versionInfoList), LinuxDataProcess.queryLspciMemorySize(lookupDevice,hostConfigData)));
+                    cardList.add(new LinuxGPU(name, deviceId, vendor, versionInfoList.isEmpty() ? "unknown" : String.join(", ", versionInfoList), LinuxDataProcess.queryLspciMemorySize(lookupDevice, hostConfigData)));
                 }
-                for(LinuxGPU linuxGPU:cardList){
-                        JSONObject newGpuInfo = configDataManager.getSampleFormat("gpuInfo");
-                        {
-                            newGpuInfo.put("gpuName",linuxGPU.getName());
-                            newGpuInfo.put("gpuAvailableRam",LinuxDataProcess.doubleTo2bits_double(linuxGPU.getVram()*1.0f/1024/1024/1024));
-                        }
-                        sampleData.getJSONArray("gpuInfoList").add(newGpuInfo);
+                for (LinuxGPU linuxGPU : cardList) {
+                    JSONObject newGpuInfo = configDataManager.getSampleFormat("gpuInfo");
+                    {
+                        newGpuInfo.put("gpuName", linuxGPU.getName());
+                        newGpuInfo.put("gpuAvailableRam", LinuxDataProcess.doubleTo2bits_double(linuxGPU.getVram() * 1.0f / 1024 / 1024 / 1024));
+                    }
+                    sampleData.getJSONArray("gpuInfoList").add(newGpuInfo);
                 }
             }
+            //lvm Info
+            {
+                List<String> VGInfo = cmdExecutor.runCommand("lvm pvscan", hostConfigData, true);
+                JSONArray lvmInfoArray=new JSONArray();
+                for(String string:VGInfo){
+                    String[] tokens=string.trim().split("\\s+");
+                    if(!tokens[0].equals("PV")){
+                        continue;
+                    }
+                    JSONObject lvmObject=configDataManager.getSampleFormat("lvmInfo");
+                    lvmObject.put("PVName",tokens[1]);
+                    lvmObject.put("VGName",tokens[3]);
+                    lvmInfoArray.add(lvmObject);
+                }
+                List<String> lvmInfo=cmdExecutor.runCommand("lvm lvdisplay",hostConfigData,true);
+                int j=1;
+                for(int i=0;i<lvmInfo.size();i+=j){
+                    if(lvmInfo.get(i).contains("--- Logical volume ---")){
+                        j=1;
+                        String line;
+                        String LVName="",VGName="",dmName="dm-";
+                        while((i+j<lvmInfo.size())&&!(line=lvmInfo.get(i+j)).contains("--- Logical volume ---")){
+                            if(line.contains("LV Name")){
+                                LVName=line.trim().split("\\s+")[2];
+                            }
+                            if(line.contains("VG Name")){
+                                VGName=line.trim().split("\\s+")[2];
+                            }
+                            if(line.contains("Block device")){
+                                int postfix=Integer.parseInt(line.trim().split("\\s+")[2].split(":")[1]);
+                                dmName+=postfix;
+                            }
+                            j++;
+                        }
+                        for(int m=0;m<lvmInfoArray.size();m++){
+                            if(lvmInfoArray.getJSONObject(m).getString("VGName").equals(VGName)){
+                                lvmInfoArray.getJSONObject(m).put("dmName",dmName);
+                                lvmInfoArray.getJSONObject(m).getJSONArray("lvmInfo").add(LVName);
+                            }
+                        }
+                    }
+                }
+                System.out.println(lvmInfoArray.toJSONString());
+                sampleData.put("lvmInfo",lvmInfoArray);
+            }
+
         }
         else if(osType.equals(OSType.WINDOWS)){
             //hostName
@@ -407,11 +457,13 @@ public class DataSampleManager {
         OSType osType = getOSType(hostConfigData);
         if(osType.equals(OSType.LINUX)){
             LinuxPeriodRecord record=new LinuxPeriodRecord();
-            //String scriptPath=System.getProperty("user.dir")+"/ConfigData/Client/SampleCommand.sh";
             String sampleCommands=readFile("Scripts/SampleCommand.sh");  //test  //SampleCommand
             sampleCommands=sampleCommands.replaceAll("\r\n","\n");
             List<String> sampleInfo=cmdExecutor.runCommand( sampleCommands,hostConfigData,false);  //test  //SampleCommand,hostConfigData);
             List<String> mountUsageInfo = cmdExecutor.runCommand("df",hostConfigData,false); //查询结果使用量为KB
+            if(sampleInfo.size()==0||mountUsageInfo.size()==0){
+                return;
+            }
             HashMap<String, Pair<Long,Long>> mountUsage=new HashMap<>();
             for (int i=0;i<mountUsageInfo.size();i++
             ) {
@@ -473,40 +525,101 @@ public class DataSampleManager {
                     else if (tokens[0].contains("Disk_Iops")) {
                         DiskInfo tempDiskInfo = new DiskInfo();
                         String diskName = tokens[0].split("_")[2];
-                        tempDiskInfo.diskName = diskName;
-                        tempDiskInfo.diskIOPS = Double.parseDouble(tokens[1]);
-                        currentString = itr.next();
-                        double readSpeed = Double.parseDouble(currentString.split(":")[1]);
-                        currentString = itr.next();
-                        double writeSpeed = Double.parseDouble(currentString.split(":")[1]);
-                        currentString = itr.next();
-                        double utilRadio = Double.parseDouble(currentString.split(":")[1]);
-                        tempDiskInfo.diskReadSpeed = readSpeed;
-                        tempDiskInfo.diskWriteSpeed = writeSpeed;
-                        tempDiskInfo.diskUsedRadio = utilRadio;
-                        ArrayList<String> mountPoints = new ArrayList<>();
-                        List<String> devMountInfo = cmdExecutor.runCommand("lsblk /dev/" + diskName,hostConfigData,false);
-                        for (String mountString : devMountInfo) {
-                            if (mountString.contains("NAME")) {
+                        JSONArray lvmInfo=sampleData.getJSONArray("lvmInfo");
+                        if(diskName.contains("dm")){
+                            int index=-1;
+                            for(int i=0;i<lvmInfo.size();i++){
+                                if(lvmInfo.getJSONObject(i).getString("dmName").equals(diskName)){
+                                    index=i;
+                                    break;
+                                }
+                            }
+                            if(index==-1){
                                 continue;
                             }
-                            String[] parts = mountString.trim().split("\\s+");
-                            if (parts.length == 6) {
-                                continue;
-                            } else {
-                                mountPoints.add(parts[6]);
+                            tempDiskInfo.diskName= lvmInfo.getJSONObject(index).getString("PVName");
+                            tempDiskInfo.diskName=tempDiskInfo.diskName.split("/")[2].substring(0,3);
+                            tempDiskInfo.diskIOPS = Double.parseDouble(tokens[1]);
+                            currentString = itr.next();
+                            double readSpeed = Double.parseDouble(currentString.split(":")[1]);
+                            currentString = itr.next();
+                            double writeSpeed = Double.parseDouble(currentString.split(":")[1]);
+                            currentString = itr.next();
+                            double utilRadio = Double.parseDouble(currentString.split(":")[1]);
+                            tempDiskInfo.diskReadSpeed = readSpeed;
+                            tempDiskInfo.diskWriteSpeed = writeSpeed;
+                            tempDiskInfo.diskUsedRadio = utilRadio;
+                            List<String> dmUsageInfo = cmdExecutor.runCommand("df /dev/" + diskName, hostConfigData, true);
+                            long diskUsedAmount = 0;
+                            for (String UsageInfo : dmUsageInfo) {
+                                if (UsageInfo.contains("Filesystem")) {
+                                    continue;
+                                }
+                                diskUsedAmount=Long.parseLong(UsageInfo.trim().split("\\s+")[2]);
                             }
+                           //KB为单位
+                            tempDiskInfo.diskFSUsageAmount = diskUsedAmount;
+                            record.getDisks().add(tempDiskInfo);
+
+
                         }
-                        long diskUsedAmount = 0;
-                        for (String mountPoint : mountPoints) {
-                            if (mountUsage.containsKey(mountPoint)) {
-                                diskUsedAmount += mountUsage.get(mountPoint).getA();
+                        else {
+                            tempDiskInfo.diskName = diskName;
+                            tempDiskInfo.diskIOPS = Double.parseDouble(tokens[1]);
+                            currentString = itr.next();
+                            double readSpeed = Double.parseDouble(currentString.split(":")[1]);
+                            currentString = itr.next();
+                            double writeSpeed = Double.parseDouble(currentString.split(":")[1]);
+                            currentString = itr.next();
+                            double utilRadio = Double.parseDouble(currentString.split(":")[1]);
+                            tempDiskInfo.diskReadSpeed = readSpeed;
+                            tempDiskInfo.diskWriteSpeed = writeSpeed;
+                            tempDiskInfo.diskUsedRadio = utilRadio;
+
+
+                            ArrayList<String> mountPoints = new ArrayList<>();
+                            List<String> devMountInfo = cmdExecutor.runCommand("lsblk /dev/" + diskName, hostConfigData, false);
+                            for (String mountString : devMountInfo) {
+                                if (mountString.contains("NAME")) {
+                                    continue;
+                                }
+                                String[] parts = mountString.trim().split("\\s+");
+                                if (parts.length == 6) {
+                                    continue;
+                                } else {
+                                    mountPoints.add(parts[6]);
+                                }
                             }
+                            long diskUsedAmount = 0;
+                            for (String mountPoint : mountPoints) {
+                                if (mountUsage.containsKey(mountPoint)) {
+                                    diskUsedAmount += mountUsage.get(mountPoint).getA();
+                                }
+                            }
+                            tempDiskInfo.diskFSUsageAmount = diskUsedAmount;
+                            record.getDisks().add(tempDiskInfo);
                         }
-                        tempDiskInfo.diskFSUsageAmount = diskUsedAmount;
-                        record.getDisks().add(tempDiskInfo);
                     }
                 }
+                //DiskStore合并
+                Collections.sort(record.getDisks());
+                String tempDiskName=null;
+                ArrayList<DiskInfo> afterMergeInfo=new ArrayList<>();
+                for(int i=0;i<record.getDisks().size();i++){
+                    if(tempDiskName==null||!record.getDisks().get(i).diskName.equals(tempDiskName)){
+                        afterMergeInfo.add(record.getDisks().get(i));
+                        tempDiskName=record.getDisks().get(i).diskName;
+                    }
+                    else if(record.getDisks().get(i).diskName.equals(tempDiskName)){
+                        DiskInfo tempDiskInfo=afterMergeInfo.get(afterMergeInfo.size()-1);
+                        tempDiskInfo.diskIOPS+=record.getDisks().get(i).diskIOPS;
+                        tempDiskInfo.diskReadSpeed+=record.getDisks().get(i).diskReadSpeed;
+                        tempDiskInfo.diskWriteSpeed+=record.getDisks().get(i).diskWriteSpeed;
+                        tempDiskInfo.diskFSUsageAmount+=record.getDisks().get(i).diskFSUsageAmount;
+                    }
+                }
+
+
             }
             //CPU
             {
@@ -575,7 +688,7 @@ public class DataSampleManager {
                     DiskInfo tempDiskInfo=DiskStoreList.get(j);
                     int i=findDiskIndex(tempDiskInfo.diskName,sampleData);
                     if(i==-1){
-                        System.out.println(tempDiskInfo.diskName +" not found.");
+                        //System.out.println(tempDiskInfo.diskName +" not found.");
                         continue;
                     }
                     double usage2bits=0.0;

@@ -30,4 +30,13 @@ public class DFPRecord implements GeneralDFP{
         this.predictProbability = predictProbability;
         this.modelName = modelName;
     }
+    public DFPRecord(String diskSerial, String hostName,Byte isSSdBYte,Timestamp timestamp, Float predictProbability, String modelName) {
+        this.isSSdBYte = isSSdBYte;
+        this.diskSerial = diskSerial;
+        this.hostName = hostName;
+        this.isSSd = (int)this.isSSdBYte>0? true:false;
+        this.timestamp = timestamp;
+        this.predictProbability = predictProbability.doubleValue();
+        this.modelName = modelName;
+    }
 }

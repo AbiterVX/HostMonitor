@@ -25,14 +25,15 @@ public class HardWithDFPRecord {
         this.isSSd = isSSd;
         this.model = model;
     }
-    public HardWithDFPRecord(String diskSerial, Timestamp timestamp, Double predictProbability, String modelName, String hostName, String hostIp, Double size, Byte isSSdByte, String model) {
+
+    public HardWithDFPRecord(String diskSerial, Timestamp timestamp, Float predictProbability, String modelName, String hostName, String hostIp, Float size, Byte isSSdByte, String model) {
         this.diskSerial = diskSerial;
         this.timestamp = timestamp;
-        this.predictProbability = predictProbability;
+        this.predictProbability = predictProbability.doubleValue();
         this.modelName = modelName;
         this.hostName = hostName;
         this.hostIp=hostIp;
-        this.size = size;
+        this.size = size.doubleValue();
         this.isSSdByte=isSSdByte;
         this.isSSd = (int)this.isSSdByte>0? true:false;
         this.model = model;

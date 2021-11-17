@@ -60,7 +60,17 @@ public class DispersedRecord {
         DiskReadRates = diskReadRates;
         DiskWriteRates = diskWriteRates;
     }
-
+    public DispersedRecord(String hostname, String ip, Timestamp timestamp, Float memUsage, Float cpuUsage, Float netRecv, Float netSent, Float diskReadRates, Float diskWriteRates) {
+        this.hostname = hostname;
+        this.ip = ip;
+        this.timestamp = timestamp;
+        MemUsage = memUsage.doubleValue();
+        CpuUsage = cpuUsage.doubleValue();
+        NetRecv = netRecv.doubleValue();
+        NetSent = netSent.doubleValue();
+        DiskReadRates = diskReadRates.doubleValue();
+        DiskWriteRates = diskWriteRates.doubleValue();
+    }
     @Override
     public String toString() {
         return "Record{" +

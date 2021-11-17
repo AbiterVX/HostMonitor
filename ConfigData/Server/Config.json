@@ -2,7 +2,7 @@
   "DataCollectorServerIP": "127.0.0.1",
   "ServerSampleListenPort": 7000,
   "SpecialUsagePort": 7001,
-  "DataSourceSelect": 0,
+  "DataSourceSelect": 1,
   "sampleSelect": 1,
   "clientSampleSelect": 0,
   "loadPartition": {
@@ -104,6 +104,12 @@
       "recvBytes": 0,
       "sentSpeed": 0,
       "recvSpeed": 0
+    },
+    "lvmInfo": {
+      "PVName": "",
+      "VGName": "",
+      "lvmInfo": [],
+      "dmName":""
     }
   },
   "filter": {
