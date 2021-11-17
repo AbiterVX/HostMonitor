@@ -136,9 +136,6 @@ function FRefreshDataHostInfoAll(uiRefreshCallbackFunc){
 
 function FRefreshDataDiskInfoAll(uiRefreshCallbackFunc){
     FSendGetRequest(false,"/getDiskInfo/All/Dashboard",function (resultData){
-
-
-
         uiRefreshCallbackFunc();
     });
 }
@@ -146,7 +143,6 @@ function FRefreshDataDiskInfoAll(uiRefreshCallbackFunc){
 function FRefreshDataHostInfo(hostName,uiRefreshCallbackFunc){
     var hostInfo = FGetHostInfo(hostName);
     FSendGetRequest(false,"/getHostInfo/HostDetail/"+ hostName,function (resultData){
-
         //hostInfo1
         for(var key in hostInfo["hostInfo1"]){
             hostInfo["hostInfo1"][key] = resultData[key];
@@ -215,8 +211,6 @@ function FRefreshDataHostDetailTrend(hostName,uiRefreshCallbackFunc){
 
 function FRefreshDataDiskInfo(hostName,uiRefreshCallbackFunc){
     FSendGetRequest(false,"/getDiskInfo/"+ hostName,function (resultData){
-
-
         uiRefreshCallbackFunc();
     });
 }
@@ -343,3 +337,5 @@ function userSignIn(userIDValue,passwordValue,callbackFunc){
         callbackFunc(resultData);
     });
 }
+
+

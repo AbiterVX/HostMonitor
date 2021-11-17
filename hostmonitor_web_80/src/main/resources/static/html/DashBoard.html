@@ -474,6 +474,13 @@
         //趋势图更新
         refreshTrendChartData();
 
+
+        //刷新频率
+        var hostRefreshInterval = 0;
+        FSendGetRequest(false,"/SystemSetting/Get",function (resultData){
+            hostRefreshInterval = resultData["dataSampleInterval"] * 1000;
+        });
+
         //循环刷新拓扑图，趋势图
         {
             setInterval(function (){
@@ -482,7 +489,7 @@
                     refreshTopologyChart();
                     refreshTrendChartData();
                 })
-            },10000);
+            },hostRefreshInterval);
         }
 
         //更新HostInfo数据.
@@ -497,7 +504,7 @@
                 FRefreshDataHostInfoAll(function (){
                     //refreshHostInfoAndDiskInfoTable(false);
                 });
-            },20000);
+            },hostRefreshInterval);
         }
     }
 
