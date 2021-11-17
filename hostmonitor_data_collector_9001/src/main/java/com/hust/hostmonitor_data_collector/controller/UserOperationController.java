@@ -195,12 +195,15 @@ public class UserOperationController {
         int BackupTimingInterval = Integer.parseInt(params.get("BackupTimingInterval"));
         boolean BackupEmergency =  Boolean.parseBoolean(params.get("BackupEmergency"));
         float BackupFailureRateThreshold = Float.parseFloat(params.get("BackupFailureRateThreshold"));
-
+        int sampleDataInterval=Integer.parseInt(params.get("dataSampleInterval"));
+        int processDataInterval=Integer.parseInt(params.get("processSampleInterval"));
         //检验
         boolean couldUpdate = false;
         if(ReportTimingInterval>=0 && BackupTimingInterval>=0 &&
                 ReportFailureRateThreshold>=0 && ReportFailureRateThreshold<=100 &&
-                BackupFailureRateThreshold>=0 && BackupFailureRateThreshold<=100 ){
+                BackupFailureRateThreshold>=0 && BackupFailureRateThreshold<=100
+                &&sampleDataInterval>=3 && processDataInterval>=3
+        ){
             couldUpdate = true;
         }
 
@@ -217,6 +220,7 @@ public class UserOperationController {
             newSystemSetting.put("BackupFailureRateThreshold",BackupFailureRateThreshold);
             userService.setSystemSetting(newSystemSetting);
         }
+        //TODO 系统操作实质性的修改
 
         return "Complete";
     }
