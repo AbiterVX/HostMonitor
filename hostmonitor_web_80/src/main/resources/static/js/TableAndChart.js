@@ -599,8 +599,9 @@ const tableColumns = {
             formatter: function operateFormatter(value, row, index) {
                 //['#92cc76','#fac859','#ee6767']
                 return [
-                    '<a class="display"  style="font-weight:bold;text-decoration:none;" href="javascript:void(0)" title="Like">正常</a>',
+
                 ].join('')
+                //'<a class="display"  style="font-weight:bold;text-decoration:none;" href="javascript:void(0)">正常</a>',
             }
         }
     ],
@@ -730,9 +731,9 @@ const tableColumns = {
             },
             formatter: function operateFormatter(value, row, index) {
                 return [
-                    '<a class="display"  style="color:#5470c6;text-decoration:none;" href="javascript:void(0)" title="Like">查看</a>      ',
-                    '<a class="delete" style="color:#ee6767;text-decoration:none;" href="javascript:void(0)" title="Remove">删除</a>',
+                    '<a class="display"  style="color:#5470c6;text-decoration:none;" href="javascript:void(0)" >查看</a>      ',
                 ].join('')
+                //'<a class="delete" style="color:#ee6767;text-decoration:none;" href="javascript:void(0)" >删除</a>',
             }
         }
 
