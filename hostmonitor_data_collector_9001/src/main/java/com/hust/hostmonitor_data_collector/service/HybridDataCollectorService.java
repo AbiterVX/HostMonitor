@@ -82,8 +82,8 @@ public class HybridDataCollectorService implements DataCollectorService{
     private Timer smartSampleTimer=new Timer();
     private Timer diskPredictTimer=new Timer();
     //定时器周期参数
-    private final long dataSampleInterval=configDataManager.getSystemSetting().getLong("sampleDataInterval");
-    private final long processSampleInterval=configDataManager.getSystemSetting().getLong("processDataInterval");
+    private final long dataSampleInterval=configDataManager.getSystemSetting().getLong("dataSampleInterval");
+    private final long processSampleInterval=configDataManager.getSystemSetting().getLong("processSampleInterval");
     private final int sampleStoreDelayMS=500;
     private final int offset=1000;
     private final long predictInterval=24*3600*1000;
@@ -91,105 +91,111 @@ public class HybridDataCollectorService implements DataCollectorService{
     private TimerTask performanceSampleTask= new TimerTask() {
         @Override
         public void run() {
-            CountDownLatch latch=new CountDownLatch(dataSampleManager.hostList.size());
-            for(HostConfigData hostConfigData:dataSampleManager.hostList){
-                if(sshSampleData.containsKey(hostConfigData.ip)){
-                    JSONObject targetObject=sshSampleData.get(hostConfigData.ip);
-                    if(!targetObject.getBoolean("connected")){
-                        executorService.execute(new Runnable() {
-                            @Override
-                            public void run() {
-                                JSONObject initObject=dataSampleManager.sampleHostHardwareData(hostConfigData);
-                                if(!initObject.getBoolean("connected")){
-                                    latch.countDown();
-                                }
-                                else {
-                                    sshSampleData.put(hostConfigData.ip, initObject);
-                                    dataSampleManager.sampleHostData(hostConfigData, initObject);
-                                    latch.countDown();
-                                }
-                            }
-                        });
-                    }
-                    else {
-                        executorService.execute(new Runnable() {
-                            @Override
-                            public void run() {
-                                dataSampleManager.sampleHostData(hostConfigData, sshSampleData.get(hostConfigData.ip));
-                                latch.countDown();
-                            }
-                        });
-                    }
-                }
-                else{
+            performanceSampleTaskFunction();
+
+        }
+    };
+    private void performanceSampleTaskFunction(){
+        CountDownLatch latch=new CountDownLatch(dataSampleManager.hostList.size());
+        for(HostConfigData hostConfigData:dataSampleManager.hostList){
+            if(sshSampleData.containsKey(hostConfigData.ip)){
+                JSONObject targetObject=sshSampleData.get(hostConfigData.ip);
+                if(!targetObject.getBoolean("connected")){
                     executorService.execute(new Runnable() {
                         @Override
                         public void run() {
                             JSONObject initObject=dataSampleManager.sampleHostHardwareData(hostConfigData);
-                            sshSampleData.put(hostConfigData.ip,initObject);
-                            dataSampleManager.sampleHostData(hostConfigData,initObject);
+                            if(!initObject.getBoolean("connected")){
+                                latch.countDown();
+                            }
+                            else {
+                                sshSampleData.put(hostConfigData.ip, initObject);
+                                dataSampleManager.sampleHostData(hostConfigData, initObject);
+                                latch.countDown();
+                            }
+                        }
+                    });
+                }
+                else {
+                    executorService.execute(new Runnable() {
+                        @Override
+                        public void run() {
+                            dataSampleManager.sampleHostData(hostConfigData, sshSampleData.get(hostConfigData.ip));
                             latch.countDown();
                         }
                     });
-
                 }
-               logger.info("[DSManager]"+hostConfigData.ip+" performance sample");
             }
-            try {
-                latch.await();
-                logger.info("[DSManager] performance sample finish");
-                storeSampleData();
-                logger.info("[DSManager] persistence finish");
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-                logger.error("[DSManager] performance sample latch error");
-            }
+            else{
+                executorService.execute(new Runnable() {
+                    @Override
+                    public void run() {
+                        JSONObject initObject=dataSampleManager.sampleHostHardwareData(hostConfigData);
+                        sshSampleData.put(hostConfigData.ip,initObject);
+                        dataSampleManager.sampleHostData(hostConfigData,initObject);
+                        latch.countDown();
+                    }
+                });
 
+            }
+            logger.info("[DSManager]"+hostConfigData.ip+" performance sample");
         }
-    };
+        try {
+            latch.await();
+            logger.info("[DSManager] performance sample finish");
+            storeSampleData();
+            logger.info("[DSManager] persistence finish");
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+            logger.error("[DSManager] performance sample latch error");
+        }
+    }
     //定时任务(Host进程采样)
     private TimerTask processSampleTask=new TimerTask() {
         @Override
         public void run() {
-            CountDownLatch latch=new CountDownLatch(dataSampleManager.hostList.size());
-            for(HostConfigData hostConfigData:dataSampleManager.hostList){
-                if(sshSampleData.containsKey(hostConfigData.ip)){
-                    JSONObject targetObject=sshSampleData.get(hostConfigData.ip);
-                    if(!targetObject.getBoolean("connected")){
-                        latch.countDown();
-                    }
-                    else {
-                        executorService.execute(new Runnable() {
-                            @Override
-                            public void run() {
-                                dataSampleManager.sampleHostProcess(hostConfigData, sshSampleData.get(hostConfigData.ip));
-                                latch.countDown();
-                            }
-                        });
-                    }
+           processSampleTaskFunction();
+        }
+    };
+    private void processSampleTaskFunction(){
+        CountDownLatch latch=new CountDownLatch(dataSampleManager.hostList.size());
+        for(HostConfigData hostConfigData:dataSampleManager.hostList){
+            if(sshSampleData.containsKey(hostConfigData.ip)){
+                JSONObject targetObject=sshSampleData.get(hostConfigData.ip);
+                if(!targetObject.getBoolean("connected")){
+                    latch.countDown();
                 }
-                else{
+                else {
                     executorService.execute(new Runnable() {
                         @Override
                         public void run() {
-                            JSONObject initObject=dataSampleManager.sampleHostHardwareData (hostConfigData) ;
-                            sshSampleData.put(hostConfigData.ip,initObject);
-                            dataSampleManager.sampleHostProcess(hostConfigData,initObject);
+                            dataSampleManager.sampleHostProcess(hostConfigData, sshSampleData.get(hostConfigData.ip));
                             latch.countDown();
                         }
                     });
                 }
-                logger.info("[DSManager]"+hostConfigData.ip+" process sample");
             }
-            try {
-                latch.await();
-                logger.info("[DSManager] process sample finish");
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-                logger.error("[DSManager] process sample latch error");
+            else{
+                executorService.execute(new Runnable() {
+                    @Override
+                    public void run() {
+                        JSONObject initObject=dataSampleManager.sampleHostHardwareData (hostConfigData) ;
+                        sshSampleData.put(hostConfigData.ip,initObject);
+                        dataSampleManager.sampleHostProcess(hostConfigData,initObject);
+                        latch.countDown();
+                    }
+                });
             }
+            logger.info("[DSManager]"+hostConfigData.ip+" process sample");
         }
-    };
+        try {
+            latch.await();
+            logger.info("[DSManager] process sample finish");
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+            logger.error("[DSManager] process sample latch error");
+        }
+    }
     //ssh定时任务 节点smart信息采集
     private TimerTask smartSampleTask=new TimerTask() {
         @Override
@@ -1017,7 +1023,7 @@ public class HybridDataCollectorService implements DataCollectorService{
 
     @Override
     public void updateSystemSetting(JSONObject newSystemSetting) {
-        int dataSampleIntervalNew=newSystemSetting.getIntValue("sampleDataInterval");
+        int dataSampleIntervalNew=newSystemSetting.getIntValue("dataSampleInterval");
         executorService.shutdown();
         while(!executorService.isTerminated());
 
@@ -1025,14 +1031,26 @@ public class HybridDataCollectorService implements DataCollectorService{
             synchronized (hostsSampleData){
                 dataSampleTimer.cancel();
                 dataSampleTimer=new Timer();
+                performanceSampleTask=new TimerTask() {
+                    @Override
+                    public void run() {
+                        performanceSampleTaskFunction();
+                    }
+                };
                 dataSampleTimer.schedule(performanceSampleTask,10*1000,dataSampleIntervalNew*1000);
             }
         }
-        int processSampleIntervalNew=newSystemSetting.getIntValue("processDataInterval");
+        int processSampleIntervalNew=newSystemSetting.getIntValue("processSampleInterval");
         if(dataSampleIntervalNew*1000!=processSampleInterval){
             synchronized (hostsSampleData){
                 processSampleTimer.cancel();
                 processSampleTimer=new Timer();
+                processSampleTask=new TimerTask() {
+                    @Override
+                    public void run() {
+                        processSampleTaskFunction();
+                    }
+                };
                 processSampleTimer.schedule(processSampleTask,10*1000,processSampleIntervalNew*1000);
             }
         }

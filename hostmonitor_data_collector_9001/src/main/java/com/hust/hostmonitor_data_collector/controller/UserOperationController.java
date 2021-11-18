@@ -197,15 +197,15 @@ public class UserOperationController {
         int BackupTimingInterval = Integer.parseInt(params.get("BackupTimingInterval"));
         boolean BackupEmergency =  Boolean.parseBoolean(params.get("BackupEmergency"));
         float BackupFailureRateThreshold = Float.parseFloat(params.get("BackupFailureRateThreshold"));
-        int sampleDataInterval=Integer.parseInt(params.get("dataSampleInterval"));
-        int processDataInterval=Integer.parseInt(params.get("processSampleInterval"));
+        int dataSampleInterval=Integer.parseInt(params.get("dataSampleInterval"));
+        int processSampleInterval=Integer.parseInt(params.get("processSampleInterval"));
 
         //检验
         boolean couldUpdate = false;
         if(ReportTimingInterval>=0 && BackupTimingInterval>=0 &&
                 ReportFailureRateThreshold>=0 && ReportFailureRateThreshold<=100 &&
                 BackupFailureRateThreshold>=0 && BackupFailureRateThreshold<=100
-                &&sampleDataInterval>=0 && processDataInterval>=0
+                &&dataSampleInterval>=0 && processSampleInterval>=0
         ){
             couldUpdate = true;
         }
@@ -221,8 +221,8 @@ public class UserOperationController {
             newSystemSetting.put("BackupTimingInterval",BackupTimingInterval);
             newSystemSetting.put("BackupEmergency",BackupEmergency);
             newSystemSetting.put("BackupFailureRateThreshold",BackupFailureRateThreshold);
-            newSystemSetting.put("sampleDataInterval",sampleDataInterval);
-            newSystemSetting.put("processDataInterval",processDataInterval);
+            newSystemSetting.put("dataSampleInterval",dataSampleInterval);
+            newSystemSetting.put("processSampleInterval",processSampleInterval);
             userService.setSystemSetting(newSystemSetting);
             dataCollectorService.updateSystemSetting(newSystemSetting);
         }

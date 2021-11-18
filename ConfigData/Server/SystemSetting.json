@@ -1,1 +1,1 @@
-{"BackupTimingInterval":8,"sampleDataInterval":60,"ReportTimingInterval":6,"ReportEmergency":false,"BackupTiming":false,"ReportTiming":false,"BackupEmergency":false,"ReportFailureRateThreshold":7.0,"processDataInterval":60,"BackupFailureRateThreshold":9.0}
+{"BackupTimingInterval":8,"ReportTimingInterval":6,"dataSampleInterval":60,"ReportEmergency":false,"BackupTiming":false,"processSampleInterval":60,"ReportTiming":false,"BackupEmergency":false,"ReportFailureRateThreshold":7.0,"BackupFailureRateThreshold":9.0}
