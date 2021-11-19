@@ -14,6 +14,8 @@ SpringCloud项目。
 
 ​	|__ 子工程：hostmonitor_data_collector_9000
 
+​	|__ 子工程：hostmonitor_data_collector_9001
+
 ​	|__ 子工程：hostmonitor_web_80
 
 ​	|__ 子工程：hostmonitor_client
@@ -23,6 +25,10 @@ SpringCloud项目。
 **hostmonitor_commons：**公共对象模块，若工程公共对象过多会移动到common并集中打包（目前暂时不用）
 
 **hostmonitor_data_collector_9000：**通过socket接受client的采样数据，数据库CRUD。位于9000端口
+
+**hostmonitor_data_collector_9001：集成了通过socket接受client的采样数据的采样方式和通过SSH方式链接client采样的方式， 数据库CRUD。
+位于9001端口，其中socket采样方式与9000相同，如果使用SSH采样方式无需使用client端，且无需安装java、python依赖，与9001端相关的
+其他配置信息可见该模块中的README文件
 
 **hostmonitor_web_80：**显示web界面，位于80端口（从而可直接输入域名/ip直接访问页面），向9000请求数据，具有数据缓存功能。
 
@@ -42,11 +48,13 @@ nacos：用于注册中心（可选项）
 
 配置文件
 
-（1）DispersedConfig.json  ：data_collector_9000 数据采样格式
+（1）HostList.csv  ：data_collector_9001通过SSH采样时，需要连接的被监测节点的信息
 
-（2）OriginalSampleDataFormat.json ：client数据采样格式
+（2）Config.json ：数据采样格式
 
-（3）/Client/smartmontools-7.2-1.win32-setup.exe：故障预测数据采样依赖工具
+（3）Proxy.csv ：如果HostList中的节点链接需要使用代理，则将代理信息填于此表
+
+（4）SystemSetting.json :与系统采样和报告相关的参数信息
 
 ​		 windows：安装同级目录下的smartmontools-7.2-1.win32-setup.exe
 

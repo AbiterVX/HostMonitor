@@ -1,8 +1,6 @@
 # 9001 配置文件
 ## 数据库切换
-启动前修改 /Config/Server/Config.json
-"DataSourceSelect"  0时使用mysql,1时使用达梦数据库，
-同时修改application.yml中 spring:profiles:active: prod
+启动前修改 修改application.yml中 spring:profiles:active: prod
 
 ##采样方式切换
 启动前修改 /Config/Server/Config.json
