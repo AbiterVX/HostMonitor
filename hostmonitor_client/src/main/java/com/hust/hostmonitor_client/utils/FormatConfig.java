@@ -9,7 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class FormatConfig {
-    private final JSONObject configJson = JSONObject.parseObject(readFile("ConfigData/Config.json"));
+    private final JSONObject configJson = JSONObject.parseObject(readFile("ConfigData/Server/Config.json"));
     private final String path = System.getProperty("user.dir");
     private static volatile FormatConfig formatConfig=null;
     public static FormatConfig getInstance(){

@@ -1409,7 +1409,23 @@ function FGetTrendChartOption(){
             formatter: function(params){
                 var returnTxt = "时间: "+ FGetDateTime(params[0].value[0]) +"<br/>";
                 for(var i =0; i< params.length; i++){
-                    returnTxt += params[i].marker+" "+params[i].seriesName+ " "+params[i].value[1] + unitLabel[params[i].axisIndex] + "<br/>";
+
+                    var display_value = params[i].value[1];
+                    var unit_label = unitLabel[params[i].axisIndex];
+
+                    if(params[i].axisIndex === 2 || params[i].axisIndex=== 3 ) {
+                        if (display_value > 1024) {
+                            display_value = display_value / 1024.0;
+                            unit_label = "Mb/s"
+                        }
+                        if (display_value > 1024) {
+                            display_value = display_value / 1024.0;
+                            unit_label = "Gb/s"
+                        }
+                    }
+
+                    display_value = display_value.toFixed(2).toString();
+                    returnTxt += params[i].marker+" "+params[i].seriesName+ " " +display_value +  unit_label + "<br/>";
                 }
                 return returnTxt;
             }

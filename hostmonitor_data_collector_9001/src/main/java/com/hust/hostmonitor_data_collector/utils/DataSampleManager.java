@@ -691,7 +691,8 @@ public class DataSampleManager {
                     DiskInfo tempDiskInfo=DiskStoreList.get(j);
                     int i=findDiskIndex(tempDiskInfo.diskName,sampleData);
                     if(i==-1){
-                        //System.out.println(tempDiskInfo.diskName +" not found.");
+                        double singleUsedSize=tempDiskInfo.diskFSUsageAmount*1.0f/1024/1024;
+                        totalUsedSize+=singleUsedSize;
                         continue;
                     }
                     double usage2bits=0.0;

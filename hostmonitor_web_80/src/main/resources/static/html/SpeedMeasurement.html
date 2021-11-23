@@ -53,6 +53,7 @@
         var hostIpList = FGetMainInfo()["hostIp"];
         for(var i=0;i<hostIpList.length;i++){
             smInfoList.push({
+                state: false,
                 ip: hostIpList[i],
                 ioTestLastTime: "-",
                 readSpeed: "-",
@@ -127,6 +128,7 @@
                 for (var i = 0; i < smInfoList.length; i++) {
                     if (smInfoList[i]["ip"] === current_ip) {
                         //smInfoList[i]["ioTestLastTime"] = "-";
+                        smInfoList[i]["state"] = false;
                         smInfoList[i]["readSpeed"] = resultData["readSpeed"];
                         smInfoList[i]["writeSpeed"] = resultData["writeSpeed"];
                         refreshSpeedMeasurementTable(false,smInfoList);

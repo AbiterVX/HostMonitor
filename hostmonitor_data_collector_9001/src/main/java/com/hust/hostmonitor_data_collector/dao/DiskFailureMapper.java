@@ -4,6 +4,7 @@ import com.hust.hostmonitor_data_collector.dao.entity.*;
 import com.hust.hostmonitor_data_collector.dao.provider.DiskFailureProvider;
 import org.apache.ibatis.annotations.*;
 
+import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.List;
 
@@ -48,10 +49,10 @@ public interface DiskFailureMapper {
 //                         @Param("ErrorRate")double ErrorRate,@Param("Parameters")String Parameters,@Param("UserId")String UserId);
 
     @InsertProvider(type=DiskFailureProvider.class,method = "insertTrainInfo")
-    void insertTrainInfo(@Param("PredictModel")int PredictModel, @Param("DiskModel")String DiskModel,
+    void insertTrainInfo(@Param("Timestamp")Timestamp timestamp,@Param("PredictModel")int PredictModel, @Param("DiskModel")String DiskModel,
                          @Param("FDR")float FDR, @Param("FAR")float FAR, @Param("AUC")float AUC, @Param("FNR")float FNR,
-                         @Param("Accuracy")float Accuracy,@Param("Precision")float Precision,@Param("Specificity")float Specificity,
-                         @Param("ErrorRate")float ErrorRate,@Param("Parameters")String Parameters,@Param("OperatorID")String OperatorID);
+                         @Param("Accuracy")float Accuracy, @Param("Precision")float Precision, @Param("Specificity")float Specificity,
+                         @Param("ErrorRate")float ErrorRate, @Param("Parameters")String Parameters, @Param("OperatorID")String OperatorID);
 
 
 

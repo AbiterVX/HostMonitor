@@ -191,10 +191,17 @@
                 //oneday_interval = 3*60* 1000
                 for(var i=trendChartData[0].length-1;i>=0;i--){
                     if(timestamp - trendChartData[0][i][0] > oneday_interval){
-                        beginIndex = i;
+                        if(i === trendChartData[0].length-1){
+                            beginIndex = i;
+                        }
+                        else{
+                            beginIndex = i+1;
+                        }
                         break;
                     }
                 }
+
+
                 var tempTrendChartData = [];
                 for(var i=0;i<trendChartData.length;i++){
                     tempTrendChartData.push(trendChartData[i].slice(beginIndex,trendChartData[i].length));
