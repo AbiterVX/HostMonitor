@@ -152,6 +152,14 @@ public class DataSampleController {
 
 
     //TODO 真实磁盘损坏标记
+    @PostMapping(value="/setDiskState",produces = "application/json;charset=UTF-8")
+    @ResponseBody
+    public String setDiskState(@RequestBody JSONObject jsonParam){
+        String diskSerial= jsonParam.getString("diskSerial");
+        boolean state= jsonParam.getBoolean("state");
+        String result=dataCollectorService.setDiskState(diskSerial,state);
+        return result;
+    }
 
     @GetMapping(value = "/test2")
     @ResponseBody

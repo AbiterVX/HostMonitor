@@ -132,4 +132,10 @@ public interface DiskFailureMapper {
     @SelectProvider(type = DiskFailureProvider.class,method = "checkRecordExists")
     int checkRecordExists(@Param("diskSerial")String diskSerial,
                           @Param("timestamp")Timestamp timestamp);
+
+    @UpdateProvider(type= DiskFailureProvider.class,method="updateDiskState")
+    void updateDiskState(@Param("diskSerial")String diskSerial,@Param("state")Boolean state);
+
+    @SelectProvider(type= DiskFailureProvider.class,method = "selectAllFailureWithHardwareLists")
+    List<DiskHardWareInfo> selectAllFailureWithHardwareLists();
 }

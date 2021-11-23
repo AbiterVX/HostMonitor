@@ -145,7 +145,9 @@ public class DataSampleManager {
                         newDiskInfo.put("type", 0);
                         JSONObject currentDiskData = new JSONObject();
                         List<String> cmdResult = cmdExecutor.runCommand("smartctl -i /dev/" + devsName, hostConfigData, true);
-                        if (cmdResult.get(3).contains("Unable to")) {
+                        if(cmdResult.size()>=4)
+                        {
+                            if (cmdResult.get(3).contains("Unable to")) {
                             sampleData.getJSONArray("diskInfoList").add(newDiskInfo);
                             totalsize += size;
                             continue;
@@ -168,6 +170,7 @@ public class DataSampleManager {
                                 newDiskInfo.put("type", rawData[1].equals("Solid State Device") ? 1 : 0);
                                 break;
                             }
+                        }
                         }
                     }
                     sampleData.getJSONArray("diskInfoList").add(newDiskInfo);

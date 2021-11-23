@@ -36,4 +36,6 @@ public interface DataCollectorService {
 
     void updateSystemSetting(JSONObject newSystemSetting);
     String test();
+
+    String setDiskState(String diskSerial,boolean state);
 }

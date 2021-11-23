@@ -38,6 +38,11 @@ public class SSHDataCollectorService implements DataCollectorService{
     }
 
     @Override
+    public String setDiskState(String diskSerial,boolean state) {
+        return null;
+    }
+
+    @Override
     public HashMap<String, JSONObject> getSocketMap() {
         return null;
     }

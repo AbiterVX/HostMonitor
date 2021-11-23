@@ -783,53 +783,56 @@ public class HybridDataCollectorService implements DataCollectorService{
     }
 
     //磁盘故障预测统计页面阈值参数
-    private final double mediumLow=0.20f;
-    private final double mediumHigh=0.70f;
+    //
+    private final double highRiskThreshold=0.20f;
+    private final double lowRiskThreshold=0.70f;
     @Override
     public String getDFPSummary() {
         JSONObject result=new JSONObject();
-
-        //左侧表格,取出最新的模型的性能数据
+        //中部表格,取出最新的模型的性能数据
         JSONArray comparison=new JSONArray();
         StatisRecord statisRecord=diskFailureMapper.selectLatestTrainingSummary();
-
+        StatisRecord realityRecord=realResultAnalysis();
         JSONObject tempObject;
-        if(statisRecord==null){
-            comparison.add(new JSONObject());
-            comparison.add(new JSONObject());
-            result.put("comparison",comparison);
-        }
-        else {
-            tempObject = new JSONObject();
-            tempObject.put("field", "predict");
-            tempObject.put("FDR", statisRecord.FDR);
-            tempObject.put("FAR", statisRecord.FAR);
-            tempObject.put("AUC", statisRecord.AUC);
-            tempObject.put("FNR", statisRecord.FNR);
-            tempObject.put("Accuracy", statisRecord.Accuracy);
-            tempObject.put("Precision", statisRecord.Accuracy);
-            tempObject.put("Specificity", statisRecord.Accuracy);
-            tempObject.put("ErrorRate", statisRecord.Accuracy);
-            comparison.add(tempObject);
-
-            tempObject = new JSONObject();
-            tempObject.put("field", "reality");
-            tempObject.put("FDR", 0.6);
-            tempObject.put("FAR", 0.6);
-            tempObject.put("AUC", 0.6);
-            tempObject.put("FNR", 0.6);
-            tempObject.put("Accuracy", 0.6);
-            tempObject.put("Precision", 0.6);
-            tempObject.put("Specificity", 0.6);
-            tempObject.put("ErrorRate", 0.6);
-            comparison.add(tempObject);
-
+       {
+           if(statisRecord!=null) {
+               tempObject = new JSONObject();
+               tempObject.put("field", "value");
+               tempObject.put("FDR", statisRecord.FDR);
+               tempObject.put("FAR", statisRecord.FAR);
+               tempObject.put("AUC", statisRecord.AUC);
+               tempObject.put("FNR", statisRecord.FNR);
+               tempObject.put("Accuracy", statisRecord.Accuracy);
+               tempObject.put("Precision", statisRecord.Precision);
+               tempObject.put("Specificity", statisRecord.Specificity);
+               tempObject.put("ErrorRate", statisRecord.ErrorRate);
+               comparison.add(tempObject);
+           }
+           else {
+               comparison.add(new JSONObject());
+           }
+            if(realityRecord!=null) {
+                tempObject = new JSONObject();
+                tempObject.put("field", "value");
+                tempObject.put("FDR",realityRecord.FDR);
+                tempObject.put("FAR",realityRecord.FAR);
+                tempObject.put("AUC",realityRecord.AUC);
+                tempObject.put("FNR",realityRecord.FNR);
+                tempObject.put("Accuracy",realityRecord.Accuracy);
+                tempObject.put("Precision", realityRecord.Precision);
+                tempObject.put("Specificity",realityRecord.Specificity);
+                tempObject.put("ErrorRate",realityRecord.ErrorRate);
+                comparison.add(tempObject);
+            }
+            else {
+                comparison.add(new JSONObject());
+            }
             result.put("dfpComparison", comparison);
         }
-        //仪表盘
+        //上部右侧仪表盘
         Timestamp timestamp=diskFailureMapper.selectLatestRecordTime();
         if(timestamp==null){
-            System.err.println("[Database]There is no dfp records in mysql");
+            logger.info("[Database]There is no dfp records in mysql");
             JSONArray SummaryChart=new JSONArray();
             SummaryChart.add(0);
             SummaryChart.add(0);
@@ -842,7 +845,6 @@ public class HybridDataCollectorService implements DataCollectorService{
             return result.toJSONString();
         }
         Calendar calendar=Calendar.getInstance();
-
         calendar.setTimeInMillis(timestamp.getTime());
         calendar.set(Calendar.MINUTE,0);
         calendar.set(Calendar.SECOND,0);
@@ -852,52 +854,24 @@ public class HybridDataCollectorService implements DataCollectorService{
         List<DFPRecord> queryList=diskFailureMapper.selectDFPRecordsByLowbound(lowbound);
         int lowCount=0,mediumCount=0,highCount=0;
         for(DFPRecord dfpRecord:queryList){
-            if(dfpRecord.predictProbability<=mediumLow){
+            if(dfpRecord.predictProbability<=highRiskThreshold){
                 highCount++;
             }
-            else if(dfpRecord.predictProbability>mediumHigh){
+            else if(dfpRecord.predictProbability>lowRiskThreshold){
                 lowCount++;
             }
             else {
                 mediumCount++;
             }
         }
-//        double lowProportion,mediumProportion,highProportion;
-//        int totalCount=lowCount+mediumCount+highCount;
-//        lowProportion=doubleTo2bits_double(lowCount*1.0/totalCount);
-//        mediumProportion=doubleTo2bits_double(mediumCount*1.0/totalCount);
-//        highProportion=doubleTo2bits_double(1-lowProportion-mediumProportion);
-//        JSONArray diskProbabilityStatistic=new JSONArray();
         JSONArray SummaryChart=new JSONArray();
         SummaryChart.add(lowCount);
         SummaryChart.add(mediumCount);
         SummaryChart.add(highCount);
         result.put("SummaryChart",SummaryChart);
-//        result.put("diskProbabilityStatistic",diskProbabilityStatistic);
-//        result.getJSONArray("diskProbabilityStatistic").add(lowProportion);
-//        result.getJSONArray("diskProbabilityStatistic").add(mediumProportion);
-//        result.getJSONArray("diskProbabilityStatistic").add(highProportion);
-        //条状图，先用预测的结果替代
-//        timestamp=diskFailureMapper.selectLatestFailureTime();
-//        calendar.setTimeInMillis(timestamp.getTime());
-//        calendar.set(Calendar.MINUTE,0);
-//        calendar.set(Calendar.SECOND,0);
-//        calendar.set(Calendar.HOUR_OF_DAY,0);
-//        lowbound=new Timestamp(calendar.getTimeInMillis());
-//        List<RealDiskFailure> realDiskFailureList=diskFailureMapper.selectRecentRecords(lowbound);
-//        for(RealDiskFailure diskFailure:realDiskFailureList){
-//
-//
-//
-//        }
-        //TODO 临时版本 ,暂定四个厂商
-        List<HardWithDFPRecord> RecordList=diskFailureMapper.selectRecentDFPWithHardwareRecordList(lowbound);
-//        JSONObject rightChart=new JSONObject();
-//        rightChart.put("西部数据",new JSONArray());
-//        rightChart.put("希捷",new JSONArray());
-//        rightChart.put("东芝",new JSONArray());
-//        rightChart.put("三星",new JSONArray());
-//        rightChart.put("其他",new JSONArray());
+
+        //TODO 上部左侧条状图 临时暂定四个厂商 后改为配置文件设置
+        List<DiskHardWareInfo> RecordList=diskFailureMapper.selectAllFailureWithHardwareLists();
         JSONArray brands=new JSONArray();
         brands.add("西部数据");
         brands.add("希捷");
@@ -989,6 +963,12 @@ public class HybridDataCollectorService implements DataCollectorService{
         result.put("trend",Trend);
         return result.toJSONString();
     }
+
+
+    //TODO
+    private StatisRecord realResultAnalysis() {
+    }
+
     @Override
     public String remoteTest(String nodeIp){
         //客户端版本
@@ -1126,5 +1106,13 @@ public class HybridDataCollectorService implements DataCollectorService{
     }
     public String test(){
         return applicationEnv;
+    }
+
+    @Override
+    public String setDiskState(String diskSerial,boolean state) {
+        String result=null;
+        diskFailureMapper.updateDiskState(diskSerial,state);
+
+        return result;
     }
 }

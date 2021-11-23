@@ -42,6 +42,11 @@ public class CSModeDataCollectorService implements DataCollectorService{
     }
 
     @Override
+    public String setDiskState(String diskSerial,boolean state) {
+        return null;
+    }
+
+    @Override
     public String getHostInfoDashboardAll() {
         return null;
     }

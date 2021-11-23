@@ -309,4 +309,26 @@ public class DiskFailureProvider {
         }
         return SQL;
     }
+
+    public String updateDiskState(){
+        String SQL=null;
+        if(dataSourceSelect==0){
+            SQL="update diskhardwareinfo set state=#{state} where diskSerial=#{diskSerial}";
+        }
+        else if(dataSourceSelect==1){
+            SQL="update storagedevicemonitor.diskhardwareinfo set state=#{state} where diskSerial=#{diskSerial}";
+        }
+        return SQL;
+    }
+
+    public String selectAllFailureWithHardwareLists(){
+        String SQL=null;
+        if(dataSourceSelect==0){
+            SQL="select * from diskhardwareinfo where state=false";
+        }
+        else if(dataSourceSelect==1){
+            SQL="select * from storagedevicemonitor.diskhardwareinfo where state=false";
+        }
+        return SQL;
+    }
 }

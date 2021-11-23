@@ -7,27 +7,23 @@ public class DiskHardWareInfo {
     public boolean isSSd;
     public String model;
     public String hostIp;
-
-    public DiskHardWareInfo(String diskSerial, String hostName, double size, boolean isSSd, String model, String hostIp) {
+    public boolean state;
+    public DiskHardWareInfo(String diskSerial, String hostName, double size, boolean isSSd, String model, String hostIp,Boolean state) {
         this.diskSerial = diskSerial;
         this.hostName = hostName;
         this.size = size;
         this.isSSd = isSSd;
         this.model = model;
         this.hostIp=hostIp;
+        this.state=state;
     }
-
-
-
-
-    @Override
-    public String toString() {
-        return "DiskHardWareInfo{" +
-                "diskSerial='" + diskSerial + '\'' +
-                ", hostName='" + hostName + '\'' +
-                ", size=" + size +
-                ", isSSd=" + isSSd +
-                ", model='" + model + '\'' +
-                '}';
+    public DiskHardWareInfo(String diskSerial, String hostName, double size, Byte isSSd, String model, String hostIp,Byte state){
+        this.diskSerial = diskSerial;
+        this.hostName = hostName;
+        this.size = size;
+        this.isSSd =  (int)isSSd>0? true:false;;
+        this.model = model;
+        this.hostIp=hostIp;
+        this.state= (int)state>0? true:false;;
     }
 }
