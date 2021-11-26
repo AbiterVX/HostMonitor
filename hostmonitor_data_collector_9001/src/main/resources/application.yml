@@ -3,7 +3,7 @@ server:
 
 spring:
   profiles:
-      active: prod
+      active: test
       # dev 阿里云mysql数据库 配置文件改 0
       # test 本地达梦数据库 配置文件改 1
       # prod 701达梦数据库 配置文件改 1

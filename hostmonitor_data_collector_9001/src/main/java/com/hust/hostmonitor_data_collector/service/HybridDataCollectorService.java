@@ -248,7 +248,7 @@ public class HybridDataCollectorService implements DataCollectorService{
         }
     };
     //socket采样持久化任务
-    private final TimerTask dataPersistenceTask = new TimerTask() {
+    private TimerTask dataPersistenceTask = new TimerTask() {
         @Override
         public void run() {
             dataPersistenceTaskFunction();
@@ -350,7 +350,7 @@ public class HybridDataCollectorService implements DataCollectorService{
         //线程池大小设为Host个数*2
         executorService= Executors.newFixedThreadPool(sshHostList.size()*2);
         dataPath=System.getProperty("user.dir")+"/DiskPredict/";
-        logger.info("Check select in Config.json [1]SSH Commands [2]OSHI/选择采样模式:[1]SSH远程执行指令 [2]OSHI [3]混合模式");
+        logger.info("Check select in Config.json 选择采样模式:[1]SSH远程执行指令 [2]OSHI [3]混合模式");
         logger.info("Default:SSH Commands/默认使用SSH远程执行指令");
         Calendar calendar=Calendar.getInstance();
         calendar.set(Calendar.HOUR_OF_DAY, 1);
@@ -361,6 +361,7 @@ public class HybridDataCollectorService implements DataCollectorService{
             date=addDay(date,1);
         }
         if(sampleSelect==1){
+            logger.info("系统以模式1启动");
             sshSampleData=new HashMap<>();
             hostsSampleData=sshSampleData;
             for(HostConfigData hostConfigData:sshHostList){
@@ -373,7 +374,7 @@ public class HybridDataCollectorService implements DataCollectorService{
             smartSampleTimer.schedule(smartSampleTask,0,24*3600*1000);
         }
         else if(sampleSelect==2){
-
+            logger.info("系统以模式2启动");
             socketSampleData=new HashMap<>();
             hostsSampleData=socketSampleData;
             dataReceiver=new DataReceiver(this);
@@ -381,6 +382,7 @@ public class HybridDataCollectorService implements DataCollectorService{
             dataSampleTimer.schedule(dataPersistenceTask,dataSampleInterval/2,dataSampleInterval*1000-offset);
         }
         else if(sampleSelect==3){
+            logger.info("系统以模式3启动");
             sshSampleData=new HashMap<>();
             socketSampleData=new HashMap<>();
             hybridSampleData=new HashMap<>();
@@ -1153,11 +1155,19 @@ public class HybridDataCollectorService implements DataCollectorService{
         return applicationEnv;
     }
 
+    public void mailNotice(){
+
+    }
+    public void phoneNotice(){
+
+    }
+
+
+
     @Override
     public String setDiskState(String diskSerial,boolean state) {
         String result=null;
         diskFailureMapper.updateDiskState(diskSerial,state);
-
         return result;
     }
 }

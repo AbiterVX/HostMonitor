@@ -156,7 +156,7 @@ public class UserOperationController {
     @ResponseBody
     public String testSendEmail(@PathVariable Map<String,String> map) {
         String emailAddress = map.get("emailAddress");
-        userService.sendEmail(emailAddress);
+        //userService.sendEmail(emailAddress);
         return "";
     }
 

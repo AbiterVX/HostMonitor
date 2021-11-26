@@ -1,6 +1,7 @@
 package com.hust.hostmonitor_data_collector.service;
 
 import com.alibaba.fastjson.JSONObject;
+import com.hust.hostmonitor_data_collector.dao.DiskFailureMapper;
 import com.hust.hostmonitor_data_collector.dao.UserDao;
 import com.hust.hostmonitor_data_collector.dao.entity.SystemUser;
 import com.hust.hostmonitor_data_collector.utils.DispersedConfig;
@@ -14,12 +15,15 @@ import javax.annotation.Resource;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class UserService {
     //User数据库操作
     @Autowired
     UserDao userDao;
-
+    @Autowired
+    DiskFailureMapper diskFailureMapper;
     //配置类
     private DispersedConfig dispersedConfig = DispersedConfig.getInstance();
     private JSONObject systemSetting;
@@ -40,7 +44,14 @@ public class UserService {
     //邮件发送
     @Autowired
     private JavaMailSender mailSender;
+    private Timer mailTimer=new Timer();
 
+    private TimerTask mailTask=new TimerTask() {
+        @Override
+        public void run() {
+
+        }
+    };
     //Init
     public UserService(){
         systemSetting = dispersedConfig.getSystemSetting();
@@ -106,7 +117,7 @@ public class UserService {
         }
     }
     //发送邮件
-    public void sendEmail(String emailAddress){
+    public void sendEmail(String emailAddress,String mailTitle,String mailText){
         SimpleMailMessage message = new SimpleMailMessage();
         message.setFrom(userName);//发送方
         message.setTo(emailAddress);//接收方

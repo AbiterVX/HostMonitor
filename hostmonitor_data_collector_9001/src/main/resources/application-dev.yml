@@ -5,7 +5,7 @@ spring:
     name: hostmonitor-data-collector
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://39.105.123.116:3306/StorageDeviceMonitor?useSSL=false&useUnicode=true&characterEncoding=utf-8&allowMultiQueries=true&useJDBCCompliantTimezoneShift=true&serverTimezone=Asia/Shanghai
+    url: jdbc:mysql://127.0.0.1:3306/StorageDeviceMonitor?useSSL=false&useUnicode=true&characterEncoding=utf-8&allowMultiQueries=true&useJDBCCompliantTimezoneShift=true&serverTimezone=Asia/Shanghai
     username: root
     password: b511
   mail:

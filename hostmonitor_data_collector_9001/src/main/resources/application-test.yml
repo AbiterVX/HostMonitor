@@ -5,9 +5,9 @@ spring:
     name: hostmonitor-data-collector
   datasource:
     driver-class-name: dm.jdbc.driver.DmDriver
-    #本地达梦数据库 url url: jdbc:dm://127.0.0.1:5236/storagedevicemonitor?zeroDateTimeBehavior=convertToNull&useUnicode=true&characterEncoding=utf-8
-    #笔记本
-    url: jdbc:dm://127.0.0.1:3306/storagedevicemonitor?zeroDateTimeBehavior=convertToNull&useUnicode=true&characterEncoding=utf-8
+    #本地达梦数据库
+    url: jdbc:dm://127.0.0.1:5236/storagedevicemonitor?zeroDateTimeBehavior=convertToNull&useUnicode=true&characterEncoding=utf-8
+    #笔记本 url: jdbc:dm://127.0.0.1:3306/storagedevicemonitor?zeroDateTimeBehavior=convertToNull&useUnicode=true&characterEncoding=utf-8
     username: SYSDBA
     password: b511123456
 #  mail:
