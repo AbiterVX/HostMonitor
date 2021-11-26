@@ -139,4 +139,7 @@ public interface DiskFailureMapper {
 
     @SelectProvider(type= DiskFailureProvider.class,method = "selectAllFailureWithHardwareLists")
     List<DiskHardWareInfo> selectAllFailureWithHardwareLists();
+
+    @SelectProvider(type = DiskFailureProvider.class,method = "selectAllFailureWithHardwareListsWithTimelimit")
+    List<DiskHardWareInfo> selectAllFailureWithHardwareListsWithTimelimit(@Param("lowbound") Timestamp lowbound);
 }

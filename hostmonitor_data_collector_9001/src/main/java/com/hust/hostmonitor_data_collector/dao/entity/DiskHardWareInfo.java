@@ -1,5 +1,7 @@
 package com.hust.hostmonitor_data_collector.dao.entity;
 
+import java.sql.Timestamp;
+
 public class DiskHardWareInfo {
     public String diskSerial;
     public String hostName;
@@ -8,7 +10,8 @@ public class DiskHardWareInfo {
     public String model;
     public String hostIp;
     public boolean state;
-    public DiskHardWareInfo(String diskSerial, String hostName, double size, boolean isSSd, String model, String hostIp,Boolean state) {
+    public Timestamp modifiedTimestamp;
+    public DiskHardWareInfo(String diskSerial, String hostName, double size, boolean isSSd, String model, String hostIp,Boolean state,Timestamp modifiedTimestamp) {
         this.diskSerial = diskSerial;
         this.hostName = hostName;
         this.size = size;
@@ -16,8 +19,9 @@ public class DiskHardWareInfo {
         this.model = model;
         this.hostIp=hostIp;
         this.state=state;
+        this.modifiedTimestamp=modifiedTimestamp;
     }
-    public DiskHardWareInfo(String diskSerial, String hostName, double size, Byte isSSd, String model, String hostIp,Byte state){
+    public DiskHardWareInfo(String diskSerial, String hostName, double size, Byte isSSd, String model, String hostIp,Byte state,Timestamp modifiedTimestamp){
         this.diskSerial = diskSerial;
         this.hostName = hostName;
         this.size = size;
@@ -25,5 +29,6 @@ public class DiskHardWareInfo {
         this.model = model;
         this.hostIp=hostIp;
         this.state= (int)state>0? true:false;;
+        this.modifiedTimestamp=modifiedTimestamp;
     }
 }

@@ -15,7 +15,6 @@ import com.hust.hostmonitor_data_collector.utils.DiskPredict.DiskPredictProgress
 import com.hust.hostmonitor_data_collector.utils.DiskPredict.QueryResources;
 import com.hust.hostmonitor_data_collector.utils.SocketConnect.DataReceiver;
 import com.hust.hostmonitor_data_collector.utils.linuxsample.LinuxDataProcess;
-import org.apache.poi.ss.formula.functions.T;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,7 +30,6 @@ import com.hust.hostmonitor_data_collector.utils.SSHConnect.HostConfigData;
 import org.springframework.beans.factory.annotation.Value;
 
 import javax.annotation.PostConstruct;
-import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -59,8 +57,6 @@ public class HybridDataCollectorService implements DataCollectorService{
     private ConfigDataManager configDataManager= ConfigDataManager.getInstance();
     //采样方式选择
     private int sampleSelect=configDataManager.getSampleMethod();
-    //cmd命令执行
-    DataSampleManager cmdSampleManager=DataSampleManager.getInstance();
     private String dataPath;
     //格式资源变量
     private final SimpleDateFormat sdf=new SimpleDateFormat("yyyy-MM-dd");
@@ -354,7 +350,7 @@ public class HybridDataCollectorService implements DataCollectorService{
         //线程池大小设为Host个数*2
         executorService= Executors.newFixedThreadPool(sshHostList.size()*2);
         dataPath=System.getProperty("user.dir")+"/DiskPredict/";
-        logger.info("Check select in Config.json [1]SSH Commands [2]OSHI/选择采样模式:[1]SSH远程执行指令[2]OSHI");
+        logger.info("Check select in Config.json [1]SSH Commands [2]OSHI/选择采样模式:[1]SSH远程执行指令 [2]OSHI [3]混合模式");
         logger.info("Default:SSH Commands/默认使用SSH远程执行指令");
         Calendar calendar=Calendar.getInstance();
         calendar.set(Calendar.HOUR_OF_DAY, 1);
@@ -920,7 +916,7 @@ public class HybridDataCollectorService implements DataCollectorService{
         result.put("SummaryChart",SummaryChart);
 
         //TODO 上部左侧条状图 临时暂定四个厂商 后改为配置文件设置
-        List<DiskHardWareInfo> RecordList=diskFailureMapper.selectAllFailureWithHardwareLists();
+        List<DiskHardWareInfo> HardwareList=diskFailureMapper.selectAllFailureWithHardwareLists();
         JSONArray brands=new JSONArray();
         brands.add("西部数据");
         brands.add("希捷");
@@ -931,41 +927,25 @@ public class HybridDataCollectorService implements DataCollectorService{
         for(int i=0;i<10;i++){
             count[i]=0;
         }
-        for(HardWithDFPRecord hardWithDFPRecord:RecordList){
+        for(DiskHardWareInfo diskHardWareInfo:HardwareList){
             int index;
-            if(hardWithDFPRecord.predictProbability<=mediumLow){
-                index= QueryResources.queryDiskIndex(hardWithDFPRecord.diskSerial);
-                index*=2;
-                if(!hardWithDFPRecord.isSSd){
-                    index+=1;
-                }
-                count[index]++;
+            index= QueryResources.queryDiskIndex(diskHardWareInfo.diskSerial);
+            index*=2;
+            if(!diskHardWareInfo.isSSd){
+                index+=1;
             }
+            count[index]++;
         }
-//        rightChart.getJSONArray("西部数据").add(count[0]);
-//        rightChart.getJSONArray("西部数据").add(count[1]);
-//        rightChart.getJSONArray("希捷").add(count[2]);
-//        rightChart.getJSONArray("希捷").add(count[3]);
-//        rightChart.getJSONArray("东芝").add(count[4]);
-//        rightChart.getJSONArray("东芝").add(count[5]);
-//        rightChart.getJSONArray("三星").add(count[6]);
-//        rightChart.getJSONArray("三星").add(count[7]);
-//        rightChart.getJSONArray("其他").add(count[8]);
-//        rightChart.getJSONArray("其他").add(count[9]);
-//        result.put("rightChart",rightChart);
         JSONArray hddCount=new JSONArray();
         JSONArray ssdCount=new JSONArray();
         Iterator<Object> itr=brands.iterator();
         int m=0;
         while(itr.hasNext()){
-
             if(count[2*m]==0&&count[2*m+1]==0){
-
                 itr.next();
                 itr.remove();
             }
             else{
-
                 itr.next();
                 ssdCount.add(count[2*m]);
                 hddCount.add(count[2*m+1]);
@@ -975,14 +955,12 @@ public class HybridDataCollectorService implements DataCollectorService{
         result.put("diskType",brands);
         result.put("ssdCount",ssdCount);
         result.put("hddCount",hddCount);
-
-
-        //错误盘数趋势图,统计的是两周的，每天的磁盘损坏数量
+        //错误盘数趋势图,统计的是两周的，每天的磁盘损坏数量 需要修改数据库字段了此处先假设该字段名称为修改日期ModifiedTimestamp 注意还需要修改硬件表插入操作
         JSONArray Trend=new JSONArray();
         calendar.add(Calendar.DAY_OF_MONTH,-13);
 
         lowbound=new Timestamp(calendar.getTimeInMillis());
-        RecordList=diskFailureMapper.selectRecentDFPWithHardwareRecordList(lowbound);
+        HardwareList=diskFailureMapper.selectAllFailureWithHardwareListsWithTimelimit(lowbound);
         int[] twoWeeks=new int[14];
         for(int i=0;i<14;i++){
             twoWeeks[i]=0;
@@ -990,16 +968,13 @@ public class HybridDataCollectorService implements DataCollectorService{
         int i=0;
         calendar.add(Calendar.DAY_OF_MONTH,1);
         long highbound=calendar.getTimeInMillis();
-        for(HardWithDFPRecord hardWithDFPRecord:RecordList){
-            if(hardWithDFPRecord.timestamp.getTime()>highbound){
+        for(DiskHardWareInfo diskHardWareInfo:HardwareList){
+            if(diskHardWareInfo.modifiedTimestamp.getTime()>highbound){
                 i++;
                 calendar.add(Calendar.DAY_OF_MONTH,1);
                 highbound=calendar.getTimeInMillis();
             }
-            if(hardWithDFPRecord.predictProbability<=mediumLow){
                 twoWeeks[i]++;
-            }
-
         }
         calendar.setTimeInMillis(lowbound.getTime());
         for(int j=0;j<14;j++){
@@ -1013,9 +988,9 @@ public class HybridDataCollectorService implements DataCollectorService{
         return result.toJSONString();
     }
 
-
-    //TODO
+    //TODO 根据实际损坏的盘数，计算实际的模型参数指标
     private StatisRecord realResultAnalysis() {
+        return new StatisRecord(0.6,0.6,0.6,0.6,0.6,0.6,0.6,0.6);
     }
 
     @Override

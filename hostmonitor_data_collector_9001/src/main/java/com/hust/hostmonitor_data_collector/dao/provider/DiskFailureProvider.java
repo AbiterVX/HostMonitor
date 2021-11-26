@@ -331,4 +331,20 @@ public class DiskFailureProvider {
         }
         return SQL;
     }
+
+    public String selectAllFailureWithHardwareListsWithTimelimit(){
+        String SQL=null;
+        if(dataSourceSelect==0){
+            SQL="select * from diskhardwareinfo where state=false and modifiedTimestamp>#{lowbound}";
+        }
+        else if(dataSourceSelect==1){
+            SQL="select * from storagedevicemonitor.diskhardwareinfo where state=false and modifiedTimestamp>#{lowbound}";
+        }
+        return SQL;
+
+
+
+
+
+    }
 }

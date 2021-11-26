@@ -437,7 +437,7 @@
         //获取Host配置数据
         FSendGetRequest(false, "/getHostsRouter", function (resultData) {
             hostConfigData =resultData;
-            testHostConfig = [
+            /*testHostConfig = [
                 {ip:"2.0.0.1", router:"127.0.0.3",},
                 {ip:"2.0.0.2", router:"127.0.0.3",},
                 {ip:"2.0.0.3", router:"127.0.0.3",},
@@ -457,7 +457,7 @@
 
             for(var i=0;i<testHostConfig.length;i++){
                 hostConfigData.push(testHostConfig[i]);
-            }
+            }*/
         });
 
         //趋势图
