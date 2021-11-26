@@ -226,8 +226,6 @@ public class UserOperationController {
             userService.setSystemSetting(newSystemSetting);
             dataCollectorService.updateSystemSetting(newSystemSetting);
         }
-
-
         return "Complete";
     }
 

@@ -255,17 +255,24 @@ public class HybridDataCollectorService implements DataCollectorService{
     private final TimerTask dataPersistenceTask = new TimerTask() {
         @Override
         public void run() {
-            logger.info("[DataPersistance]"+new Date());
-            try {
-                Thread.sleep(sampleStoreDelayMS);
-                storeSampleData();
-            } catch (InterruptedException e) {
-                logger.error("[ThreadSleepError]: In TimerTask dataPersistenceTask");
-            }
+            dataPersistenceTaskFunction();
         }
     };
+    private void dataPersistenceTaskFunction(){
+        logger.info("[DataPersistance]"+new Date());
+        try {
+            Thread.sleep(sampleStoreDelayMS);
+            storeSampleData();
+        } catch (InterruptedException e) {
+            logger.error("[ThreadSleepError]: In TimerTask dataPersistenceTask");
+        }
+    };
+
     //实际数据库持久化操作
     private void storeSampleData(){
+        if(sampleSelect==3){
+            mapsMix();
+        }
         logger.info("[Persistence]DataHostsSize "+hostsSampleData.size());
         for(Map.Entry<String, JSONObject> entry: hostsSampleData.entrySet()){
             JSONObject tempObject=entry.getValue();
@@ -334,7 +341,7 @@ public class HybridDataCollectorService implements DataCollectorService{
     private HashMap<String,JSONObject> sshSampleData = null;
     private HashMap<String,JSONObject> socketSampleData=null;
     private HashMap<String,JSONObject> hostsSampleData=null;
-
+    private HashMap<String,JSONObject> hybridSampleData=null;
     @Override
     public HashMap<String, JSONObject> getSocketMap() {
         return socketSampleData;
@@ -361,7 +368,6 @@ public class HybridDataCollectorService implements DataCollectorService{
             sshSampleData=new HashMap<>();
             hostsSampleData=sshSampleData;
             for(HostConfigData hostConfigData:sshHostList){
-
                 JSONObject initObject=dataSampleManager.sampleHostHardwareData(hostConfigData);
                 sshSampleData.put(hostConfigData.ip,initObject);
             }
@@ -378,9 +384,44 @@ public class HybridDataCollectorService implements DataCollectorService{
             dataReceiver.startListening();
             dataSampleTimer.schedule(dataPersistenceTask,dataSampleInterval/2,dataSampleInterval*1000-offset);
         }
+        else if(sampleSelect==3){
+            sshSampleData=new HashMap<>();
+            socketSampleData=new HashMap<>();
+            hybridSampleData=new HashMap<>();
+            hostsSampleData=hybridSampleData;
+            for(HostConfigData hostConfigData:sshHostList){
+                JSONObject initObject=dataSampleManager.sampleHostHardwareData(hostConfigData);
+                sshSampleData.put(hostConfigData.ip,initObject);
+            }
+            dataSampleTimer.schedule(performanceSampleTask,20*1000,dataSampleInterval*1000);
+            processSampleTimer.schedule(processSampleTask,60*1000,processSampleInterval*1000);
+            //mainTimer.schedule(smartSampleTask,date,24*3600*1000);
+            smartSampleTimer.schedule(smartSampleTask,0,24*3600*1000);
+            dataReceiver=new DataReceiver(this);
+            dataReceiver.startListening();
+        }
         summaryInfo=configDataManager.getSummaryFormat();
         loadPartition=configDataManager.getLoadPartitionFormat();
         diskPredictTimer.schedule(diskPredictTask,date,predictInterval);
+    }
+    private void mapsMix(){
+        for(Map.Entry<String,JSONObject> sampleData:sshSampleData.entrySet()){
+            if(hybridSampleData.containsKey(sampleData.getKey())){
+                continue;
+            }
+            else {
+                hybridSampleData.put(sampleData.getKey(),sampleData.getValue());
+            }
+
+        }
+        for(Map.Entry<String,JSONObject> sampleData:socketSampleData.entrySet()){
+            if(hybridSampleData.containsKey(sampleData.getKey())){
+                continue;
+            }
+            else {
+                hybridSampleData.put(sampleData.getKey(),sampleData.getValue());
+            }
+        }
     }
     private Date addDay(Date date,int num){
         Calendar calendar=Calendar.getInstance();
@@ -392,7 +433,6 @@ public class HybridDataCollectorService implements DataCollectorService{
     public void updateConfig(){
         configDataManager.setApplicationEnv(applicationEnv);
     }
-
     //-----外部服务接口-----
 
     @Override
@@ -401,6 +441,9 @@ public class HybridDataCollectorService implements DataCollectorService{
         return summaryInfo.toJSONString();
     }
     public void UpdateSummaryInfo(){
+        if(sampleSelect==3){
+            mapsMix();
+        }
         double totalSumCapacity=0;
         int windowsCount=0,linuxCount=0,HDDCount=0,SSDCount=0,connectedCount=0;
         float[][] loadCount = new float[][]{{0,0,0},{0,0,0},{0,0,0}};
@@ -494,6 +537,9 @@ public class HybridDataCollectorService implements DataCollectorService{
     }
     @Override
     public String getHostInfoDashboardAll() {
+        if(sampleSelect==3){
+            mapsMix();
+        }
         JSONObject resultObject=new JSONObject();
         for(Map.Entry<String, JSONObject> entry: hostsSampleData.entrySet()){
             resultObject.put(entry.getKey(),entry.getValue());
@@ -513,6 +559,9 @@ public class HybridDataCollectorService implements DataCollectorService{
 
     @Override
     public String getHostInfoDetail(String IP) {
+        if(sampleSelect==3){
+            mapsMix();
+        }
         String result=hostsSampleData.get(IP).toJSONString();
         return result;
     }
@@ -1000,13 +1049,33 @@ public class HybridDataCollectorService implements DataCollectorService{
         }
         return "sampleSelect Error";
     }
-
+    //TODO 完善
     @Override
     public void updateSystemSetting(JSONObject newSystemSetting) {
+        //对于sampleSelect3的特殊处理
+        if(sampleSelect==2){
+            int dataSampleIntervalNew=newSystemSetting.getIntValue("dataSampleInterval");
+            if(dataSampleIntervalNew*1000!=dataSampleInterval){
+                synchronized (hostsSampleData){
+                    dataSampleTimer.cancel();
+                    dataSampleTimer=new Timer();
+                    dataPersistenceTask=new TimerTask() {
+                        @Override
+                        public void run() {
+                            dataPersistenceTaskFunction();
+                        }
+                    };
+                    dataSampleTimer.schedule(dataPersistenceTask,10*1000,dataSampleIntervalNew*1000-offset);
+                }
+            }
+        }
+        else if(sampleSelect==3){
+            mapsMix();
+        }
+
         int dataSampleIntervalNew=newSystemSetting.getIntValue("dataSampleInterval");
         executorService.shutdown();
         while(!executorService.isTerminated());
-
         if(dataSampleIntervalNew*1000!=dataSampleInterval){
             synchronized (hostsSampleData){
                 dataSampleTimer.cancel();
@@ -1036,8 +1105,6 @@ public class HybridDataCollectorService implements DataCollectorService{
         }
         executorService=Executors.newFixedThreadPool(sshHostList.size()*2);
     }
-
-
     @Override
     public void setAllDiskDFPState(String hostIp, boolean b) {
         if(socketSampleData.containsKey(hostIp)){
@@ -1053,6 +1120,9 @@ public class HybridDataCollectorService implements DataCollectorService{
     //返回所有节点的实时信息
     @Override
     public String getAllHostsInfoDetail() {
+        if(sampleSelect==3){
+            mapsMix();
+        }
         JSONObject result = new JSONObject();
         Set<String> ipSet = hostsSampleData.keySet();
         DecimalFormat decimalFormat = new DecimalFormat("#.##");
