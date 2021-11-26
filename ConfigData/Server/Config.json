@@ -2,7 +2,7 @@
   "DataCollectorServerIP": "127.0.0.1",
   "ServerSampleListenPort": 7000,
   "SpecialUsagePort": 7001,
-  "sampleSelect": 2,
+  "sampleSelect": 3,
   "clientSampleSelect": 0,
   "loadPartition": {
     "cpuLoad": [30.0,70.0,100.0],
