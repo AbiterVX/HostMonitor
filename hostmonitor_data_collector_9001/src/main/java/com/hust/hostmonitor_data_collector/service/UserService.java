@@ -1,7 +1,10 @@
 package com.hust.hostmonitor_data_collector.service;
 
 import com.alibaba.fastjson.JSONObject;
+import com.hust.hostmonitor_data_collector.dao.DiskFailureMapper;
 import com.hust.hostmonitor_data_collector.dao.UserDao;
+import com.hust.hostmonitor_data_collector.dao.entity.DiskHardWareInfo;
+import com.hust.hostmonitor_data_collector.dao.entity.HardWithDFPRecord;
 import com.hust.hostmonitor_data_collector.dao.entity.SystemUser;
 import com.hust.hostmonitor_data_collector.utils.ConfigDataManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,16 +19,21 @@ import java.net.URLEncoder;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 //用户相关的服务类
 public class UserService {
     //User数据库操作
     @Autowired
     UserDao userDao;
-
+    //磁盘数据库操作，仅用于邮件提醒
+    @Autowired
+    DiskFailureMapper diskFailureMapper;
     //配置类
     private ConfigDataManager configDataManager = ConfigDataManager.getInstance();
-
+    private final double highRiskThreshold=0.20f;
+    private final double lowRiskThreshold=0.70f;
     //RestTemplate
     @Resource
     private RestTemplate restTemplate;
@@ -42,7 +50,37 @@ public class UserService {
     //邮件发送
     @Autowired
     private JavaMailSender mailSender;
+    private Timer mailTimer=new Timer();
+    private TimerTask mailTask=new TimerTask() {
+        @Override
+        public void run() {
+            mailTaskFunction();
+        }
+    };
+    private void mailTaskFunction(){
+        String Title="磁盘故障可能性警告(Disk Failure Warning)";
+        List<HardWithDFPRecord> hardWithDFPRecordList=diskFailureMapper.selectLatestDFPWithHardwareRecordList();
+        String Text="本邮件将提醒您，下列磁盘有损坏风险：\n";
+        String[] levels=new String[3];
+        levels[0]="[高风险]:\n";
+        levels[1]="[中风险]:\n";
+        levels[2]="[低风险]:\n";
+        for(HardWithDFPRecord hardWithDFPRecord:hardWithDFPRecordList){
+            String temp="["+(hardWithDFPRecord.isSSd?"SSD":"HDD")+"]";
+            temp+=hardWithDFPRecord.diskSerial+" in ";
+            temp+=hardWithDFPRecord.hostName+"@"+hardWithDFPRecord.hostName+"\n";
+            if(hardWithDFPRecord.predictProbability<highRiskThreshold){
+                levels[0]+=temp;
+            }
+            else if(hardWithDFPRecord.predictProbability>lowRiskThreshold){
+                levels[2]+=temp;
+            }
+            else {
+                levels[1]+=temp;
+            }
+        }
 
+    }
     //Init
     public UserService(){}
 
@@ -101,13 +139,13 @@ public class UserService {
         }
     }
     //发送邮件
-    public void sendEmail(String emailAddress){
+    public void sendEmail(String emailAddress,String mailTitle,String mailText){
         SimpleMailMessage message = new SimpleMailMessage();
         //发送方,接收方,标题,内容
         message.setFrom(userName);
         message.setTo(emailAddress);
-        message.setSubject("主题：简单邮件");
-        message.setText("测试邮件内容");
+        message.setSubject(mailTitle);
+        message.setText(mailText);
         mailSender.send(message);
     }
 
