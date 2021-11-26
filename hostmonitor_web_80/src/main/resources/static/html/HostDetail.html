@@ -345,7 +345,7 @@
         var endTime = document.getElementById("EndTime").value
         var validTime = false;
         var averageValue = [];
-        if (startTime !== "" && startTime !== "" && startTime <= endTime){
+        if (currentTrendChartData.length > 0 && startTime !== "" && startTime !== "" && startTime <= endTime){
             startTime = Date.parse(new Date(startTime));
             endTime = Date.parse(new Date(endTime));
             validTime = true;
