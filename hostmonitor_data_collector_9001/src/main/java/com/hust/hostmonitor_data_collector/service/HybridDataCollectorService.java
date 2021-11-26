@@ -14,6 +14,7 @@ import com.hust.hostmonitor_data_collector.utils.DiskPredict.DiskPredict;
 import com.hust.hostmonitor_data_collector.utils.DiskPredict.DiskPredictProgress;
 import com.hust.hostmonitor_data_collector.utils.DiskPredict.QueryResources;
 import com.hust.hostmonitor_data_collector.utils.SocketConnect.DataReceiver;
+import com.hust.hostmonitor_data_collector.utils.SocketConnect.SpecialProcessor;
 import com.hust.hostmonitor_data_collector.utils.linuxsample.LinuxDataProcess;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,6 +49,9 @@ public class HybridDataCollectorService implements DataCollectorService{
     DispersedMapper dispersedMapper;
     @Value("${spring.profiles.active}")
     String applicationEnv;
+    @Value("${UseEnv}")
+    String UseEnv;
+
 
     //日志输出
     Logger logger= LoggerFactory.getLogger(HybridDataCollectorService.class);
@@ -63,6 +67,7 @@ public class HybridDataCollectorService implements DataCollectorService{
 
     //Sokect数据接收
     private DataReceiver dataReceiver;
+    private SpecialProcessor specialProcessor;
     //----- 监控节点
     //SSH 连接的节点配置数据List
     private List<HostConfigData> sshHostList;
@@ -286,10 +291,13 @@ public class HybridDataCollectorService implements DataCollectorService{
 
                 double DiskReadRates=0;
                 double DiskWriteRates=0;
+                double IOPS=0;
                 for(int i=0;i<tempObject.getJSONArray("diskInfoList").size();i++){
                     DiskWriteRates+=tempObject.getJSONArray("diskInfoList").getJSONObject(i).getDouble("diskWriteSpeed");
                     DiskReadRates+=tempObject.getJSONArray("diskInfoList").getJSONObject(i).getDouble("diskReadSpeed");
+                    IOPS+=tempObject.getJSONArray("diskInfoList").getJSONObject(i).getDouble("diskIOPS");
                 }
+
                 if( tempObject.getDouble("cpuUsage")==0){
                     continue;
                 }
@@ -299,7 +307,7 @@ public class HybridDataCollectorService implements DataCollectorService{
                                 tempObject.getTimestamp("lastUpdateTime")/*这里可能要改时间*/, memUsage,
                                 tempObject.getDouble("cpuUsage"),
                                 tempObject.getDouble("netReceiveSpeed"),
-                                tempObject.getDouble("netSendSpeed"), DiskReadRates, DiskWriteRates);
+                                tempObject.getDouble("netSendSpeed"), DiskReadRates, DiskWriteRates,IOPS);
                         entry.getValue().put("hasPersistent", true);
                     }
                 }
@@ -370,7 +378,6 @@ public class HybridDataCollectorService implements DataCollectorService{
             }
             dataSampleTimer.schedule(performanceSampleTask,20*1000,dataSampleInterval*1000);
             processSampleTimer.schedule(processSampleTask,60*1000,processSampleInterval*1000);
-            //mainTimer.schedule(smartSampleTask,date,24*3600*1000);
             smartSampleTimer.schedule(smartSampleTask,0,24*3600*1000);
         }
         else if(sampleSelect==2){
@@ -379,6 +386,8 @@ public class HybridDataCollectorService implements DataCollectorService{
             hostsSampleData=socketSampleData;
             dataReceiver=new DataReceiver(this);
             dataReceiver.startListening();
+            specialProcessor=new SpecialProcessor(this);
+            specialProcessor.startListening();
             dataSampleTimer.schedule(dataPersistenceTask,dataSampleInterval/2,dataSampleInterval*1000-offset);
         }
         else if(sampleSelect==3){
@@ -397,6 +406,8 @@ public class HybridDataCollectorService implements DataCollectorService{
             smartSampleTimer.schedule(smartSampleTask,0,24*3600*1000);
             dataReceiver=new DataReceiver(this);
             dataReceiver.startListening();
+            specialProcessor=new SpecialProcessor(this);
+            specialProcessor.startListening();
         }
         summaryInfo=configDataManager.getSummaryFormat();
         loadPartition=configDataManager.getLoadPartitionFormat();
@@ -580,7 +591,6 @@ public class HybridDataCollectorService implements DataCollectorService{
         Timestamp highbound=new Timestamp(System.currentTimeMillis());
         Timestamp lowbound=new Timestamp(System.currentTimeMillis()-hours*3600*1000);
         List<DispersedRecord> dispersedRecordList= dispersedMapper.queryRecordsWithTimeLimit(lowbound,highbound,Ip);
-
         JSONArray result=new JSONArray();
         for(int i=0;i<6;i++){
             result.add(new JSONArray());
@@ -588,9 +598,13 @@ public class HybridDataCollectorService implements DataCollectorService{
 
         for(DispersedRecord dispersedRecord:dispersedRecordList){
             Timestamp timestamp = dispersedRecord.getTimestamp();
-
             result.getJSONArray(0).add(createNewValue(timestamp,dispersedRecord.getCpuUsage()));
-            result.getJSONArray(1).add(createNewValue(timestamp,dispersedRecord.getMemUsage()));
+            if(UseEnv.equals("CSDDC")){
+                result.getJSONArray(1).add(createNewValue(timestamp,dispersedRecord.getIOPS()));
+            }
+            else {
+                result.getJSONArray(1).add(createNewValue(timestamp, dispersedRecord.getMemUsage()));
+            }
             result.getJSONArray(2).add(createNewValue(timestamp,dispersedRecord.getDiskReadRates()));
             result.getJSONArray(3).add(createNewValue(timestamp,dispersedRecord.getDiskWriteRates()));
             result.getJSONArray(4).add(createNewValue(timestamp,dispersedRecord.getNetRecv()));

@@ -260,11 +260,9 @@ public class OSHISampler implements Sampler{
                     }
                 }
             }
-
-
-
             double singleTotalSize=dataObject.getJSONArray("diskInfoList").getJSONObject(j).getDouble("diskTotalSize");
             dataObject.getJSONArray("diskInfoList").getJSONObject(j).put("diskTotalFreeSize",FormatUtils.doubleTo2bits_double(usable*1.0/1024/1024/1024));
+            totalUsedSize+=usable;
             long previousReadNumber=dataObject.getJSONArray("diskInfoList").getJSONObject(j).getLong("diskRead");
             long previousReadBytes=dataObject.getJSONArray("diskInfoList").getJSONObject(j).getLong("diskReadBytes");
             long previousWriteNumber=dataObject.getJSONArray("diskInfoList").getJSONObject(j).getLong("diskWrite");

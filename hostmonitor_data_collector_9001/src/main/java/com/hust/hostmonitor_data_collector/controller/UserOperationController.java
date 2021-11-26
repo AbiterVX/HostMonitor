@@ -176,7 +176,7 @@ public class UserOperationController {
     @GetMapping(value = "/SystemSetting/Get")
     @ResponseBody
     public String getSystemSetting() {
-        System.out.println(userService.getSystemSetting());
+        System.out.println("[Get]/SystemSetting/Get");
         return userService.getSystemSetting();
     }
 

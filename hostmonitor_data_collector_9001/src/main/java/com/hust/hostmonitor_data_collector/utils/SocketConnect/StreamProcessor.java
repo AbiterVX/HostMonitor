@@ -51,8 +51,6 @@ public class StreamProcessor implements Runnable{
                 oldDataObject.put("lastUpdateTime",new Timestamp(System.currentTimeMillis()));
                 oldDataObject.put("connected",true);
                 oldDataObject.put("hasPersistent",false);
-                //parent.hostInfoMap.put(remoteIp,UpdateObject);
-                //System.out.println("["+remoteIp+"]"+"["+remotePort+"]"+"[Receive]"+receivedString);
             } catch (IOException e) {
                 e.printStackTrace();
                 inFromNode.close();

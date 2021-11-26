@@ -1345,10 +1345,16 @@ function FRefreshDFPSummaryChart(currentChart,currentData){
 }
 
 //获取ChartOption-TrendChart
-function FGetTrendChartOption(){
+function FGetTrendChartOption(show_iops){
     var titleName = ["CPU利用率","内存利用率","硬盘IO","网络IO"];
     var unitLabel =["%","%","Kb/s","Kb/s"];
     var seriesName = ["CPU利用率","内存利用率","硬盘读取","硬盘写入","网络接受","网络发送"];
+    if(show_iops){
+        titleName = ["CPU利用率","IOPS","硬盘IO","网络IO"];
+        unitLabel =["%","","Kb/s","Kb/s"];
+        seriesName = ["CPU利用率","IOPS","硬盘读取","硬盘写入","网络接受","网络发送"];
+    }
+
 
     var trendChartOption = {
         title: [

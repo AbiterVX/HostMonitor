@@ -9,7 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class FormatConfig {
-    private final JSONObject configJson = JSONObject.parseObject(readFile("ConfigData/Server/Config.json"));
+    private final JSONObject configJson = JSONObject.parseObject(readFile("ConfigData/Client/Config.json"));
     private final String path = System.getProperty("user.dir");
     private static volatile FormatConfig formatConfig=null;
     public static FormatConfig getInstance(){
@@ -46,6 +46,9 @@ public class FormatConfig {
     public int getSampleSelect() {
         //0 OSHI,1 commands
         return configJson.getIntValue("clientSampleSelect");
+    }
+    public int getIntConifg(String field){
+        return configJson.getIntValue(field);
     }
     public int getPort(int choice){
         if(choice==1){

@@ -9,11 +9,11 @@ public class DispersedProvider {
         String SQL=null;
         if(dataSourceSelect==0){
             SQL= "insert into DispersedMonitorRecord values (" +
-                    "#{hostname},#{ip},#{timestamp},#{MemUsage},#{CpuUsage},#{NetRecv},#{NetSent},#{DiskReadRates},#{DiskWriteRates})";
+                    "#{hostname},#{ip},#{timestamp},#{MemUsage},#{CpuUsage},#{NetRecv},#{NetSent},#{DiskReadRates},#{DiskWriteRates},#{IOPS})";
         }
         else if (dataSourceSelect==1){
             SQL= "insert into storagedevicemonitor.DISPERSEDMONITORRECORD values (" +
-                    "#{hostname},#{ip},#{timestamp},#{MemUsage},#{CpuUsage},#{NetRecv},#{NetSent},#{DiskReadRates},#{DiskWriteRates})";
+                    "#{hostname},#{ip},#{timestamp},#{MemUsage},#{CpuUsage},#{NetRecv},#{NetSent},#{DiskReadRates},#{DiskWriteRates},#{IOPS})";
         }
         return SQL;
     }

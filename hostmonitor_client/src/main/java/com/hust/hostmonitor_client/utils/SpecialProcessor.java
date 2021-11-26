@@ -90,6 +90,7 @@ public class SpecialProcessor {
             try {
                 int testChoice;
                 while((testChoice=inFromCollector.readInt())!=-1){
+                        //1 进行测试 2 修改采样周期
                         if(testChoice==1){
                             String speedTestCmd=null;
                             String readSpeed=null;
@@ -121,6 +122,9 @@ public class SpecialProcessor {
                             }
                             outToCollector.writeUTF(writeSpeed);
                             outToCollector.writeUTF(readSpeed);
+                        }
+                        else if(testChoice==2){
+
                         }
 
                 }

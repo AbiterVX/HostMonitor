@@ -1,9 +1,9 @@
 server:
   port: 9001
-
 spring:
   profiles:
       active: test
+      # 数据库表结构以笔记本达梦数据库为准
       # dev 阿里云mysql数据库 配置文件改 0
       # test 本地达梦数据库 配置文件改 1
       # prod 701达梦数据库 配置文件改 1
@@ -29,3 +29,7 @@ sms_config:
   sms-url: http://v.juhe.cn/sms/send?mobile=%s&tpl_id=%s&tpl_value=%s&key=%s
   tpl-id-1: 234103
   key: a1a2f8b334adea73c4de5c848848959b
+
+UseEnv: CSDDC
+  #CSDDC 701
+  #YIYAO 医药

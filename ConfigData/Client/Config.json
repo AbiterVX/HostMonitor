@@ -1,0 +1,121 @@
+{
+  "DataCollectorServerIP": "127.0.0.1",
+  "ServerSampleListenPort": 7000,
+  "SpecialUsagePort": 7001,
+  "sampleSelect": 2,
+  "clientSampleSelect": 0,
+  "sampleInterval": 20,
+  "loadPartition": {
+    "cpuLoad": [30.0,70.0,100.0],
+    "memoryLoad": [30.0,70.0,100.0],
+    "diskLoad": [30.0,70.0,100.0]
+  },
+  "summary": {
+    "hostIp":[],
+    "connectedCount": 0,
+    "sumCapacity": 0,
+    "windowsHostCount": 0,
+    "linuxHostCount": 0,
+    "hddCount": 0,
+    "ssdCount": 0,
+    "lastUpdateTime": 0,
+    "load": [
+      [0,0,0],
+      [0,0,0],
+      [0,0,0]
+    ]
+  },
+  "SampleFormat": {
+    "hostInfo": {
+      "hostName": "",
+      "connected": false,
+      "hasPersistent": true,
+      "osName": "OS",
+      "memoryUsage": [0,0],
+      "netReceiveSpeed": 0,
+      "netSendSpeed": 0,
+      "cpuUsage": 0,
+      "allDiskTotalSize": 0,
+      "allDiskTotalFreeSize": 0,
+      "lastUpdateTime": 0,
+      "diskInfoList": [],
+      "cpuInfoList": [],
+      "gpuInfoList": [],
+      "processInfoList": [],
+      "DFPList": {}
+    },
+    "diskInfo": {
+      "diskName": "",
+      "diskIOPS": 0,
+      "diskReadSpeed": 0,
+      "diskWriteSpeed": 0,
+      "diskTotalSize": 0,
+      "diskTotalFreeSize": 0,
+      "diskModel":"",
+      "type": 0,
+      "diskPartitionList": []
+    },
+    "diskPartition": {
+      "driveLetter": "",
+      "size": 0,
+      "freeSize": 0,
+      "IOPS": 0,
+      "readSpeed": 0,
+      "writeSpeed": 0
+    },
+    "cpuInfo": {
+      "cpuName": "",
+      "cpuUsage": 0,
+      "cpuTemperature": 0
+    },
+    "gpuInfo": {
+      "gpuName": "",
+      "gpuAvailableRam": 0
+    },
+    "processInfo": {
+      "processId": "",
+      "processName": "",
+      "startTime": 0,
+      "cpuUsage": 0,
+      "memoryUsage": 0,
+      "diskReadSpeed": 0,
+      "diskWriteSpeed": 0
+    },
+    "diskFailurePredictInfo": {
+      "hostName": "",
+      "diskName": "",
+      "predictTime": "",
+      "predictProbability": "",
+      "lastUpdateTime": 0
+    },
+    "speedMeasurementInfo": {
+      "state": false,
+      "hostName": "",
+      "ioTestLastTime": "",
+      "netSendSpeed": "",
+      "netDownloadSpeed": "",
+      "diskIOSpeed": "",
+      "lastUpdateTime": 0
+    },
+    "netInterfaceInfo": {
+      "netInterfaceName": "",
+      "sentBytes": 0,
+      "recvBytes": 0,
+      "sentSpeed": 0,
+      "recvSpeed": 0
+    },
+    "lvmInfo": {
+      "PVName": "",
+      "VGName": "",
+      "lvmInfo": [],
+      "dmName":""
+    }
+  },
+  "filter": {
+    "cpuUsage": 100,
+    "memoryUsage": 100,
+    "diskReadSpeed": 0,
+    "diskWriteSpeed": 0
+  }
+
+}

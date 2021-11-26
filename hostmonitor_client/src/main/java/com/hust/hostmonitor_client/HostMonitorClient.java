@@ -2,6 +2,8 @@ package com.hust.hostmonitor_client;
 
 import com.hust.hostmonitor_client.utils.*;
 import lombok.SneakyThrows;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import oshi.util.Util;
 
 import java.io.DataOutputStream;
@@ -10,16 +12,16 @@ import java.net.Socket;
 
 public class HostMonitorClient {
     public static Object lockObject=new Object();
-    public static int SamplePeriod=20000;
+    public static int SamplePeriod=FormatConfig.getInstance().getIntConifg("sampleInterval");
     public static int sampleIndex=0;
     private static int processFrequency=1;
     private static Sampler mainSampler=new OSHISampler();
     private static int WRITE_READ_UTF_MAX_LENGTH=65535;
     private static int SEGMENT_LENGTH=60000;
+    private Logger logger= LoggerFactory.getLogger(HostMonitorClient.class);
     @SneakyThrows
     public static void main(String[] args) {
         boolean isTheFirstTimeToSample=true;
-
         Thread diskPredictDataSampler=new DiskPredictDataSampler(mainSampler.hostName());
         diskPredictDataSampler.start();
         mainSampler.hardWareSample();
@@ -31,17 +33,17 @@ public class HostMonitorClient {
 
         synchronized (lockObject){
             while(true){
-                Util.sleep(SamplePeriod);
+                Util.sleep(SamplePeriod*1000);
                 if(!isTheFirstTimeToSample){
-                    mainSampler.periodSample(SamplePeriod/1000,false);
+                    mainSampler.periodSample(SamplePeriod,false);
                 }
                 else{
-                    mainSampler.periodSample(SamplePeriod/1000,true);
+                    mainSampler.periodSample(SamplePeriod,true);
                     isTheFirstTimeToSample=false;
                 }
                 boolean judgeResult=false;
                 if(sampleIndex%processFrequency==0){
-                    mainSampler.processInfoSample(SamplePeriod/1000,processFrequency);
+                    mainSampler.processInfoSample(SamplePeriod,processFrequency);
                     sampleIndex=1;
                     judgeResult=true;
                 }else{
@@ -82,32 +84,25 @@ public class HostMonitorClient {
         }
         private void connect() {
             try {
-                //System.err.println("外部类"+this);
                 clientSocket = new Socket(collectorIP, collectorPort);
                 outToCollector = new DataOutputStream(clientSocket.getOutputStream());
-
                 Thread thread = new Thread(new Client_send(clientSocket, outToCollector));
                 thread.start();
                 connection_state = true;
             } catch (IOException e) {
-                //e.printStackTrace();
                 System.err.println("["+Thread.currentThread().getName()+"]"+"Can't connect to the collector");
             }
         }
         private void reconnect() throws IOException {
             while(!connection_state){
                 System.out.println("Try to reconnect to the collector");
-                //System.err.println("["+Thread.currentThread().getName()+"]这个线程还活着");
-                //System.err.println(Thread.currentThread().getState());
                 connect();
                 try {
                     Thread.sleep(reconnectInterval);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-
             }
-
         }
         public class Client_send implements Runnable{
             private Socket socket;
@@ -118,7 +113,6 @@ public class HostMonitorClient {
             }
             @Override
             public void run() {
-                //System.err.println("内部类"+DataSender.this);
                 try{
                     outToCollector.writeUTF(mainSampler.getHostName());
                     synchronized (lockObject) {

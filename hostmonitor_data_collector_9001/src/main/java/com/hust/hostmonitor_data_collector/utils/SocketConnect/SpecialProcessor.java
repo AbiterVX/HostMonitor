@@ -2,6 +2,8 @@ package com.hust.hostmonitor_data_collector.utils.SocketConnect;
 
 import com.hust.hostmonitor_data_collector.service.DataCollectorService;
 import com.hust.hostmonitor_data_collector.utils.DiskPredict.DiskPredict;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.DataInputStream;
 import java.io.File;
@@ -14,28 +16,29 @@ import java.util.Calendar;
 import java.util.StringTokenizer;
 
 public class SpecialProcessor {
+    private Logger logger= LoggerFactory.getLogger(SpecialProcessor.class);
     private DataCollectorService parent;
     private ServerSocket server;
     private String fileRepository;
+    private int specialPort=7001;
     public final SimpleDateFormat sdf =new SimpleDateFormat("yyyy-MM-dd");
     public SpecialProcessor(DataCollectorService parent){
         fileRepository = System.getProperty("user.dir") +"/DiskPredict/";
         this.parent=parent;
         try {
-            this.server=new ServerSocket(7001);
+            this.server=new ServerSocket(specialPort);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
     public void startListening(){
-        //System.out.println("[FileReceiver]Start listening for disk data");
         Thread listeningThread=new ThreadListening();
         listeningThread.start();
     }
     public class ThreadListening extends Thread{
         public void run(){
             try {
-                //System.out.println("===========Server Listening============");
+                logger.info("[SpecialProcesser]===========Server Listening on "+specialPort+"============");
                 while (true){
                     Socket socket = server.accept();
                     // 建立好连接后，从socket中获取输入流，并建立缓冲区进行读取

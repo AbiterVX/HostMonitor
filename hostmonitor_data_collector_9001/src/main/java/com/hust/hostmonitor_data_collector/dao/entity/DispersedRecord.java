@@ -13,6 +13,15 @@ public class DispersedRecord {
     private Double DiskReadRates;
     private Double DiskWriteRates;
 
+    public Double getIOPS() {
+        return IOPS;
+    }
+
+    public void setIOPS(Double IOPS) {
+        this.IOPS = IOPS;
+    }
+
+    private Double IOPS;
     public String getHostname() {
         return hostname;
     }
@@ -49,7 +58,7 @@ public class DispersedRecord {
         return DiskWriteRates;
     }
 
-    public DispersedRecord(String hostname, String ip, Timestamp timestamp, Double memUsage, Double cpuUsage, Double netRecv, Double netSent, Double diskReadRates, Double diskWriteRates) {
+    public DispersedRecord(String hostname, String ip, Timestamp timestamp, Double memUsage, Double cpuUsage, Double netRecv, Double netSent, Double diskReadRates, Double diskWriteRates,Double IOPS) {
         this.hostname = hostname;
         this.ip = ip;
         this.timestamp = timestamp;
@@ -59,8 +68,9 @@ public class DispersedRecord {
         NetSent = netSent;
         DiskReadRates = diskReadRates;
         DiskWriteRates = diskWriteRates;
+        IOPS=IOPS;
     }
-    public DispersedRecord(String hostname, String ip, Timestamp timestamp, Float memUsage, Float cpuUsage, Float netRecv, Float netSent, Float diskReadRates, Float diskWriteRates) {
+    public DispersedRecord(String hostname, String ip, Timestamp timestamp, Float memUsage, Float cpuUsage, Float netRecv, Float netSent, Float diskReadRates, Float diskWriteRates,Float IOPS) {
         this.hostname = hostname;
         this.ip = ip;
         this.timestamp = timestamp;
@@ -70,6 +80,7 @@ public class DispersedRecord {
         NetSent = netSent.doubleValue();
         DiskReadRates = diskReadRates.doubleValue();
         DiskWriteRates = diskWriteRates.doubleValue();
+        IOPS=IOPS;
     }
     @Override
     public String toString() {

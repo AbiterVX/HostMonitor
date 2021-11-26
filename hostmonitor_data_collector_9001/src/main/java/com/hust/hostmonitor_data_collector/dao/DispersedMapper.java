@@ -19,7 +19,9 @@ public interface DispersedMapper {
                          @Param("NetRecv")Double NetRecv,
                          @Param("NetSent")Double NetSent,
                          @Param("DiskReadRates") double DiskReadRates,
-                         @Param("DiskWriteRates") double DiskWriteRates);
+                         @Param("DiskWriteRates") double DiskWriteRates,
+                         @Param("IOPS") double IOPS);
+
     @SelectProvider(type = DispersedProvider.class,method = "queryRecordsWithTimeLimit")
     List<DispersedRecord> queryRecordsWithTimeLimit(@Param("lowbound")Timestamp lowbound,
                                                     @Param("highbound")Timestamp highbound,
