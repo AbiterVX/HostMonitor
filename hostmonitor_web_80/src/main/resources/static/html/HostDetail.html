@@ -26,6 +26,13 @@
     <!-- Latest compiled and minified Locales -->
     <script src="../bootstrap-table/bootstrap-table-zh-CN.min.js"></script>
 </head>
+<style>
+    .TrendInputBlock{
+        height: 35px;
+    }
+</style>
+
+
 <body>
     <div class="card" >
         <div class="card-header">
@@ -71,6 +78,48 @@
             </div>
         </div>
         <div class="card-body">
+            <div class="row" style="margin-bottom: 20px;">
+                <div class="col-md-2">
+                    <label>开始时间：</label>
+                    <input id="StartTime" type="datetime-local" class="form-control TrendInputBlock">
+                </div>
+
+                <div class="col-md-2">
+                    <label>结束时间：</label>
+                    <input id="EndTime" type="datetime-local" class="form-control TrendInputBlock">
+                </div>
+                <div class="col-md-1">
+                    <label>计算:</label>
+                    <button class="btn btn-secondary btn-block TrendInputBlock"  onclick="caculateAverageTrendValue()">计算</button>
+                </div>
+                <div class="col-md-1">
+                </div>
+                <div class="col-md-1">
+                    <label id="Label1">CPU利用率:</label>
+                    <input id="Value1" type="text" class="form-control TrendInputBlock" readonly>
+                </div>
+                <div class="col-md-1">
+                    <label id="Label2">内存利用率:</label>
+                    <input id="Value2" type="text" class="form-control TrendInputBlock"  readonly>
+                </div>
+                <div class="col-md-1">
+                    <label id="Label3">硬盘读取速度:</label>
+                    <input id="Value3" type="text" class="form-control TrendInputBlock"  readonly>
+                </div>
+                <div class="col-md-1">
+                    <label id="Label4">硬盘写入速度:</label>
+                    <input id="Value4" type="text" class="form-control TrendInputBlock" readonly>
+                </div>
+                <div class="col-md-1">
+                    <label id="Label5">网络接受速度:</label>
+                    <input id="Value5" type="text" class="form-control TrendInputBlock"  readonly>
+                </div>
+                <div class="col-md-1">
+                    <label id="Label6">网络发送速度:</label>
+                    <input id="Value6" type="text" class="form-control TrendInputBlock" readonly>
+                </div>
+
+            </div>
             <div id="TrendChart" style="width: 100%;height: 800px;"></div>
         </div>
     </div>
@@ -97,6 +146,8 @@
     var currentDateIntervalIndex = 0;
     //MainInfo
     var mainInfo = FGetMainInfo();
+    //趋势数据
+    var tempTrendChartData;
 
     //加载后执行
     window.onload=function (){
@@ -202,7 +253,7 @@
                 }
 
 
-                var tempTrendChartData = [];
+                tempTrendChartData = [];
                 for(var i=0;i<trendChartData.length;i++){
                     tempTrendChartData.push(trendChartData[i].slice(beginIndex,trendChartData[i].length));
                 }
@@ -271,6 +322,78 @@
             });
         }
         TrendChart.setOption(option);
+    }
+
+
+    //计算选中的区间平均值
+    function caculateAverageTrendValue(){
+        var startTime = document.getElementById("StartTime").value
+        var endTime = document.getElementById("EndTime").value
+
+        var validTime = false;
+        var averageValue = [];
+        if (startTime !== "" && startTime !== "" && startTime < endTime){
+            startTime = Date(startTime);
+            endTime = Date(endTime);
+
+            validTime = true;
+            for(var i=0;i<trendChartData.length;i++){
+                //获取起始索引
+                var startIndex = 0;
+                for(var j=0;j<trendChartData[i].length;j++){
+                    if(startTime >= trendChartData[i][j][0]){
+                        startIndex = j;
+                        break;
+                    }
+                }
+
+                //获取终止索引
+                var endIndex = 0;
+                for(var j=trendChartData[i].length-1;j>=0;j--){
+                    if(endIndex <= trendChartData[i][j][0]){
+                        endIndex = j;
+                        break;
+                    }
+                }
+
+                if(startIndex <= endIndex){
+                    //正常
+                }
+                else{
+                    //精度不足
+                    if(startIndex-1 >=0){
+                        startIndex -=1;
+                    }
+                    if(endIndex+1 <=trendChartData[i].length-1){
+                        startIndex +=1;
+                    }
+                }
+
+                // 计算平均值
+                var sumValue = 0;
+                for(var j=startIndex;j<=endIndex;j++){
+                    sumValue += trendChartData[i][j];
+                }
+                averageValue.push(sumValue/(endIndex - startIndex + 1));
+            }
+
+
+        }
+        else{
+
+        }
+
+        var valueCount = 6;
+        for(var i=0;i<valueCount;i++){
+            if(validTime){
+                document.getElementById("Value"+(i+1).toString()).value = averageValue[i]
+            }
+            else{
+                document.getElementById("Value"+(i+1).toString()).value = "--"
+            }
+        }
+
+
     }
 </script>
 
