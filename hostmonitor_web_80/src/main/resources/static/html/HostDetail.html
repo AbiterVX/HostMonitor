@@ -95,27 +95,27 @@
                 <div class="col-md-1">
                 </div>
                 <div class="col-md-1">
-                    <label id="Label1">CPU利用率:</label>
+                    <label id="Label1"></label>
                     <input id="Value1" type="text" class="form-control TrendInputBlock" readonly>
                 </div>
                 <div class="col-md-1">
-                    <label id="Label2">内存利用率:</label>
+                    <label id="Label2"></label>
                     <input id="Value2" type="text" class="form-control TrendInputBlock"  readonly>
                 </div>
                 <div class="col-md-1">
-                    <label id="Label3">硬盘读取速度:</label>
+                    <label id="Label3"></label>
                     <input id="Value3" type="text" class="form-control TrendInputBlock"  readonly>
                 </div>
                 <div class="col-md-1">
-                    <label id="Label4">硬盘写入速度:</label>
+                    <label id="Label4"></label>
                     <input id="Value4" type="text" class="form-control TrendInputBlock" readonly>
                 </div>
                 <div class="col-md-1">
-                    <label id="Label5">网络接受速度:</label>
+                    <label id="Label5"></label>
                     <input id="Value5" type="text" class="form-control TrendInputBlock"  readonly>
                 </div>
                 <div class="col-md-1">
-                    <label id="Label6">网络发送速度:</label>
+                    <label id="Label6"></label>
                     <input id="Value6" type="text" class="form-control TrendInputBlock" readonly>
                 </div>
 
@@ -147,7 +147,9 @@
     //MainInfo
     var mainInfo = FGetMainInfo();
     //趋势数据
-    var tempTrendChartData;
+    var currentTrendChartData = [];
+
+    var trendChartDataTitle = ["CPU利用率:","IOPS:","硬盘读取:","硬盘写入:","网络接受:","网络发送:"];
 
     //加载后执行
     window.onload=function (){
@@ -194,6 +196,15 @@
             });
             refreshTrendChart();
         },hostRefreshInterval);
+
+
+        for(var i=0;i<trendChartDataTitle.length;i++){
+            document.getElementById("Label"+(i+1).toString()).innerText = trendChartDataTitle[i];
+        }
+        //计算选中的区间平均值-默认填写时间-当前时间
+        var currentDate = getFormat(new Date());
+        document.getElementById("StartTime").value = currentDate;
+        document.getElementById("EndTime").value = currentDate;
     }
 
     //[DropDown]选择-HostIp
@@ -232,6 +243,7 @@
     //刷新Chart
     function refreshTrendChart(){
         FRefreshDataHostDetailTrend(mainInfo["hostIp"][currentHostIndex],function (trendChartData){
+            currentTrendChartData =trendChartData;
             if(currentDateIntervalIndex === 0){
                 refreshTrendChartData(trendChartData);
             }
@@ -253,10 +265,12 @@
                 }
 
 
-                tempTrendChartData = [];
+                var tempTrendChartData = [];
                 for(var i=0;i<trendChartData.length;i++){
                     tempTrendChartData.push(trendChartData[i].slice(beginIndex,trendChartData[i].length));
                 }
+
+
                 refreshTrendChartData(tempTrendChartData);
             }
 
@@ -329,31 +343,36 @@
     function caculateAverageTrendValue(){
         var startTime = document.getElementById("StartTime").value
         var endTime = document.getElementById("EndTime").value
-
         var validTime = false;
         var averageValue = [];
-        if (startTime !== "" && startTime !== "" && startTime < endTime){
-            startTime = Date(startTime);
-            endTime = Date(endTime);
-
+        if (startTime !== "" && startTime !== "" && startTime <= endTime){
+            startTime = Date.parse(new Date(startTime));
+            endTime = Date.parse(new Date(endTime));
             validTime = true;
-            for(var i=0;i<trendChartData.length;i++){
+            for(var i=0;i<currentTrendChartData.length;i++){
                 //获取起始索引
-                var startIndex = 0;
-                for(var j=0;j<trendChartData[i].length;j++){
-                    if(startTime >= trendChartData[i][j][0]){
+                var startIndex = -1;
+                for(var j=0;j<currentTrendChartData[i].length;j++){
+                    if(startTime <= currentTrendChartData[i][j][0]){
                         startIndex = j;
                         break;
                     }
                 }
+                if(startIndex === -1){
+                    startIndex =currentTrendChartData[i].length-1;
+                }
+
 
                 //获取终止索引
-                var endIndex = 0;
-                for(var j=trendChartData[i].length-1;j>=0;j--){
-                    if(endIndex <= trendChartData[i][j][0]){
+                var endIndex = -1;
+                for(var j=currentTrendChartData[i].length-1;j>=0;j--){
+                    if(endTime >= currentTrendChartData[i][j][0]){
                         endIndex = j;
                         break;
                     }
+                }
+                if(endIndex === -1){
+                    endIndex = 0;
                 }
 
                 if(startIndex <= endIndex){
@@ -364,27 +383,23 @@
                     if(startIndex-1 >=0){
                         startIndex -=1;
                     }
-                    if(endIndex+1 <=trendChartData[i].length-1){
-                        startIndex +=1;
+                    if(endIndex+1 <=currentTrendChartData[i].length-1){
+                        endIndex +=1;
                     }
                 }
+                //alert(startIndex.toString()+","+ );
+
 
                 // 计算平均值
                 var sumValue = 0;
                 for(var j=startIndex;j<=endIndex;j++){
-                    sumValue += trendChartData[i][j];
+                    sumValue += currentTrendChartData[i][j][1];
                 }
-                averageValue.push(sumValue/(endIndex - startIndex + 1));
+                averageValue.push((sumValue/(endIndex - startIndex + 1)).toFixed(2));
             }
-
-
-        }
-        else{
-
         }
 
-        var valueCount = 6;
-        for(var i=0;i<valueCount;i++){
+        for(var i=0;i<trendChartDataTitle.length;i++){
             if(validTime){
                 document.getElementById("Value"+(i+1).toString()).value = averageValue[i]
             }

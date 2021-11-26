@@ -12,6 +12,24 @@ function FGetDateTime(currentDate){
     var s = (date.getSeconds() <10 ? '0' + date.getSeconds() : date.getSeconds());
     return Y+M+D+h+m+s;
 }
+
+
+//构造符合datetime-local格式的当前日期
+function getFormat(date){
+    var result_date = "";
+    result_date += date.getFullYear()+"-";
+    result_date += (date.getMonth()+1)<10?"0"+(date.getMonth()+1):(date.getMonth()+1);
+    result_date += "-";
+    result_date += date.getDate()<10?"0"+(date.getDate()):(date.getDate());
+    result_date += "T";
+    result_date += date.getHours()<10?"0"+(date.getHours()):(date.getHours());
+    result_date += ":";
+    result_date += date.getMinutes()<10?"0"+(date.getMinutes()):(date.getMinutes());
+    result_date += ":00";
+    return result_date;
+}
+
+
 //百分制增加单位
 function FGetPercentageWithUnit(value){
     return value + "%";
