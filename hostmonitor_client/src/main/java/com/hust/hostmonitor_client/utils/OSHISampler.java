@@ -41,7 +41,7 @@ import java.util.Map;
 public class OSHISampler implements Sampler{
     @Override
     public String OSName() {
-        return null;
+        return systemInfo.getOperatingSystem().toString();
     }
     private Logger logger= LoggerFactory.getLogger(OSHISampler.class);
     private SystemInfo systemInfo;

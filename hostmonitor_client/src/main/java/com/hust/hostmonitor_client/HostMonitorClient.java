@@ -22,7 +22,7 @@ public class HostMonitorClient {
     @SneakyThrows
     public static void main(String[] args) {
         boolean isTheFirstTimeToSample=true;
-        Thread diskPredictDataSampler=new DiskPredictDataSampler(mainSampler.hostName());
+        Thread diskPredictDataSampler=new DiskPredictDataSampler(mainSampler.hostName(), mainSampler.OSName());
         diskPredictDataSampler.start();
         mainSampler.hardWareSample();
         SpecialProcessor specialProcessor=new SpecialProcessor(mainSampler.OSName());

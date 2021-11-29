@@ -1077,6 +1077,12 @@ public class DataSampleManager {
                     cmdResult.remove(cmdResult.size() - 1);
                     for(String currentOutput: cmdResult){
                         String[] rawData = currentOutput.split(":\\s+");
+                        if(rawData.length!=2){
+                            continue;
+                        }
+                        if(rawData[0].equals("Device type")&&rawData[1].equals("CD/DVD")){
+                            continue;
+                        }
                         currentDiskData.put(rawData[0],rawData[1]);
                     }
                 }
@@ -1088,6 +1094,9 @@ public class DataSampleManager {
                     {
                         List<String> cmdResult = cmdExecutor.runCommand(smartDataSampleCmd + currentDiskName,hostConfigData,true);
                         for (int i = 0; i < 7; i++) {
+                            if(cmdResult.size()==0){
+                                continue;
+                            }
                             cmdResult.remove(0);
                         }
                         for(String currentOutput: cmdResult){

@@ -14,6 +14,7 @@ public class DiskPredictDataSampler extends Thread {
     private String sampleFilePath = "";
     private String dataFilePath="";
     private final long sampleInterval=24*3600*1000;
+    private final String osType;
     //private final long sampleInterval=10*1000;
     private Socket fileSocket;
     private String collectorIp="";
@@ -23,10 +24,11 @@ public class DiskPredictDataSampler extends Thread {
     private boolean flag=true;
     private int fileRetransmitInterval=3000;
     private SenderThread sender;
-    public DiskPredictDataSampler(String name){
+    public DiskPredictDataSampler(String name,String osType){
         collectorIp= formatConfig.getCollectorIP();
         collectorPort= formatConfig.getPort(2);
         this.hostName=name;
+        this.osType=osType;
         sampleFilePath = System.getProperty("user.dir") +"/DiskPredict/client/data_collector.py";
         dataFilePath=System.getProperty("user.dir") +"/DiskPredict/client/sampleData/data.csv";
     }
@@ -39,7 +41,7 @@ public class DiskPredictDataSampler extends Thread {
                 while(sender.isAlive());
                 System.out.println("Sender exits");
             }
-            SU.run(new CommandSampler());
+            SU.run(new CommandSampler(osType));
             flag=false;
             sender=new SenderThread();
             sender.start();
@@ -104,6 +106,10 @@ public class DiskPredictDataSampler extends Thread {
         }
     }
     public class CommandSampler extends SuperUserApplication{
+        public CommandSampler(String osType){
+            this.osType=osType;
+        }
+        private String osType;
         @Override
         public int run(String[] strings) {
 
@@ -112,8 +118,19 @@ public class DiskPredictDataSampler extends Thread {
             {
                 //获取硬盘名
                 List<String> diskList = new ArrayList<>();
+                String getDiskListCmd = "";
+                if(osType.toLowerCase().contains("windows")){
+                    getDiskListCmd = "wmic logicaldisk get deviceid";
+                    List<String> cmdResult = new CmdExecutor(getDiskListCmd).cmdResult;
+                    cmdResult.remove(0);
+                    for(String currentStr:cmdResult){
+                        if(!currentStr.equals("")){
+                            diskList.add(currentStr.trim());
+                        }
+                    }
+                }
+                else
                 {
-                    String getDiskListCmd = "";
                     getDiskListCmd = "lsblk -bnd";
                     List<String> cmdResult = new CmdExecutor(getDiskListCmd).cmdResult;
                     for(String currentStr:cmdResult) {
