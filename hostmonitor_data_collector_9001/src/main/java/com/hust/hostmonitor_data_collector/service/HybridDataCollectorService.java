@@ -1011,15 +1011,31 @@ public class HybridDataCollectorService implements DataCollectorService{
 
     @Override
     public String remoteTest(String nodeIp){
+        int testMethodSelect=1;
+        if(sampleSelect==1){
+            testMethodSelect=1;
+        }
+        else if(sampleSelect==2){
+            testMethodSelect=2;
+        }
+        else  if(sampleSelect==3){
+            if(sshSampleData.containsKey(nodeIp)){
+                testMethodSelect=1;
+            }
+            else {
+                testMethodSelect=2;
+            }
+        }
+
         //客户端版本
-        if(sampleSelect==2) {
+        if(testMethodSelect==2) {
             TestInitiator testInitiator = new TestInitiator(nodeIp);
             testInitiator.socketInitialization();
             String result = testInitiator.executeTest(1);
             testInitiator.closeTestSocket();
             return result;
         }
-        else if(sampleSelect==1){
+        else if(testMethodSelect==1){
             HostConfigData testConfig=null;
             JSONObject sampleObject=sshSampleData.get(nodeIp);
             if(!sampleObject.getBoolean("connected")){
@@ -1035,7 +1051,6 @@ public class HybridDataCollectorService implements DataCollectorService{
                 return "Node not found";
             }
             JSONObject result=dataSampleManager.ioTest(testConfig);
-            //JSONObject result = cmdSampleManager.ioTest(nodeIp);
             return result.toJSONString();
         }
         return "sampleSelect Error";
@@ -1167,13 +1182,6 @@ public class HybridDataCollectorService implements DataCollectorService{
     }
     public String test(){
         return applicationEnv;
-    }
-
-    public void mailNotice(){
-
-    }
-    public void phoneNotice(){
-
     }
 
 

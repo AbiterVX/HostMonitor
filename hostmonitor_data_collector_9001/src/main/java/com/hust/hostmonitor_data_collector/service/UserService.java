@@ -79,12 +79,20 @@ public class UserService {
                 levels[1]+=temp;
             }
         }
-
+        Text+=levels[0];
+        Text+=levels[1];
+        Text+=levels[2];
+        List<SystemUser> userList=getUsers();
+        for(SystemUser systemUser:userList){
+            if(systemUser.isAdmin()|| systemUser.isSuperAdmin()){
+                if(systemUser.isEmailValidState()&& systemUser.isValidState()){
+                    sendEmail(systemUser.getEmail(),Title,Text);
+                }
+            }
+        }
     }
     //Init
     public UserService(){}
-
-
     //-----用户
     //注册
     public String signUp(String userName,String password){
