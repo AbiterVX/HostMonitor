@@ -831,19 +831,20 @@ public class HybridDataCollectorService implements DataCollectorService{
     public String getDFPTrainList() {
         List<TrainInfo> queryResult=diskFailureMapper.selectAllTrainInfo();
         JSONArray resultArray=new JSONArray();
+        DecimalFormat df=new DecimalFormat("#.######");
         for(TrainInfo trainInfo:queryResult){
             JSONObject tempObject=new JSONObject();
             tempObject.put("buildTime",trainInfo.timestamp);
             tempObject.put("model",trainInfo.PredictModel);
             tempObject.put("diskModel",trainInfo.DiskModel);
-            tempObject.put("FDR",trainInfo.FDR);
-            tempObject.put("FAR",trainInfo.FAR);
-            tempObject.put("AUC",trainInfo.AUC);
-            tempObject.put("FNR",trainInfo.FNR);
-            tempObject.put("Accuracy",trainInfo.Accuracy);
-            tempObject.put("Precision",trainInfo.Precision);
-            tempObject.put("Specificity",trainInfo.Specificity);
-            tempObject.put("ErrorRate",trainInfo.ErrorRate);
+            tempObject.put("FDR",Double.parseDouble(df.format(trainInfo.FDR)));
+            tempObject.put("FAR",Double.parseDouble(df.format(trainInfo.FAR)));
+            tempObject.put("AUC",Double.parseDouble(df.format(trainInfo.AUC)));
+            tempObject.put("FNR",Double.parseDouble(df.format(trainInfo.FNR)));
+            tempObject.put("Accuracy",Double.parseDouble(df.format(trainInfo.Accuracy)));
+            tempObject.put("Precision",Double.parseDouble(df.format(trainInfo.Precision)));
+            tempObject.put("Specificity",Double.parseDouble(df.format(trainInfo.Specificity)));
+            tempObject.put("ErrorRate",Double.parseDouble(df.format(trainInfo.ErrorRate)));
             tempObject.put("params", trainInfo.Parameters); // JSON.parse(trainInfo.Parameters)
             tempObject.put("OperatorID", trainInfo.OperatorID);
             resultArray.add(tempObject);
@@ -860,23 +861,26 @@ public class HybridDataCollectorService implements DataCollectorService{
         JSONObject result=new JSONObject();
         //中部表格,取出最新的模型的性能数据
         JSONArray comparison=new JSONArray();
-        List<DiskHardWareInfo> HardwareList=diskFailureMapper.selectAllFailureWithHardwareLists();
+
         StatisRecord statisRecord=diskFailureMapper.selectLatestTrainingSummary();
         Timestamp new_model_date=diskFailureMapper.selectLatestModelTime();
-        StatisRecord realityRecord=realResultAnalysis(HardwareList,diskFailureMapper.selectDFPRecordsByLowbound(new_model_date));
+        List<DiskHardWareInfo> hardwaresBePredicted=diskFailureMapper.selectHardwareInfoBePredicted(new_model_date);
+        List<DFPRecord> dfpRecordList =diskFailureMapper.selectDFPRecordsByPredictLowbound(new_model_date);
+        StatisRecord realityRecord=realResultAnalysis(hardwaresBePredicted,dfpRecordList);
+        DecimalFormat decimalFormat = new DecimalFormat("#.######");
         JSONObject tempObject;
        {
            if(statisRecord!=null) {
                tempObject = new JSONObject();
                tempObject.put("field", "value");
-               tempObject.put("FDR", statisRecord.FDR);
-               tempObject.put("FAR", statisRecord.FAR);
-               tempObject.put("AUC", statisRecord.AUC);
-               tempObject.put("FNR", statisRecord.FNR);
-               tempObject.put("Accuracy", statisRecord.Accuracy);
-               tempObject.put("Precision", statisRecord.Precision);
-               tempObject.put("Specificity", statisRecord.Specificity);
-               tempObject.put("ErrorRate", statisRecord.ErrorRate);
+               tempObject.put("FDR", Double.parseDouble(decimalFormat.format(statisRecord.FDR)));
+               tempObject.put("FAR", Double.parseDouble(decimalFormat.format(statisRecord.FAR)));
+               tempObject.put("AUC", Double.parseDouble(decimalFormat.format(statisRecord.AUC)));
+               tempObject.put("FNR", Double.parseDouble(decimalFormat.format(statisRecord.FNR)));
+               tempObject.put("Accuracy", Double.parseDouble(decimalFormat.format(statisRecord.Accuracy)));
+               tempObject.put("Precision", Double.parseDouble(decimalFormat.format(statisRecord.Precision)));
+               tempObject.put("Specificity",Double.parseDouble(decimalFormat.format(statisRecord.Specificity)));
+               tempObject.put("ErrorRate", Double.parseDouble(decimalFormat.format(statisRecord.ErrorRate)));
                comparison.add(tempObject);
            }
            else {
@@ -885,14 +889,14 @@ public class HybridDataCollectorService implements DataCollectorService{
             if(realityRecord!=null) {
                 tempObject = new JSONObject();
                 tempObject.put("field", "value");
-                tempObject.put("FDR",realityRecord.FDR);
-                tempObject.put("FAR",realityRecord.FAR);
-                tempObject.put("AUC",realityRecord.AUC);
-                tempObject.put("FNR",realityRecord.FNR);
-                tempObject.put("Accuracy",realityRecord.Accuracy);
-                tempObject.put("Precision", realityRecord.Precision);
-                tempObject.put("Specificity",realityRecord.Specificity);
-                tempObject.put("ErrorRate",realityRecord.ErrorRate);
+                tempObject.put("FDR",Double.parseDouble(decimalFormat.format(realityRecord.FDR)));
+                tempObject.put("FAR",Double.parseDouble(decimalFormat.format(realityRecord.FAR)));
+                tempObject.put("AUC",Double.parseDouble(decimalFormat.format(realityRecord.AUC)));
+                tempObject.put("FNR",Double.parseDouble(decimalFormat.format(realityRecord.FNR)));
+                tempObject.put("Accuracy",Double.parseDouble(decimalFormat.format(realityRecord.Accuracy)));
+                tempObject.put("Precision", Double.parseDouble(decimalFormat.format(realityRecord.Precision)));
+                tempObject.put("Specificity",Double.parseDouble(decimalFormat.format(realityRecord.Specificity)));
+                tempObject.put("ErrorRate",Double.parseDouble(decimalFormat.format(realityRecord.ErrorRate)));
                 comparison.add(tempObject);
             }
             else {
@@ -942,7 +946,7 @@ public class HybridDataCollectorService implements DataCollectorService{
         result.put("SummaryChart",SummaryChart);
 
         //TODO 上部左侧条状图 临时暂定四个厂商 后改为配置文件设置
-
+        List<DiskHardWareInfo> HardwareList=diskFailureMapper.selectAllFailureWithHardwareLists();
         JSONArray brands=new JSONArray();
         brands.add("西部数据");
         brands.add("希捷");
@@ -981,10 +985,14 @@ public class HybridDataCollectorService implements DataCollectorService{
         result.put("diskType",brands);
         result.put("ssdCount",ssdCount);
         result.put("hddCount",hddCount);
-        //错误盘数趋势图,统计的是两周的，每天的磁盘损坏数量 需要修改数据库字段了此处先假设该字段名称为修改日期ModifiedTimestamp 注意还需要修改硬件表插入操作
+        //错误盘数趋势图,统计的是两周的，每天的磁盘损坏数量
         JSONArray Trend=new JSONArray();
+        Timestamp latestSignTimestamp=diskFailureMapper.selectLatestSignTimestamp();
+        calendar.setTimeInMillis(latestSignTimestamp.getTime());
+        calendar.set(Calendar.MINUTE,0);
+        calendar.set(Calendar.SECOND,0);
+        calendar.set(Calendar.HOUR_OF_DAY,0);
         calendar.add(Calendar.DAY_OF_MONTH,-13);
-
         lowbound=new Timestamp(calendar.getTimeInMillis());
         HardwareList=diskFailureMapper.selectAllFailureWithHardwareListsWithTimelimit(lowbound);
         int[] twoWeeks=new int[14];
@@ -995,12 +1003,12 @@ public class HybridDataCollectorService implements DataCollectorService{
         calendar.add(Calendar.DAY_OF_MONTH,1);
         long highbound=calendar.getTimeInMillis();
         for(DiskHardWareInfo diskHardWareInfo:HardwareList){
-            if(diskHardWareInfo.modifiedTimestamp.getTime()>highbound){
+            while(diskHardWareInfo.modifiedTimestamp.getTime()>highbound){
                 i++;
                 calendar.add(Calendar.DAY_OF_MONTH,1);
                 highbound=calendar.getTimeInMillis();
             }
-                twoWeeks[i]++;
+            twoWeeks[i]++;  //  刚刚有错
         }
         calendar.setTimeInMillis(lowbound.getTime());
         for(int j=0;j<14;j++){
@@ -1065,15 +1073,23 @@ public class HybridDataCollectorService implements DataCollectorService{
                     }
                 }
             }
-
+            //TODO 判断分母
             double FDR,FAR,AUC,FNR,accuracy,precision,specificity,errorRate;
         {
             //真实错误盘中判定为错误的比例
-            FDR=FDRupper*1.0/totalRealFalse;
+            if(totalRealFalse!=0) {
+                FDR = FDRupper * 1.0 / totalRealFalse;
+            }
+            else {
+                FDR =0 ;
+            }
         }
         {
             //真实正确盘中判定为错误的比例
-            FAR=FARupper*1.0/totalRealTrue;
+            if(totalRealTrue!=0)
+                FAR=FARupper*1.0/totalRealTrue;
+            else
+                FAR=0;
         }
         {
             AUC=0.6;
@@ -1083,18 +1099,27 @@ public class HybridDataCollectorService implements DataCollectorService{
             FNR=1-FDR;
         }
         {
-            accuracy=(FDRupper+totalRealTrue-FARupper)*1.0/(totalRealFalse+totalRealTrue);
+            if((totalRealFalse+totalRealTrue)!=0)
+                accuracy=(FDRupper+totalRealTrue-FARupper)*1.0/(totalRealFalse+totalRealTrue);
+            else
+                accuracy=0;
         }
         {
             //预测结果为错误盘的结果中 真的为错误盘的比例
-            precision=preuppser*1.0/totalPredictFalse;
+            if(totalPredictFalse!=0)
+                precision=preuppser*1.0/totalPredictFalse;
+            else
+                precision=0;
         }
         {
             //即TNR
             specificity=precision;
         }
         {
-            errorRate=errorRateUpper*1.0/totalPredictFalse+totalPredictTrue;
+            if((totalPredictFalse+totalPredictTrue)!=0)
+                errorRate=errorRateUpper*1.0/(totalPredictFalse+totalPredictTrue);
+            else
+                errorRate=0;
         }
         return new StatisRecord(FDR,FAR,AUC,FNR,accuracy,precision,specificity,errorRate);
     }

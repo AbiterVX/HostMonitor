@@ -100,6 +100,9 @@ public interface DiskFailureMapper {
     @SelectProvider(type=DiskFailureProvider.class,method="selectDFPRecordsByLowbound")
     List<DFPRecord> selectDFPRecordsByLowbound(@Param("lowbound")Timestamp lowbound);
 
+    @SelectProvider(type=DiskFailureProvider.class,method = "selectDFPRecordsByPredictLowbound")
+    List<DFPRecord> selectDFPRecordsByPredictLowbound(@Param("lowbound")Timestamp lowbound);
+
     @SelectProvider(type=DiskFailureProvider.class,method="queryDiskHardwareExists")
     String queryDiskHardwareExists(@Param("diskSerial") String diskName);
 
@@ -149,4 +152,10 @@ public interface DiskFailureMapper {
 
     @SelectProvider(type = DiskFailureProvider.class,method="selectLatestModelTime")
     Timestamp selectLatestModelTime();
+
+    @SelectProvider(type = DiskFailureProvider.class,method = "selectHardwareInfoBePredicted")
+    List<DiskHardWareInfo> selectHardwareInfoBePredicted(@Param("lowbound") Timestamp lowbound);
+
+    @SelectProvider(type=DiskFailureProvider.class,method = "selectLatestSignTimestamp")
+    Timestamp selectLatestSignTimestamp();
 }

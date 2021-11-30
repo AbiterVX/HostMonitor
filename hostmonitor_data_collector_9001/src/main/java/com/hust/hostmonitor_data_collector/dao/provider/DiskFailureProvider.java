@@ -186,12 +186,23 @@ public class DiskFailureProvider {
     public String selectLatestRecordTime(){
         String SQL=null;
         if(dataSourceSelect==0){
-            SQL="select max(timestamp) from diskDFPInfo";
+            SQL="select max(PREDICTTIME) from diskDFPInfo";
         }
         else if(dataSourceSelect==1){
-            SQL="select max(timestamp) from storagedevicemonitor.diskDFPInfo";
+            SQL="select max(PREDICTTIME) from storagedevicemonitor.diskDFPInfo";
         }
         return SQL;
+    }
+    public String selectLatestSignTimestamp(){
+        String SQL=null;
+        if(dataSourceSelect==0){
+            SQL="select max(modifiedTimestamp) from diskHardwareInfo";
+        }
+        else if(dataSourceSelect==1){
+            SQL="select max(modifiedTimestamp) from storagedevicemonitor.diskHardwareInfo";
+        }
+        return SQL;
+
     }
     public String selectDFPRecordsByLowbound(){
         String SQL=null;
@@ -206,6 +217,36 @@ public class DiskFailureProvider {
                     "join (select max(timestamp)maxtimestamp from storagedevicemonitor.diskDFPInfo where timestamp>=#{lowbound} group by diskSerial)c on c.maxtimestamp=a.timestamp";
         }
         return SQL;
+    }
+    public String selectDFPRecordsByPredictLowbound(){
+        String SQL=null;
+        if(dataSourceSelect==0){
+            SQL="select a.diskSerial,b.hostName,b.isSSd,a.timestamp,a.predictProbability,a.modelName" +
+                    " from (diskDFPInfo a join diskHardwareInfo b on a.diskSerial=b.diskSerial) " +
+                    "join (select max(timestamp)maxtimestamp from diskDFPInfo where predictTime>=#{lowbound} group by diskSerial)c on c.maxtimestamp=a.timestamp";
+        }
+        else if(dataSourceSelect==1){
+            SQL="select a.diskSerial,b.hostName,b.isSSd,a.timestamp,a.predictProbability,a.modelName" +
+                    " from (storagedevicemonitor.diskDFPInfo a join storagedevicemonitor.diskHardwareInfo b on a.diskSerial=b.diskSerial) " +
+                    "join (select max(timestamp)maxtimestamp from storagedevicemonitor.diskDFPInfo where predictTime>=#{lowbound} group by diskSerial)c on c.maxtimestamp=a.timestamp";
+        }
+        return SQL;
+    }
+    public String selectHardwareInfoBePredicted(){
+        String SQL=null;
+        if(dataSourceSelect==0){
+            SQL="select a.diskSerial,a.hostName,a.size,a.isssd,a.model,a.hostip,a.state,a.modifiedtimestamp" +
+                    " from diskHardwareInfo a " +
+                    "join (select diskSerial from diskDFPInfo where predictTime>=#{lowbound} group by diskSerial)b on b.diskSerial=a.diskSerial";
+        }
+        else if(dataSourceSelect==1){
+            SQL="select a.diskSerial,a.hostName,a.size,a.isssd,a.model,a.hostip,a.state,a.modifiedtimestamp" +
+                    " from storagedevicemonitor.diskHardwareInfo a " +
+                    "join (select diskSerial from storagedevicemonitor.diskDFPInfo where predictTime>=#{lowbound} group by diskSerial)b on b.diskSerial=a.diskSerial";
+        }
+        return SQL;
+
+
     }
     public String queryDiskHardwareExists(){
         String SQL=null;

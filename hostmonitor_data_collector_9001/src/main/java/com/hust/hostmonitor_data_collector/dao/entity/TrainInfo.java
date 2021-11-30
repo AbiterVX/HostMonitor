@@ -1,7 +1,8 @@
 package com.hust.hostmonitor_data_collector.dao.entity;
 
 import java.sql.Timestamp;
-
+import java.text.DecimalFormat;
+import com.alibaba.fastjson.util.*;
 public class TrainInfo {
     public Timestamp timestamp;
     public int PredictModel;
@@ -16,7 +17,6 @@ public class TrainInfo {
     public float ErrorRate;
     public String Parameters;
     public String OperatorID;
-
     public TrainInfo(){}
     public TrainInfo(Timestamp timestamp, int predictModel, String diskModel, float FDR, float FAR, float AUC, float FNR, float accuracy, float precision, float specificity, float errorRate, String parameters, String operatorID) {
         this.timestamp = timestamp;

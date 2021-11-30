@@ -31,4 +31,14 @@ public class DiskHardWareInfo {
         this.state= (int)state>0? true:false;;
         this.modifiedTimestamp=modifiedTimestamp;
     }
+    public DiskHardWareInfo(String diskSerial, String hostName, Float size, Byte isSSd, String model, String hostIp,Byte state,Timestamp modifiedTimestamp){
+        this.diskSerial = diskSerial;
+        this.hostName = hostName;
+        this.size = size.doubleValue();
+        this.isSSd =  (int)isSSd>0? true:false;;
+        this.model = model;
+        this.hostIp=hostIp;
+        this.state= (int)state>0? true:false;;
+        this.modifiedTimestamp=modifiedTimestamp;
+    }
 }

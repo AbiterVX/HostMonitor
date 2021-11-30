@@ -593,7 +593,7 @@ const tableColumns = {
                 var displayValue = "";
 
                 for(var i=0;i<dfpPartition.length;i++){
-                    if(value < dfpPartition[i]){
+                    if(value <= dfpPartition[i]){
                         color = dfpPartitionColor[i];
                         displayValue = displayValueList[i];
                         break;

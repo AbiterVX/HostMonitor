@@ -83,7 +83,7 @@
         FailureCountStatisticsChart.setOption(FGetFailureCountStatisticsChartOption([[0,0]]));
 
         //刷新SummaryChart
-        FSendGetRequest(false,"/Dispersed/getDFPSummaryInfo",function (resultData){
+        FSendGetRequest(false,"/getDFPSummaryInfo",function (resultData){
             if(resultData!==null) {
                 //预期与实际对比
                 $('#dfpComparison').bootstrapTable("load", resultData["dfpComparison"]);
