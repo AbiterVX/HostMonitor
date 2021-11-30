@@ -156,6 +156,10 @@ public class DiskPredictDataSampler extends Thread {
                             if(rawData.length<=1){
                                 continue;
                             }
+                            if(rawData[0].equals("Model Number")){
+                                rawData[0]="Device Model";
+                            }
+
                             currentDiskData.put(rawData[0],rawData[1]);
                         }
                     }
@@ -165,6 +169,7 @@ public class DiskPredictDataSampler extends Thread {
                         diskData.put(serialNumber,currentDiskData);
                         JSONObject smartData = new JSONObject();
                         {
+
                             List<String> cmdResult = new CmdExecutor(smartDataSampleCmd + currentDiskName).cmdResult;
                             for (int i = 0; i < 7; i++) {
                                 cmdResult.remove(0);
@@ -172,8 +177,9 @@ public class DiskPredictDataSampler extends Thread {
                             for(String currentOutput: cmdResult){
                                 if(!currentOutput.equals("")){
                                     currentOutput = currentOutput.trim();
+
                                     String[] rawData = currentOutput.split("\\s+");
-                                    if(rawData.length<=1){
+                                    if(rawData.length<10){
                                         continue;
                                     }
                                     JSONObject currentSmart = new JSONObject();
