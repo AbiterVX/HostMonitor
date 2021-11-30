@@ -3,6 +3,7 @@ package com.hust.hostmonitor_data_collector.dao;
 import com.hust.hostmonitor_data_collector.dao.entity.*;
 import com.hust.hostmonitor_data_collector.dao.provider.DiskFailureProvider;
 import org.apache.ibatis.annotations.*;
+import org.ehcache.xml.model.Disk;
 
 import java.sql.Time;
 import java.sql.Timestamp;
@@ -11,6 +12,8 @@ import java.util.List;
 @Mapper
 public interface DiskFailureMapper {
 
+    @SelectProvider(type=DiskFailureProvider.class,method="queryDiskState")
+    Boolean queryDiskState(String diskSerial);
 
     @SelectProvider(type = DiskFailureProvider.class,method = "getDiskFailureInfo")
     List<String> getDiskFailureInfo(@Param("ip")String ip,@Param("resultDate")String resultDate);
@@ -18,11 +21,12 @@ public interface DiskFailureMapper {
     @InsertProvider(type = DiskFailureProvider.class,method = "insertDiskHardwareInfo")
     void insertDiskHardwareInfo(@Param("diskSerial")String diskSerial,
                                 @Param("hostName")String hostName,
-
                                 @Param("capacity")double size,
                                 @Param("isSSD")boolean isSSD,
                                 @Param("model")String model,
-                                @Param("ip")String ip);
+                                @Param("ip")String ip,
+                                @Param("state")boolean state,
+                                @Param("modifiedTimestamp")Timestamp modifiedTimestamp);
 
     @InsertProvider(type =DiskFailureProvider.class,method = "insertDiskSampleInfo")
     void insertDiskSampleInfo(@Param("diskSerial")String diskSerial,
@@ -135,11 +139,14 @@ public interface DiskFailureMapper {
                           @Param("timestamp")Timestamp timestamp);
 
     @UpdateProvider(type= DiskFailureProvider.class,method="updateDiskState")
-    void updateDiskState(@Param("diskSerial")String diskSerial,@Param("state")Boolean state);
+    void updateDiskState(@Param("diskSerial")String diskSerial,@Param("state")Boolean state,@Param("modifiedTimestamp")Timestamp modifiedTimestamp);
 
     @SelectProvider(type= DiskFailureProvider.class,method = "selectAllFailureWithHardwareLists")
     List<DiskHardWareInfo> selectAllFailureWithHardwareLists();
 
     @SelectProvider(type = DiskFailureProvider.class,method = "selectAllFailureWithHardwareListsWithTimelimit")
     List<DiskHardWareInfo> selectAllFailureWithHardwareListsWithTimelimit(@Param("lowbound") Timestamp lowbound);
+
+    @SelectProvider(type = DiskFailureProvider.class,method="selectLatestModelTime")
+    Timestamp selectLatestModelTime();
 }

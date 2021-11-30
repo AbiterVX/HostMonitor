@@ -21,6 +21,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.File;
+import java.sql.Time;
 import java.sql.Timestamp;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
@@ -324,7 +325,7 @@ public class HybridDataCollectorService implements DataCollectorService{
                                 tempDiskObject.getDoubleValue("diskTotalSize"),
                                 tempDiskObject.getIntValue("type")>0? true:false,
                                 tempDiskObject.getString("diskModel"),
-                                tempObject.getString("ip"));
+                                tempObject.getString("ip"),true,new Timestamp(new Date().getTime()));
                     }
                     //diskFailureMapper.insertDiskSampleInfo(diskSerial, tempObject.getTimestamp("lastUpdateTime"),tempDiskObject.getDoubleValue("diskIOPS"),
                             //tempDiskObject.getDoubleValue("diskReadSpeed"),tempDiskObject.getDoubleValue("diskWriteSpeed"));
@@ -644,6 +645,13 @@ public class HybridDataCollectorService implements DataCollectorService{
             tempObject.put("timestamp",dfpRecord.timestamp);
             tempObject.put("predictProbability",dfpRecord.predictProbability);
             tempObject.put("predictResult",dfpRecord.predictProbability<=0.1f?1:0);
+            Boolean diskState=diskFailureMapper.queryDiskState(dfpRecord.diskSerial);
+            if(diskState!=null){
+                tempObject.put("failureSymbol",diskState);
+            }
+            else {
+                tempObject.put("failureSymbol",true);
+            }
             result.add(tempObject);
         }
         return result.toJSONString();
@@ -852,8 +860,10 @@ public class HybridDataCollectorService implements DataCollectorService{
         JSONObject result=new JSONObject();
         //中部表格,取出最新的模型的性能数据
         JSONArray comparison=new JSONArray();
+        List<DiskHardWareInfo> HardwareList=diskFailureMapper.selectAllFailureWithHardwareLists();
         StatisRecord statisRecord=diskFailureMapper.selectLatestTrainingSummary();
-        StatisRecord realityRecord=realResultAnalysis();
+        Timestamp new_model_date=diskFailureMapper.selectLatestModelTime();
+        StatisRecord realityRecord=realResultAnalysis(HardwareList,diskFailureMapper.selectDFPRecordsByLowbound(new_model_date));
         JSONObject tempObject;
        {
            if(statisRecord!=null) {
@@ -932,7 +942,7 @@ public class HybridDataCollectorService implements DataCollectorService{
         result.put("SummaryChart",SummaryChart);
 
         //TODO 上部左侧条状图 临时暂定四个厂商 后改为配置文件设置
-        List<DiskHardWareInfo> HardwareList=diskFailureMapper.selectAllFailureWithHardwareLists();
+
         JSONArray brands=new JSONArray();
         brands.add("西部数据");
         brands.add("希捷");
@@ -1004,9 +1014,89 @@ public class HybridDataCollectorService implements DataCollectorService{
         return result.toJSONString();
     }
 
-    //TODO 根据实际损坏的盘数，计算实际的模型参数指标
-    private StatisRecord realResultAnalysis() {
-        return new StatisRecord(0.6,0.6,0.6,0.6,0.6,0.6,0.6,0.6);
+    private StatisRecord realResultAnalysis(List<DiskHardWareInfo> hardwareList, List<DFPRecord> DFPRecordList) {
+            int totalRealFalse=0;
+            int totalPredictFalse=0;
+            int totalRealTrue=0;
+            int totalPredictTrue=0;
+            int FARupper=0,FDRupper=0,preuppser=0,errorRateUpper=0;
+            for(DiskHardWareInfo diskHardWareInfo:hardwareList){
+                if(!diskHardWareInfo.state){
+                    totalRealFalse++;
+                    for(DFPRecord dfpRecord:DFPRecordList){
+                        if(diskHardWareInfo.diskSerial.equals(dfpRecord.diskSerial)&&dfpRecord.predictProbability<highRiskThreshold){
+                            FDRupper++;
+                            break;
+                        }
+                    }
+                }
+                else{
+                    totalRealTrue++;
+                    for(DFPRecord dfpRecord:DFPRecordList){
+                        if(diskHardWareInfo.diskSerial.equals(dfpRecord.diskSerial)&&dfpRecord.predictProbability<highRiskThreshold){
+                            FARupper++;
+                            break;
+                        }
+                    }
+                }
+            }
+            for(DFPRecord dfpRecord:DFPRecordList){
+                if(dfpRecord.predictProbability<highRiskThreshold){
+                    totalPredictFalse++;
+                    for(DiskHardWareInfo diskHardWareInfo:hardwareList){
+                        if(dfpRecord.diskSerial.equals(diskHardWareInfo.diskSerial)&&!diskHardWareInfo.state){
+                            preuppser++;
+                            break;
+                        }
+                        else if(dfpRecord.diskSerial.equals(diskHardWareInfo.diskSerial)&&diskHardWareInfo.state){
+                            errorRateUpper++;
+                            break;
+                        }
+                    }
+                }
+                else {
+                    totalPredictTrue++;
+                    for(DiskHardWareInfo diskHardWareInfo:hardwareList){
+                        if(dfpRecord.diskSerial.equals(diskHardWareInfo.diskSerial)&&!diskHardWareInfo.state){
+                            preuppser++;
+                            errorRateUpper++;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            double FDR,FAR,AUC,FNR,accuracy,precision,specificity,errorRate;
+        {
+            //真实错误盘中判定为错误的比例
+            FDR=FDRupper*1.0/totalRealFalse;
+        }
+        {
+            //真实正确盘中判定为错误的比例
+            FAR=FARupper*1.0/totalRealTrue;
+        }
+        {
+            AUC=0.6;
+        }
+        {
+            //所有错误盘中，预测为正确盘的比例
+            FNR=1-FDR;
+        }
+        {
+            accuracy=(FDRupper+totalRealTrue-FARupper)*1.0/(totalRealFalse+totalRealTrue);
+        }
+        {
+            //预测结果为错误盘的结果中 真的为错误盘的比例
+            precision=preuppser*1.0/totalPredictFalse;
+        }
+        {
+            //即TNR
+            specificity=precision;
+        }
+        {
+            errorRate=errorRateUpper*1.0/totalPredictFalse+totalPredictTrue;
+        }
+        return new StatisRecord(FDR,FAR,AUC,FNR,accuracy,precision,specificity,errorRate);
     }
 
     @Override
@@ -1184,12 +1274,10 @@ public class HybridDataCollectorService implements DataCollectorService{
         return applicationEnv;
     }
 
-
-
     @Override
     public String setDiskState(String diskSerial,boolean state) {
         String result=null;
-        diskFailureMapper.updateDiskState(diskSerial,state);
+        diskFailureMapper.updateDiskState(diskSerial,state,new Timestamp(new Date().getTime()));
         return result;
     }
 }

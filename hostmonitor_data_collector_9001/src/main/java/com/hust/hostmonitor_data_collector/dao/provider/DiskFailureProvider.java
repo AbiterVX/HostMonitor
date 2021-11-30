@@ -22,11 +22,11 @@ public class DiskFailureProvider {
         String SQL=null;
         if(dataSourceSelect==0){
             SQL="insert into diskHardwareInfo values (" +
-                    "#{diskSerial},#{hostName},#{capacity},#{isSSD},#{model},#{ip})";
+                    "#{diskSerial},#{hostName},#{capacity},#{isSSD},#{model},#{ip},#{state},#{modifiedTimestamp})";
         }
         else if(dataSourceSelect==1){
             SQL="insert into storagedevicemonitor.diskHardwareInfo values (" +
-                    "#{diskSerial},#{hostName},#{capacity},#{isSSD},#{model},#{ip})";
+                    "#{diskSerial},#{hostName},#{capacity},#{isSSD},#{model},#{ip},#{state},#{modifiedTimestamp})";
         }
         return SQL;
     }
@@ -259,6 +259,16 @@ public class DiskFailureProvider {
         }
         return SQL;
     }
+    public String selectLatestModelTime(){
+        String SQL=null;
+        if(dataSourceSelect==0){
+            SQL="select max(timestamp) from trainInfo";
+        }
+        else if(dataSourceSelect==1){
+            SQL="select max(timestamp) from storagedevicemonitor.trainInfo";
+        }
+        return SQL;
+    }
     public String insertIntoRealDiskFailureInfo(){
         String SQL=null;
         if(dataSourceSelect==0){
@@ -313,10 +323,10 @@ public class DiskFailureProvider {
     public String updateDiskState(){
         String SQL=null;
         if(dataSourceSelect==0){
-            SQL="update diskhardwareinfo set state=#{state} where diskSerial=#{diskSerial}";
+            SQL="update diskhardwareinfo set state=#{state},modifiedTimestamp=#{modifiedTimestamp} where diskSerial=#{diskSerial}";
         }
         else if(dataSourceSelect==1){
-            SQL="update storagedevicemonitor.diskhardwareinfo set state=#{state} where diskSerial=#{diskSerial}";
+            SQL="update storagedevicemonitor.diskhardwareinfo set state=#{state},modifiedTimestamp=#{modifiedTimestamp} where diskSerial=#{diskSerial}";
         }
         return SQL;
     }
@@ -341,10 +351,16 @@ public class DiskFailureProvider {
             SQL="select * from storagedevicemonitor.diskhardwareinfo where state=false and modifiedTimestamp>#{lowbound}";
         }
         return SQL;
-
-
-
-
+    }
+    public String queryDiskState(){
+        String SQL=null;
+        if(dataSourceSelect==0){
+            SQL="select state from diskhardwareinfo where diskSerial=#{diskSerial}";
+        }
+        else if(dataSourceSelect==1){
+            SQL="select state from storagedevicemonitor.diskhardwareinfo where diskSerial=#{diskSerial}";
+        }
+        return SQL;
 
     }
 }
