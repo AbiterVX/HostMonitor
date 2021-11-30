@@ -114,7 +114,9 @@ public class SpecialProcessor {
                     System.out.println("[File]New file data has been added to integrated file.");
                     System.out.println("[File]Temp file delete status:"+file.delete());
                 }else {
-                    System.out.println("[File]New file rename status:"+file.renameTo(integratedFile));
+                    DiskPredict.addRemoteIp(path+sdf.format(calendar.getTime())+".csv",path+hostName+".csv",remoteIp);
+                    file.delete();
+                    System.out.println("[File]New file renamed");
                 }
 //                File file2;
 //                path=fileRepository+"predict_data";

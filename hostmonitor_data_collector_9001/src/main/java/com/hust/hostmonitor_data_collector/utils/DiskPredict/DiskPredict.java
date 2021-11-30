@@ -241,14 +241,21 @@ public class DiskPredict {
                 }
                 String[] rowTokens=str.split(",");
                 if(!rows.contains(rowTokens[0]+":"+rowTokens[1])) {
+
                     int thirdComma=str.indexOf(",");
-                    thirdComma=str.indexOf(",",thirdComma);
-                    thirdComma=str.indexOf(",",thirdComma);
+                    System.out.println(thirdComma);
+                    thirdComma=str.indexOf(",",thirdComma+1);
+                    System.out.println(thirdComma);
+                    thirdComma=str.indexOf(",",thirdComma+1);
+                    System.out.println(thirdComma);
                     String partOne=str.substring(0,thirdComma+1);
                     String partTwo=str.substring(thirdComma+1,str.length());
+                    System.out.println(partOne);
+                    System.out.println(remoteIp);
+                    System.out.println(partTwo);
                     str=partOne+remoteIp+partTwo;
-                    writer.write(str + "\n");
                     rows.add(rowTokens[0]+":"+rowTokens[1]);
+                    writer.write(str + "\n");
                 }
             }
             writer.flush();
@@ -258,5 +265,41 @@ public class DiskPredict {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public static void addRemoteIp(String integratedFileName,String newFile, String remoteIp) {
+        try {
+            FileWriter writer;
+            writer = new FileWriter(integratedFileName,true);
+            FileReader reader;
+            reader = new FileReader(newFile);
+            BufferedReader br=new BufferedReader(reader);
+            boolean firstline=true;
+            String str;
+            while((str=br.readLine())!=null){
+                if(firstline){
+                    firstline=false;
+                    writer.write(str+"\n");
+                    continue;
+                }
+                int thirdComma=str.indexOf(",");
+                System.out.println("-----"+thirdComma);
+                thirdComma=str.indexOf(",",thirdComma+1);
+                System.out.println("-----"+thirdComma);
+                thirdComma=str.indexOf(",",thirdComma+1);
+                System.out.println("-----"+thirdComma);
+                String partOne=str.substring(0,thirdComma+1);
+                String partTwo=str.substring(thirdComma+1,str.length());
+                str=partOne+remoteIp+partTwo;
+                writer.write(str + "\n");
+            }
+            writer.flush();
+            writer.close();
+            br.close();
+            reader.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
     }
 }
