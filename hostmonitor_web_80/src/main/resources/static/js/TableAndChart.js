@@ -608,18 +608,34 @@ const tableColumns = {
             align: 'center',
             width: 80,
             clickToSelect: false,
+            value: 0,
             events: {
                 'click .display': function (e, value, row, index) {
-                    //displayUserInfo(row,index);
-                    alert("!");
+                    if(row['failureSymbol'] === true){
+                        row['failureSymbol'] = false;
+                    }
+                    else if(row['failureSymbol'] === false){
+                        row['failureSymbol'] = true;
+                    }
+                    setDiskState(row['diskSerial'], row['failureSymbol']);
                 },
             },
             formatter: function operateFormatter(value, row, index) {
-                //['#92cc76','#fac859','#ee6767']
-                return [
+                var displayValue = "";
+                var color = "";
+                if(value === false){
+                    displayValue = "故障";
+                    color = '#ee6767';
+                }
+                else if(value === true){
+                    displayValue = "正常";
+                    color = '#79cc76';
+                }
 
+                return [
+                    '<a class="display" style="font-weight:bold;text-decoration:none;color:'+ color +'" href="javascript:void(0)">'+displayValue+'</a>',
                 ].join('')
-                //'<a class="display"  style="font-weight:bold;text-decoration:none;" href="javascript:void(0)">正常</a>',
+
             }
         }
     ],

@@ -90,7 +90,7 @@
     var hostDiskMap = null;
     var hostIPList = null;
 
-
+    var currentDfpInfoList = [];
     window.onload=function (){
         //设置Chart
         DFPTrendChart.setOption(FGetDFPTrendChartOption());
@@ -98,7 +98,8 @@
         FRefreshDataDFPInfoAll(function (dfpInfoList,resultHostDiskMap){
             if(dfpInfoList!==null){
                 //刷新Table
-                refreshDFPInfoTable(true,dfpInfoList);
+                currentDfpInfoList = dfpInfoList;
+                refreshDFPInfoTable(true);
                 hostDiskMap = resultHostDiskMap;
 
                 //Chart
@@ -176,17 +177,28 @@
     }
 
     //刷新Table-DFPInfo
-    function refreshDFPInfoTable(init,dfpInfoList){
+    function refreshDFPInfoTable(init){
         //alert(JSON.stringify(dfpInfoList));
         if(init){
             $('#diskFailurePredictInfo').bootstrapTable({
                 columns: tableColumns["diskFailurePredictInfo"],
-                data: dfpInfoList,
+                data: currentDfpInfoList,
             });
         }
         else{
-            $('#diskFailurePredictInfo').bootstrapTable("load",dfpInfoList);
+            $('#diskFailurePredictInfo').bootstrapTable("load",currentDfpInfoList);
         }
+    }
+
+    //标记磁盘
+    function setDiskState(currentDiskSerial,setFailureSymbol){
+        var parameterData = {
+            diskSerial: currentDiskSerial,
+            failureSymbol: setFailureSymbol,
+        };
+        FSendPostRequest(false,"/getDFPInfo/setDiskState",JSON.stringify(parameterData),function (resultData){
+            refreshDFPInfoTable(false);
+        });
     }
 
 

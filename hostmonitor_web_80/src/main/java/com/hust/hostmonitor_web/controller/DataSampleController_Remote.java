@@ -175,4 +175,12 @@ public class DataSampleController_Remote {
     public String getHostsRouter(){
         return getRequestData(dataCollectorUrl + "/getHostsRouter", 1000);
     }
+
+
+
+    @PostMapping(value="/getDFPInfo/setDiskState",produces = "application/json;charset=UTF-8")
+    @ResponseBody
+    public String setDiskState(@RequestBody JSONObject jsonParam){
+        return restTemplate.postForObject(dataCollectorUrl + "/getDFPInfo/setDiskState", jsonParam,String.class);
+    }
 }
