@@ -210,7 +210,7 @@ public class DiskPredict {
         }
         return false;
     }
-    public static void diskSampleDataIntegration(String integratedFileName,String newFile){
+    public static void diskSampleDataIntegration(String integratedFileName,String newFile,String remoteIp){
         String projectPath = System.getProperty("user.dir");
         HashSet<String> rows=new HashSet<>();
         try {
@@ -241,6 +241,12 @@ public class DiskPredict {
                 }
                 String[] rowTokens=str.split(",");
                 if(!rows.contains(rowTokens[0]+":"+rowTokens[1])) {
+                    int thirdComma=str.indexOf(",");
+                    thirdComma=str.indexOf(",",thirdComma);
+                    thirdComma=str.indexOf(",",thirdComma);
+                    String partOne=str.substring(0,thirdComma+1);
+                    String partTwo=str.substring(thirdComma+1,str.length());
+                    str=partOne+remoteIp+partTwo;
                     writer.write(str + "\n");
                     rows.add(rowTokens[0]+":"+rowTokens[1]);
                 }

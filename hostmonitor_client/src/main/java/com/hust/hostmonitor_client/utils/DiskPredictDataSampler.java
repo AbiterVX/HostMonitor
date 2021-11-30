@@ -30,7 +30,7 @@ public class DiskPredictDataSampler extends Thread {
         this.hostName=name;
         this.osType=osType;
         sampleFilePath = System.getProperty("user.dir") +"/DiskPredict/client/data_collector.py";
-        dataFilePath=System.getProperty("user.dir") +"/DiskPredict/client/sampleData/data.csv";
+        dataFilePath=System.getProperty("user.dir") +"/DiskPredict/client/data.csv";
     }
     //修改成定时任务最好
     public void run(){

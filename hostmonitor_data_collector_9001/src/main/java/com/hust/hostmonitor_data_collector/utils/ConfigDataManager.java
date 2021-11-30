@@ -157,7 +157,8 @@ public class ConfigDataManager {
         }
 
         //Host节点
-        List<HostConfigData> hostConfigDataList = new ArrayList<>();
+        List<HostConfigData> hostConfigDataList = new ArrayList<HostConfigData>();
+        System.out.println(hostConfigDataList.size());
         {
             JSONArray hostList = readCSV(rootPath+ "/ConfigData/Server/HostListTest.csv");
             //JSONArray hostList = readCSV(rootPath+ "/ConfigData/Server/HostListTest.csv");

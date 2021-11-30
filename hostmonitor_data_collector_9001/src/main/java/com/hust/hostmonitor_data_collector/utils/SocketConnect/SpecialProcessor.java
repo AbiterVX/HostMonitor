@@ -110,7 +110,7 @@ public class SpecialProcessor {
                 System.out.println("[File]Receive "+path);
                 File integratedFile=new File(path+sdf.format(calendar.getTime())+".csv");
                 if(integratedFile.exists()){
-                    DiskPredict.diskSampleDataIntegration(path+sdf.format(calendar.getTime())+".csv",path+hostName+".csv");
+                    DiskPredict.diskSampleDataIntegration(path+sdf.format(calendar.getTime())+".csv",path+hostName+".csv",remoteIp);
                     System.out.println("[File]New file data has been added to integrated file.");
                     System.out.println("[File]Temp file delete status:"+file.delete());
                 }else {

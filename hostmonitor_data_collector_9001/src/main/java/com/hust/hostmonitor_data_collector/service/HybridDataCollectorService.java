@@ -355,9 +355,16 @@ public class HybridDataCollectorService implements DataCollectorService{
     //----- 内部函数 -----
     //构造函数
     public HybridDataCollectorService(){
+
         sshHostList = dataSampleManager.hostList;
+
         //线程池大小设为Host个数*2
-        executorService= Executors.newFixedThreadPool(sshHostList.size()*2);
+        if(sshHostList.size()==0){
+            executorService = Executors.newFixedThreadPool(1 * 2);
+        }
+        else {
+            executorService = Executors.newFixedThreadPool(sshHostList.size() * 2);
+        }
         dataPath=System.getProperty("user.dir")+"/DiskPredict/";
         logger.info("Check select in Config.json 选择采样模式:[1]SSH远程执行指令 [2]OSHI [3]混合模式");
         logger.info("Default:SSH Commands/默认使用SSH远程执行指令");
@@ -988,6 +995,9 @@ public class HybridDataCollectorService implements DataCollectorService{
         //错误盘数趋势图,统计的是两周的，每天的磁盘损坏数量
         JSONArray Trend=new JSONArray();
         Timestamp latestSignTimestamp=diskFailureMapper.selectLatestSignTimestamp();
+        if(latestSignTimestamp==null){
+            latestSignTimestamp=new Timestamp(new Date().getTime());
+        }
         calendar.setTimeInMillis(latestSignTimestamp.getTime());
         calendar.set(Calendar.MINUTE,0);
         calendar.set(Calendar.SECOND,0);
