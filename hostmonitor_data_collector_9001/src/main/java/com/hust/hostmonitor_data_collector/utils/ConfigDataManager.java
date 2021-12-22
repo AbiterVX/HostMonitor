@@ -160,7 +160,7 @@ public class ConfigDataManager {
         List<HostConfigData> hostConfigDataList = new ArrayList<HostConfigData>();
         System.out.println(hostConfigDataList.size());
         {
-            JSONArray hostList = readCSV(rootPath+ "/ConfigData/Server/HostListTest.csv");
+            JSONArray hostList = readCSV(rootPath+ "/ConfigData/Server/HostList.csv");
             //JSONArray hostList = readCSV(rootPath+ "/ConfigData/Server/HostListTest.csv");
             for(int i=0;i<hostList.size();i++){
                 JSONObject currentHost = hostList.getJSONObject(i);
