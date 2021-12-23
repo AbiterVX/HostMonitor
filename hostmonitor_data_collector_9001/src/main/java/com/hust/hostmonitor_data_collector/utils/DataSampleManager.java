@@ -470,7 +470,7 @@ public class DataSampleManager {
             //取得有效值
             {
                 int count=0;
-                int index=0
+                int index=0;
                 for(int i=0;i<ioStatResult.size();i++){
                     if(ioStatResult.get(i).contains("Device            r/s     w/s     rkB/s     wkB/s   rrqm/s   wrqm/s  %rrqm  %wrqm r_await w_await aqu-sz rareq-sz wareq-sz  svctm  %util")){
                         count++;
