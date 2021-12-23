@@ -464,9 +464,29 @@ public class DataSampleManager {
             sampleCommands=sampleCommands.replaceAll("\r\n","\n");
             List<String> sampleInfo=cmdExecutor.runCommand( sampleCommands,hostConfigData,false);  //test  //SampleCommand,hostConfigData);
             List<String> mountUsageInfo = cmdExecutor.runCommand("df",hostConfigData,false); //查询结果使用量为KB
+            //还有候选命令 dstat -n 1 2
+            List<String> ifStatResult = cmdExecutor.runCommand("ifstat -T 1 2", hostConfigData,false);
+            List<String> ioStatResult = cmdExecutor.runCommand("iostat -x 1 2",hostConfigData,false);
+            //取得有效值
+            {
+                int count=0;
+                int index=0
+                for(int i=0;i<ioStatResult.size();i++){
+                    if(ioStatResult.get(i).contains("Device            r/s     w/s     rkB/s     wkB/s   rrqm/s   wrqm/s  %rrqm  %wrqm r_await w_await aqu-sz rareq-sz wareq-sz  svctm  %util")){
+                        count++;
+                    }
+                    if(count==2){
+                        index=i;
+                    }
+                }
+                ioStatResult=ioStatResult.subList(index,ioStatResult.size());
+            }
+
+
             if(sampleInfo.size()==0||mountUsageInfo.size()==0){
                 return;
             }
+
             HashMap<String, Pair<Long,Long>> mountUsage=new HashMap<>();
             for (int i=0;i<mountUsageInfo.size();i++
             ) {
@@ -517,19 +537,33 @@ public class DataSampleManager {
                         record.setMemFree(Long.parseLong(tokens[1]));
                     } else if (tokens[0].equals("MemAvailable")) {
                         record.setMemAvailable(Long.parseLong(tokens[1]));
-                    } else if (tokens[0].equals("NetSend")) {
+                    }
+
+
+                /**             原来的网络采样 现在已经弃用
+                    else if (tokens[0].equals("NetSend")) {
                         record.setNetSend(Long.parseLong(tokens[1]));
-                    } else if (tokens[0].equals("NetReceive")) {
+                    }
+                    else if (tokens[0].equals("NetReceive")) {
                         record.setNetReceive(Long.parseLong(tokens[1]));
-                    } else if (tokens[0].equals("Power")) {
+                  }
+                 **/
+
+                    else if (tokens[0].equals("Power")) {
                         record.setCPUTemperature(40.0);
                     }
                     //TODO 磁盘使用量计算方法修改 disk_util,修改为通过挂载点计算
-                    else if (tokens[0].contains("Disk_Iops")) {
+                    else if (tokens[0].contains("Disk_Type")) {
                         DiskInfo tempDiskInfo = new DiskInfo();
                         String diskName = tokens[0].split("_")[2];
                         JSONArray lvmInfo=sampleData.getJSONArray("lvmInfo");
                         if(diskName.contains("dm")){
+                            String lineForThisDisk=null;
+                            for(int i=0;i<ioStatResult.size();i++){
+                                if(ioStatResult.get(i).contains(diskName)){
+                                    lineForThisDisk=ioStatResult.get(i);
+                                }
+                            }
                             int index=-1;
                             for(int i=0;i<lvmInfo.size();i++){
                                 if(lvmInfo.getJSONObject(i).getString("dmName").equals(diskName)){
@@ -540,15 +574,22 @@ public class DataSampleManager {
                             if(index==-1){
                                 continue;
                             }
-                            tempDiskInfo.diskName= lvmInfo.getJSONObject(index).getString("PVName");
+                            tempDiskInfo.diskName=lvmInfo.getJSONObject(index).getString("PVName");
                             tempDiskInfo.diskName=tempDiskInfo.diskName.split("/")[2].substring(0,3);
-                            tempDiskInfo.diskIOPS = Double.parseDouble(tokens[1]);
-                            currentString = itr.next();
-                            double readSpeed = Double.parseDouble(currentString.split(":")[1]);
-                            currentString = itr.next();
-                            double writeSpeed = Double.parseDouble(currentString.split(":")[1]);
-                            currentString = itr.next();
-                            double utilRadio = Double.parseDouble(currentString.split(":")[1]);
+                            double readSpeed=0;
+                            double writeSpeed=0;
+                            double utilRadio=0;
+                            double IOPS=0;
+                            if(lineForThisDisk!=null){
+                                String[] dataSampleTokens=lineForThisDisk.trim().split("\\s+");
+                                IOPS=Double.parseDouble(dataSampleTokens[1])+Double.parseDouble(dataSampleTokens[2]);
+                                //单位KB/s
+                                readSpeed=Double.parseDouble(dataSampleTokens[3]);
+                                writeSpeed=Double.parseDouble(dataSampleTokens[4]);
+                                //已经乘了100
+                                utilRadio=Double.parseDouble(dataSampleTokens[15]);
+                            }
+                            tempDiskInfo.diskIOPS=IOPS;
                             tempDiskInfo.diskReadSpeed = readSpeed;
                             tempDiskInfo.diskWriteSpeed = writeSpeed;
                             tempDiskInfo.diskUsedRadio = utilRadio;
@@ -567,19 +608,32 @@ public class DataSampleManager {
 
                         }
                         else {
+                            //此时diskName的值是类似于sda的状态
                             tempDiskInfo.diskName = diskName;
-                            tempDiskInfo.diskIOPS = Double.parseDouble(tokens[1]);
-                            currentString = itr.next();
-                            double readSpeed = Double.parseDouble(currentString.split(":")[1]);
-                            currentString = itr.next();
-                            double writeSpeed = Double.parseDouble(currentString.split(":")[1]);
-                            currentString = itr.next();
-                            double utilRadio = Double.parseDouble(currentString.split(":")[1]);
+                            //从IostatResult里找到那一行就可以了
+                            String lineForThisDisk=null;
+                            for(int i=0;i<ioStatResult.size();i++){
+                                if(ioStatResult.get(i).contains(diskName)){
+                                    lineForThisDisk=ioStatResult.get(i);
+                                }
+                            }
+                            double readSpeed=0;
+                            double writeSpeed=0;
+                            double utilRadio=0;
+                            double IOPS=0;
+                            if(lineForThisDisk!=null){
+                                String[] dataSampleTokens=lineForThisDisk.trim().split("\\s+");
+                                IOPS=Double.parseDouble(dataSampleTokens[1])+Double.parseDouble(dataSampleTokens[2]);
+                                //单位KB/s
+                                readSpeed=Double.parseDouble(dataSampleTokens[3]);
+                                writeSpeed=Double.parseDouble(dataSampleTokens[4]);
+                                //已经乘了100
+                                utilRadio=Double.parseDouble(dataSampleTokens[15]);
+                            }
+                            tempDiskInfo.diskIOPS =IOPS;
                             tempDiskInfo.diskReadSpeed = readSpeed;
                             tempDiskInfo.diskWriteSpeed = writeSpeed;
                             tempDiskInfo.diskUsedRadio = utilRadio;
-
-
                             ArrayList<String> mountPoints = new ArrayList<>();
                             List<String> devMountInfo = cmdExecutor.runCommand("lsblk /dev/" + diskName, hostConfigData, false);
                             for (String mountString : devMountInfo) {
@@ -621,7 +675,6 @@ public class DataSampleManager {
                         tempDiskInfo.diskFSUsageAmount+=record.getDisks().get(i).diskFSUsageAmount;
                     }
                 }
-
 
             }
             //CPU
@@ -680,6 +733,11 @@ public class DataSampleManager {
 
             //NetIO
             {
+                if(ioStatResult.size()==4){
+                    String[] dataSplitTokens=ioStatResult.get(3).trim().split("\\s+");
+                    record.setNetSend(Long.parseLong(dataSplitTokens[5]));
+                    record.setNetReceive(Long.parseLong(dataSplitTokens[4]));
+                }
                 sampleData.put("netSendSpeed",LinuxDataProcess.doubleTo2bits_double(record.getNetSend()*1.0f/1024));
                 sampleData.put("netReceiveSpeed",LinuxDataProcess.doubleTo2bits_double(record.getNetReceive()*1.0f/1024));
             }

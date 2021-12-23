@@ -2,39 +2,40 @@
 
 
 #[net io]
-timeInterval=0.2
-netIO_1=$(ifconfig -s | sed -e "1d" | awk '{print $1,$3,$7}')
-sleep $timeInterval
-netIO_2=$(ifconfig -s | sed -e "1d" | awk '{print $1,$3,$7}')
-
-receiveBytes_1=0
-sendBytes_1=0
-IFS=$'\n'
-arrIN=($netIO_1)
-unset IFS
-for i in "${arrIN[@]}"; do
-        data=($(echo "$i"))
-        let receiveBytes_1+=${data[1]}
-        let sendBytes_1+=${data[2]}
-done
-
-receiveBytes_2=0
-sendBytes_2=0
-IFS=$'\n'
-arrIN=($netIO_2)
-unset IFS
-for i in "${arrIN[@]}"; do
-        data=($(echo "$i"))
-        let receiveBytes_2+=${data[1]}
-        let sendBytes_2+=${data[2]}
-done
-unset IFS
-
-netReceiveSpeed=$(echo "($receiveBytes_2- $receiveBytes_1)/$timeInterval"|bc)
-netSendSpeed=$(echo "($sendBytes_2- $sendBytes_1)/$timeInterval"|bc)
-
-echo "NetReceive:""$netReceiveSpeed"
-echo "NetSend:""$netSendSpeed"
+#dstat -n 1 2
+#timeInterval=0.5
+#netIO_1=$(ifconfig -s | sed -e "1d" | awk '{print $1,$3,$7}')
+#sleep $timeInterval
+#netIO_2=$(ifconfig -s | sed -e "1d" | awk '{print $1,$3,$7}')
+#
+#receiveBytes_1=0
+#sendBytes_1=0
+#IFS=$'\n'
+#arrIN=($netIO_1)
+#unset IFS
+#for i in "${arrIN[@]}"; do
+#        data=($(echo "$i"))
+#        let receiveBytes_1+=${data[1]}
+#        let sendBytes_1+=${data[2]}
+#done
+#
+#receiveBytes_2=0
+#sendBytes_2=0
+#IFS=$'\n'
+#arrIN=($netIO_2)
+#unset IFS
+#for i in "${arrIN[@]}"; do
+#        data=($(echo "$i"))
+#        let receiveBytes_2+=${data[1]}
+#        let sendBytes_2+=${data[2]}
+#done
+#unset IFS
+#
+#netReceiveSpeed=$(echo "($receiveBytes_2- $receiveBytes_1)/$timeInterval"|bc)
+#netSendSpeed=$(echo "($sendBytes_2- $sendBytes_1)/$timeInterval"|bc)
+#
+#echo "NetReceive:""$netReceiveSpeed"
+#echo "NetSend:""$netSendSpeed"
 
 
 #netIO=$(dstat --nocolor -n 1 2 | sed -n 4p | sed "s,\x1B\[[0-9;]*[a-zA-Z],,g" | awk '$1=$1')
@@ -111,10 +112,10 @@ do
        tempWrite=$(echo "$i" | awk -v n1=$tempWriteIndex '{print $n1}')
        tempUtil=$(echo "$i" | awk -v n1=$tempUtilIndex '{print $n1}')
 
-       echo "Disk_Iops_""$tempDiskName:""$tempTps"
-       echo "Disk_Read_""$tempDiskName:""$tempRead"
-       echo "Disk_Write_""$tempDiskName:""$tempWrite"
-       echo "Disk_Util_""$tempDiskName:""$tempUtil"
+       #echo "Disk_Iops_""$tempDiskName:""$tempTps"
+       #echo "Disk_Read_""$tempDiskName:""$tempRead"
+       #echo "Disk_Write_""$tempDiskName:""$tempWrite"
+       #echo "Disk_Util_""$tempDiskName:""$tempUtil"
 
        #[disk type]
        diskType=$(smartctl --all "/dev/"$tempDiskName  | grep "Device Model" | awk '{$1="";$2="";print $0}' | awk '$1=$1')
