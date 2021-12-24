@@ -1,4 +1,2 @@
 ip,userName,password,proxyId,OSType,router
 192.168.1.76,tan,123,1,linux,127.0.0.2
-192.168.1.75,tan,123,1,linux,127.0.0.2
-192.168.1.74,tan,123,1,linux,127.0.0.1

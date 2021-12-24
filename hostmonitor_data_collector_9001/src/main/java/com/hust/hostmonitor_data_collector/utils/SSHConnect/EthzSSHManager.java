@@ -68,7 +68,7 @@ public class EthzSSHManager implements SSHManager {
     }
     //执行ch.ethz.ssh2指令
     @Override
-    public List<String> runCommand(String command, HostConfigData hostConfigData,boolean isSudo) {
+    public List<String> runCommand(String command, HostConfigData hostConfigData,boolean isSudo,long waitTime) {
         List<String> result = new ArrayList<>();
         //远程调用
         Session session = getEthzSession(hostConfigData);
@@ -86,6 +86,7 @@ public class EthzSSHManager implements SSHManager {
                 //输出
                 InputStream is = new StreamGobbler(session.getStdout());
                 BufferedReader brs = new BufferedReader(new InputStreamReader(is, chartset));
+                Thread.sleep(waitTime);
                 //逐行获取输出结果
                 for (String line = brs.readLine(); line != null; line = brs.readLine()) {
                     result.add(line);

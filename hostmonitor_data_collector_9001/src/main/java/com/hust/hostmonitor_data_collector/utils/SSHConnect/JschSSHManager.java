@@ -61,7 +61,7 @@ public class JschSSHManager implements SSHManager {
 
     //执行JSCH指令
     @Override
-    public List<String> runCommand(String command, HostConfigData hostConfigInfo,boolean isSudo) {
+    public List<String> runCommand(String command, HostConfigData hostConfigInfo,boolean isSudo,long waitTime) {
         List<String> result = new ArrayList<String>();
         int returnCode = 0;
         Session session = getJSCHSession(hostConfigInfo);
@@ -85,8 +85,13 @@ public class JschSSHManager implements SSHManager {
             channelExec.setInputStream(null);
             BufferedReader input = new BufferedReader(new InputStreamReader(channelExec.getInputStream()));
             channelExec.connect();
-
+            try {
+                Thread.sleep(waitTime);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
             //接收远程服务器执行命令的结果
+
             String line;
             while ((line = input.readLine()) != null) {
                 result.add(line);

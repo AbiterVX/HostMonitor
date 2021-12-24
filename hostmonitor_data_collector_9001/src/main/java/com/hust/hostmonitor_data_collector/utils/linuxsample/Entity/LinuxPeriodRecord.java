@@ -27,8 +27,8 @@ public class LinuxPeriodRecord {
         AllCPUused = allCPUused;
     }
 
-    private long NetReceive;
-    private long NetSend;
+    private double NetReceive;
+    private double NetSend;
     private double CPUTemperature;
     private ArrayList<DiskInfo> disks;
 
@@ -91,19 +91,19 @@ public class LinuxPeriodRecord {
         this.CPUused = CPUused;
     }
 
-    public long getNetReceive() {
+    public double getNetReceive() {
         return NetReceive;
     }
 
-    public void setNetReceive(long netReceive) {
+    public void setNetReceive(double netReceive) {
         NetReceive = netReceive;
     }
 
-    public long getNetSend() {
+    public double getNetSend() {
         return NetSend;
     }
 
-    public void setNetSend(long netSend) {
+    public void setNetSend(double netSend) {
         NetSend = netSend;
     }
 
