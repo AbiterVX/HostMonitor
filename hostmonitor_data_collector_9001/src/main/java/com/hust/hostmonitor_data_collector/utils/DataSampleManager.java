@@ -431,7 +431,29 @@ public class DataSampleManager {
                 }
             }
         }
+        else if(osType.equals(OSType.VMWARE)){
+            //hostName
+            {
 
+            }
+            //osName
+            {
+
+            }
+            //diskInfo
+            {
+
+
+            }
+            //cpuInfoList
+            {
+
+            }
+            //gpuInfo
+            {
+
+            }
+        }
 
         if(hostConfigData!=null){
             sampleData.put("ip",hostConfigData.ip);

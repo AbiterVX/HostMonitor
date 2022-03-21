@@ -5,4 +5,6 @@ public enum OSType {
     WINDOWS,
     LINUX,
     SW_DEEPIN,
+    VMWARE,
+    ;
 }
