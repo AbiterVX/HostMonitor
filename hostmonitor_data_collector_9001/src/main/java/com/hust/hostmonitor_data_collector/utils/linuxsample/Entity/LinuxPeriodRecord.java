@@ -8,6 +8,16 @@ public class LinuxPeriodRecord {
     private long memAvailable;
     private ArrayList<Long> CPUtotal;
     private ArrayList<Long> CPUused;
+    private ArrayList<Double> CPUUtil;
+
+    public ArrayList<Double> getCPUUtil() {
+        return CPUUtil;
+    }
+
+    public void setCPUUtil(ArrayList<Double> CPUUtil) {
+        this.CPUUtil = CPUUtil;
+    }
+
     private Long AllCPUtotal;
     private Long AllCPUused;
 

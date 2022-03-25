@@ -11,6 +11,7 @@ import com.hust.hostmonitor_data_collector.utils.SSHConnect.HostConfigData;
 import com.hust.hostmonitor_data_collector.utils.linuxsample.Entity.*;
 import com.hust.hostmonitor_data_collector.utils.linuxsample.LinuxDataProcess;
 import com.hust.hostmonitor_data_collector.utils.linuxsample.LinuxGPU;
+import jnr.ffi.annotations.In;
 import org.apache.commons.io.FileUtils;
 import org.python.modules._hashlib;
 
@@ -432,22 +433,90 @@ public class DataSampleManager {
             }
         }
         else if(osType.equals(OSType.VMWARE)){
+            sampleData.put("ip", hostConfigData.ip);
             //hostName
             {
-
+                List<String> cmdResult = cmdExecutor.runCommand("hostname", hostConfigData, false,0);
+                if (cmdResult.size() == 0) {
+                    sampleData.put("connected", false);
+                    return sampleData;
+                }
+                sampleData.put("hostName", cmdResult.get(0).trim());
             }
             //osName
             {
-
+                List<String> cmdResult = cmdExecutor.runCommand("vmware -v", hostConfigData, false,0);
+                sampleData.put("osName", cmdResult.get(0).trim());
+            }
+            {
+                List<String> cmdResult=cmdExecutor.runCommand("esxcli hardware memory get",hostConfigData,false,0);
+                for(String tempString:cmdResult){
+                    if(tempString.contains("Physical Memory")){
+                        String[] tokens=tempString.split(":");
+                        sampleData.put("totalMemory",Long.parseLong(tokens[1].trim()));
+                        break;
+                    }
+                }
             }
             //diskInfo
             {
+                    List<String> devs = cmdExecutor.runCommand("esxcli storage core device list", hostConfigData, false,0);
+                    long totalsize = 0;
+                    String devsName="unknown";
+                    String Model="unknown";
+                    long size=0;
+                    boolean isSSD=false;
+                    for (String string : devs) {
+                        if (string.contains("Display Name")) {
+                            if(!devsName.equals("unknown")) {
+                                sampleData.getJSONArray("diskInfoList").add(getDisk(devsName,Model,size,isSSD,hostConfigData));
+                                totalsize += size;
+                            }
+                            String[] tokens = string.split(":");
+                            devsName = tokens[1];
 
-
+                        }
+                        if(string.contains("Device Type")){
+                            String[] tokens=string.split(":");
+                            //单位MB
+                            if(tokens[1].equals("CD-ROM")){
+                                devsName="unknown";
+                                continue;
+                            }
+                        }
+                        if(string.contains("Size")){
+                            String[] tokens=string.split(":");
+                            //单位MB
+                            size=Long.parseLong(tokens[1]);
+                        }
+                        if(string.contains("Model")){
+                            String[] tokens=string.split(":");
+                            Model=tokens[1];
+                        }
+                        if(string.contains("Is SSD")){
+                            String[] tokens=string.split(":");
+                            isSSD=Boolean.parseBoolean(tokens[1]);
+                        }
+                    }
+                    if(!devsName.equals("unknown")) {
+                        sampleData.getJSONArray("diskInfoList").add(getDisk(devsName,Model,size,isSSD,hostConfigData));
+                        totalsize += size;
+                    }
+                    sampleData.put("allDiskTotalSize", LinuxDataProcess.doubleTo2bits_double(totalsize * 1.0 / 1024 / 1024 / 1024));
             }
             //cpuInfoList
             {
-
+                List<String> cmdResult = cmdExecutor.runCommand("esxcli hardware cpu list", hostConfigData, false,0);
+                for (String rowData : cmdResult) {
+                    if (rowData.contains("CPU")) {
+                        JSONObject newCpuInfo = configDataManager.getSampleFormat("cpuInfo");
+                        {
+                            newCpuInfo.put("cpuName", rowData.split(":")[1]);
+                        }
+                        sampleData.getJSONArray("cpuInfoList").add(newCpuInfo);
+                    }
+                }
+                //esxcli hardware cpu list
             }
             //gpuInfo
             {
@@ -463,6 +532,55 @@ public class DataSampleManager {
         sampleData.put("hasPersistent",false);
         System.out.println(sampleData.toJSONString());
         return sampleData;
+    }
+    private JSONObject getDisk(String devsName,String Model,Long size,boolean isSSD,HostConfigData hostConfigData){
+        int leftColon=devsName.indexOf('(');
+        int rightColon=devsName.indexOf(')');
+        if(leftColon!=-1&&rightColon!=-1){
+            devsName=devsName.substring(leftColon+1,rightColon);
+        }
+        JSONObject newDiskInfo = configDataManager.getSampleFormat("diskInfo");
+        {
+            //获取相应盘的smart信息，并且更新
+            List<String> cmdResult = cmdExecutor.runCommand("/opt/smartmontools/smartctl -i /vmfs/devices/disks/" + devsName, hostConfigData, true,0);
+            String Serial="unknown";
+            if(cmdResult.size()>=4)
+            {
+
+                for (int i = 0; i < 4; i++) {
+                    cmdResult.remove(0);
+                }
+                cmdResult.remove(cmdResult.size() - 1);
+                for (String currentOutput : cmdResult) {
+                    String[] rawData = currentOutput.split(":\\s+");
+                    if (rawData[0].contains("Device Model")) {
+                        newDiskInfo.put("diskModel", rawData[1]);
+                        continue;
+                    }
+                    if (rawData[0].contains("Serial Number")) {
+                        Serial=rawData[1];
+                        newDiskInfo.put("diskName", devsName + ":" + rawData[1]);
+                        continue;
+                    }
+                    if (rawData[0].contains("Rotation Rate")) {
+                        newDiskInfo.put("type", isSSD ? 1 : 0);
+                        break;
+                    }
+                }
+            }
+            //获取Serial
+            String completeDiskName = null;
+            if (Serial.trim().equals("unknown")) {
+                completeDiskName = devsName + ":-unknown-" + hostConfigData.userName + "@" + hostConfigData.ip;
+            } else {
+                completeDiskName = devsName + ":" + Serial.trim();
+            }
+            newDiskInfo.put("diskName", completeDiskName);
+            newDiskInfo.put("diskModel", Model.trim());
+            newDiskInfo.put("diskTotalSize", LinuxDataProcess.doubleTo2bits_double(size * 1.0f / 1024 / 1024 / 1024));
+            newDiskInfo.put("type", 0);
+        }
+        return newDiskInfo;
     }
     private String readFile(String filePath){
         String resultData = "";
@@ -988,6 +1106,140 @@ public class DataSampleManager {
                 memoryUsage.set(0,totalMemory);
             }
         }
+        else if(osType.equals(OSType.VMWARE))
+        {
+            List<String> cmdResult = cmdExecutor.runCommand("esxtop -b -n 1", hostConfigData,false,0);
+            String[] fields=cmdResult.get(0).split(",");
+            String[] values=cmdResult.get(1).split(",");
+            HashMap<String,vmwareDiskInfo> diskIndexMap=new HashMap<String,vmwareDiskInfo>();
+            LinuxPeriodRecord record=new LinuxPeriodRecord();
+            {   //提取有效值
+                //CPUtotal里直接存放cpuUsage
+
+                for(int i=0;i<fields.length;i++){
+                    if(fields[i].contains("Physical Cpu")&&fields[i].contains("Util Time")){
+                        record.getCPUUtil().add(Double.parseDouble(values[i].trim()));
+                        continue;
+                    }
+                    if(fields[i].contains("Free MBytes")&&!fields[i].contains("Kernel MinFree Mbytes")){
+
+                        record.setMemFree(Long.parseLong(values[i].trim()));
+                        continue;
+                    }
+                    if(fields[i].contains("MBits Transmitted")){
+                        //bits
+                        record.setNetSend(record.getNetSend()+Double.parseDouble(values[i].trim()));
+                        continue;
+                    }
+                    if(fields[i].contains("MBits Received")){
+                        record.setNetReceive(record.getNetReceive()+Double.parseDouble(values[i].trim()));
+                        continue;
+                    }
+                    if(fields[i].contains("Physical Disk")&&!fields[i].contains("Adapter")&&!fields[i].contains("Device")&&!fields[i].contains("SCSI")&&!fields[i].contains("Path")){
+                        String deviceName;
+                        int leftColon=fields[i].indexOf('(');
+                        int rightColon=fields[i].indexOf(')');
+                        if(leftColon!=-1&&rightColon!=-1){
+                            deviceName=fields[i].substring(leftColon+1,rightColon);
+                            int colon=deviceName.indexOf(":");
+                            if(colon!=-1){
+                                deviceName=deviceName.substring(colon+1);
+                            }
+                        }
+                        else{
+                            continue;
+                        }
+
+                        if(!diskIndexMap.containsKey(deviceName)){
+                            for(int index=0;i<sampleData.getJSONArray("diskInfoList").size();i++){
+                                if(sampleData.getJSONArray("diskInfoList").getJSONObject(index).getString("diskName").contains(deviceName)){
+                                    diskIndexMap.put(deviceName,new vmwareDiskInfo());
+                                    diskIndexMap.get(deviceName).index=index;
+                                    break;
+                                }
+                            }
+                        }
+                        if(!diskIndexMap.containsKey(deviceName)){
+                            continue;
+                        }
+                        if(fields[i].contains("MBytes Read")){
+                            diskIndexMap.get(deviceName).readSpeed=Double.parseDouble(values[i]);
+                        }
+                        else if(fields[i].contains("Mbytes Write")){
+                            diskIndexMap.get(deviceName).writeSpeed=Double.parseDouble(values[i]);
+                        }
+                        else if(fields[i].contains("Reads")){
+                            diskIndexMap.get(deviceName).reads=Double.parseDouble(values[i]);
+                        }
+                        else if(fields[i].contains("Writes")){
+                            diskIndexMap.get(deviceName).writes=Double.parseDouble(values[i]);
+                        }
+
+                    }
+                }
+            }
+            {
+                    //CPU利用率
+                    int cpuSize=sampleData.getJSONArray("cpuInfoList").size();
+                    for(int i=0;i<cpuSize;i++){
+                        sampleData.getJSONArray("cpuInfoList").getJSONObject(i).put("cpuUsage", LinuxDataProcess.doubleTo2bits_double(record.getCPUUtil().get(i)));
+                    }
+                    //总CPU利用率
+                    sampleData.put("cpuUsage",  LinuxDataProcess.doubleTo2bits_double(record.getCPUUtil().get(record.getCPUUtil().size()-1)));
+            }
+            {
+                //内存使用量
+                JSONArray memoryUsage=new JSONArray();
+                //单位Mbytes
+                memoryUsage.add(LinuxDataProcess.doubleTo2bits_double(sampleData.getLong("totalMemory")*1.0/1024/1024-record.getMemFree()));
+                //单位MB
+                memoryUsage.add(LinuxDataProcess.doubleTo2bits_double(sampleData.getLong("totalMemory")*1.0/1024/1024));
+                sampleData.put("memoryUsage",memoryUsage);
+            }
+            {
+                //磁盘IO
+                long totalUsedSize=0;
+                for(String string:diskIndexMap.keySet()){
+                    vmwareDiskInfo tempObejct=diskIndexMap.get(string);
+                    sampleData.getJSONArray("diskInfoList").getJSONObject(tempObejct.index).put("diskRead",tempObejct.reads);
+                    sampleData.getJSONArray("diskInfoList").getJSONObject(tempObejct.index).put("diskWrite",tempObejct.writes);
+                    //单位是MB/S
+                    sampleData.getJSONArray("diskInfoList").getJSONObject(tempObejct.index).put("diskReadSpeed",tempObejct.readSpeed);
+                    sampleData.getJSONArray("diskInfoList").getJSONObject(tempObejct.index).put("diskWriteSpeed",tempObejct.writeSpeed);
+                    sampleData.getJSONArray("diskInfoList").getJSONObject(tempObejct.index).put("diskIOPS",tempObejct.reads+tempObejct.writes);
+                }
+                //还差总容量变化
+//                for(int j=0;j<DiskStoreList.size();j++){
+//                    DiskInfo tempDiskInfo=DiskStoreList.get(j);
+//                    int i=findDiskIndex(tempDiskInfo.diskName,sampleData);
+//                    if(i==-1){
+//                        double singleUsedSize=tempDiskInfo.diskFSUsageAmount*1.0f/1024/1024;
+//                        totalUsedSize+=singleUsedSize;
+//                        continue;
+//                    }
+//                    double usage2bits=0.0;
+//                    try {
+//                        usage2bits = LinuxDataProcess.doubleTo2bits_double(tempDiskInfo.diskUsedRadio);
+//                    } catch (Exception e) {
+//                        System.out.println("usage2bitsError");
+//                    }
+//
+//                    double singleTotalSize=sampleData.getJSONArray("diskInfoList").getJSONObject(i).getDouble("diskTotalSize");
+//                    double singleUsedSize=tempDiskInfo.diskFSUsageAmount*1.0f/1024/1024;
+//
+//                    totalUsedSize+=singleUsedSize;
+//                    sampleData.getJSONArray("diskInfoList").getJSONObject(i).put("diskUsage",usage2bits);
+//                    sampleData.getJSONArray("diskInfoList").getJSONObject(i).put("diskTotalFreeSize",LinuxDataProcess.doubleTo2bits_double((singleTotalSize-singleUsedSize)));
+//                }
+//                sampleData.put("allDiskTotalFreeSize",LinuxDataProcess.doubleTo2bits_double(sampleData.getDouble("allDiskTotalSize")-totalUsedSize));
+            }
+            {
+                //网络IO
+                //单位KB/s
+                sampleData.put("netSendSpeed",LinuxDataProcess.doubleTo2bits_double(record.getNetSend()*1.0f/1024/8));
+                sampleData.put("netReceiveSpeed",LinuxDataProcess.doubleTo2bits_double(record.getNetReceive()*1.0f/1024/8));
+            }
+        }
         sampleData.put("lastUpdateTime",new Timestamp(System.currentTimeMillis()));
         sampleData.put("connected",true);
         sampleData.put("hasPersistent",false);
@@ -1112,6 +1364,54 @@ public class DataSampleManager {
             }
             sampleData.put("processInfoList",processInfoList);
         }
+        else if(osType.equals(OSType.VMWARE)){
+            List<String> cmdResult = cmdExecutor.runCommand("esxtop -b -n 1", hostConfigData,false,0);
+            String[] fields=cmdResult.get(0).split(",");
+            String[] values=cmdResult.get(1).split(",");
+            JSONArray processInfoList=new JSONArray();
+            HashMap<String,JSONObject> data=new HashMap<>();
+            for(int i=0;i< fields.length;i++){
+                String field=fields[i];
+                String pid;
+                String pName;
+                int leftColon=field.indexOf('(');
+                int rightColon=field.indexOf(')');
+                if(leftColon!=-1&&rightColon!=-1){
+                    String process=field.substring(leftColon+1,rightColon);
+                    String[] tokens=process.split(":");
+                    pid=tokens[0].trim();
+                    pName=tokens[1].trim();
+                    if(!data.containsKey(pid)){
+                        JSONObject tempObject=new JSONObject();
+                        tempObject.put("processId",pid);
+                        tempObject.put("processName",pName);
+                        tempObject.put("startTime",new Timestamp(new Date().getTime()));
+                    }
+                }
+                else{
+                    continue;
+                }
+                if(field.contains("Group Cpu")&&field.contains("Used")){
+                    double cpuUsage=Double.parseDouble(values[i]);
+                    data.get(pid).put("cpuUsage",cpuUsage);
+                }
+                if(field.contains("Group Memory")&&field.contains("Memory Size MBytes")){
+                    double memoryUsage=Double.parseDouble(values[i])*1024*1024/sampleData.getLong("totalMemory");
+                    data.get(pid).put("memoryUsage",memoryUsage);
+                }
+            }
+            for(String pid:data.keySet()){
+                data.get(pid).put("diskReadSpeed",0.0f);
+                data.get(pid).put("diskWriteSpeed",0.0f);
+                if(data.get(pid).getFloat("cpuUsage")==0&&data.get(pid).getFloat("memoryUsage")==0){
+                    continue;
+                }
+                else {
+                    processInfoList.add(data.get(pid));
+                }
+            }
+            sampleData.put("processInfoList",processInfoList);
+        }
         sampleData.put("connected",true);
     }
     public void sampleHostSmart(HostConfigData hostConfigData){
@@ -1147,10 +1447,27 @@ public class DataSampleManager {
 
                     }
                 }
+                else if(osType.equals(OSType.VMWARE)){
+                    getDiskListCmd="esxcli storage core device list";
+                    List<String> cmdResult = cmdExecutor.runCommand(getDiskListCmd,hostConfigData,false,0);
+                    //0-42为第一组 43空行 44
+                    int i=0;
+                    while(i<cmdResult.size()){
+                        if(cmdResult.get(i+4).contains("CD-ROM")){
+                            i+=44;
+                            continue;
+                        }
+                        diskList.add("/vmfs/devices/disks/"+cmdResult.get(i));
+                    }
+                }
             }
             //以Json格式存数据
             String smartDiskInfoCmd = "smartctl -i ";
             String smartDataSampleCmd = "smartctl -A ";
+            if(osType.equals(OSType.VMWARE)){
+                smartDiskInfoCmd = "/opt/smartmontools/smartctl -i ";
+                smartDataSampleCmd = "/opt/smartmontools/smartctl -A ";
+            }
             for(String currentDiskName: diskList){
                 JSONObject currentDiskData = new JSONObject();
                 {
@@ -1330,6 +1647,9 @@ public class DataSampleManager {
                     ioTestData.put("writeSpeed",rawData[5] +" "+ rawData[6]);
                 }
             }
+        }
+        else if(osType.equals(OSType.VMWARE)){
+
         }
         return ioTestData;
     }
