@@ -1,0 +1,104 @@
+[root@localhost:~] df -h
+Filesystem   Size   Used Available Use% Mounted on
+VMFS-6      13.8G   1.4G     12.3G  10% /vmfs/volumes/datastore1
+VMFS-L     119.8G   2.8G    117.0G   2% /vmfs/volumes/OSDATA-623c208b-74731aac-c7bd-000c29e8a229
+vfat         4.0G 203.9M      3.8G   5% /vmfs/volumes/BOOTBANK1
+vfat         4.0G  64.0K      4.0G   0% /vmfs/volumes/BOOTBANK2
+
+[root@localhost:~] esxcli storage core device list
+mpx.vmhba64:C0:T0:L0
+   Display Name: Local NECVMWar CD-ROM (mpx.vmhba64:C0:T0:L0)
+   Has Settable Display Name: false
+   Size: 395
+   Device Type: CD-ROM
+   Multipath Plugin: NMP
+   Devfs Path: /vmfs/devices/cdrom/mpx.vmhba64:C0:T0:L0
+   Vendor: NECVMWar
+   Model: VMware IDE CDR10
+   Revision: 1.00
+   SCSI Level: 5
+   Is Pseudo: false
+   Status: on
+   Is RDM Capable: false
+   Is Local: true
+   Is Removable: true
+   Is SSD: false
+   Is VVOL PE: false
+   Is Offline: false
+   Is Perennially Reserved: false
+   Queue Full Sample Size: 0
+   Queue Full Threshold: 0
+   Thin Provisioning Status: unknown
+   Attached Filters:
+   VAAI Status: unsupported
+   Other UIDs: vml.0005000000766d68626136343a303a30
+   Is Shared Clusterwide: false
+   Is SAS: false
+   Is USB: false
+   Is Boot Device: false
+   Device Max Queue Depth: 1
+   No of outstanding IOs with competing worlds: 1
+   Drive Type: unknown
+   RAID Level: unknown
+   Number of Physical Drives: unknown
+   Protection Enabled: false
+   PI Activated: false
+   PI Type: 0
+   PI Protection Mask: NO PROTECTION
+   Supported Guard Types: NO GUARD SUPPORT
+   DIX Enabled: false
+   DIX Guard Type: NO GUARD SUPPORT
+   Emulated DIX/DIF Enabled: false
+
+mpx.vmhba0:C0:T0:L0
+   Display Name: Local VMware, Disk (mpx.vmhba0:C0:T0:L0)
+   Has Settable Display Name: false
+   Size: 145408
+   Device Type: Direct-Access
+   Multipath Plugin: HPP
+   Devfs Path: /vmfs/devices/disks/mpx.vmhba0:C0:T0:L0
+   Vendor: VMware,
+   Model: VMware Virtual S
+   Revision: 1.0
+   SCSI Level: 2
+   Is Pseudo: false
+   Status: on
+   Is RDM Capable: false
+   Is Local: true
+   Is Removable: false
+   Is SSD: false
+   Is VVOL PE: false
+   Is Offline: false
+   Is Perennially Reserved: false
+   Queue Full Sample Size: 0
+   Queue Full Threshold: 0
+   Thin Provisioning Status: unknown
+   Attached Filters:
+   VAAI Status: unsupported
+   Other UIDs: vml.0000000000766d686261303a303a30
+   Is Shared Clusterwide: false
+   Is SAS: false
+   Is USB: false
+   Is Boot Device: true
+   Device Max Queue Depth: 1024
+   No of outstanding IOs with competing worlds: 32
+   Drive Type: unknown
+   RAID Level: unknown
+   Number of Physical Drives: unknown
+   Protection Enabled: false
+   PI Activated: false
+   PI Type: 0
+   PI Protection Mask: NO PROTECTION
+   Supported Guard Types: NO GUARD SUPPORT
+   DIX Enabled: false
+   DIX Guard Type: NO GUARD SUPPORT
+   Emulated DIX/DIF Enabled: false
+
+[root@localhost:~] esxcli storage vmfs extent list
+Volume Name                                 VMFS UUID                            Extent Number  Device Name          Partition
+------------------------------------------  -----------------------------------  -------------  -------------------  ---------
+datastore1                                  623c208b-911942a0-74d6-000c29e8a229              0  mpx.vmhba0:C0:T0:L0          8
+OSDATA-623c208b-74731aac-c7bd-000c29e8a229  623c208b-74731aac-c7bd-000c29e8a229              0  mpx.vmhba0:C0:T0:L0          7
+
+
+vmhba0:C0:T0:L0

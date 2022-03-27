@@ -8,6 +8,7 @@ import com.csvreader.CsvWriter;
 import com.hust.hostmonitor_data_collector.utils.DiskPredict.DiskPredict;
 import com.hust.hostmonitor_data_collector.utils.SSHConnect.HostConfigData;
 
+import com.hust.hostmonitor_data_collector.utils.SSHConnect.ProxyConfigData;
 import com.hust.hostmonitor_data_collector.utils.linuxsample.Entity.*;
 import com.hust.hostmonitor_data_collector.utils.linuxsample.LinuxDataProcess;
 import com.hust.hostmonitor_data_collector.utils.linuxsample.LinuxGPU;
@@ -17,6 +18,7 @@ import org.python.modules._hashlib;
 
 import com.hust.hostmonitor_data_collector.utils.SSHConnect.JschSSHManager;
 import com.hust.hostmonitor_data_collector.utils.SSHConnect.SSHManager;
+import oshi.driver.unix.freebsd.disk.Mount;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -453,7 +455,8 @@ public class DataSampleManager {
                 for(String tempString:cmdResult){
                     if(tempString.contains("Physical Memory")){
                         String[] tokens=tempString.split(":");
-                        sampleData.put("totalMemory",Long.parseLong(tokens[1].trim()));
+                        tokens=tokens[1].trim().split("\\s+");
+                        sampleData.put("totalMemory",Long.parseLong(tokens[0].trim()));
                         break;
                     }
                 }
@@ -467,19 +470,22 @@ public class DataSampleManager {
                     long size=0;
                     boolean isSSD=false;
                     for (String string : devs) {
+                        if (string.contains("Has Settable Display Name")||string.contains("Queue")){
+                            continue;
+                        }
                         if (string.contains("Display Name")) {
                             if(!devsName.equals("unknown")) {
                                 sampleData.getJSONArray("diskInfoList").add(getDisk(devsName,Model,size,isSSD,hostConfigData));
                                 totalsize += size;
                             }
-                            String[] tokens = string.split(":");
-                            devsName = tokens[1];
-
+                            int indexColon=string.indexOf(":");
+                            devsName = string.substring(indexColon+1).trim();
+                            continue;
                         }
                         if(string.contains("Device Type")){
                             String[] tokens=string.split(":");
                             //单位MB
-                            if(tokens[1].equals("CD-ROM")){
+                            if(tokens[1].trim().equals("CD-ROM")){
                                 devsName="unknown";
                                 continue;
                             }
@@ -487,27 +493,33 @@ public class DataSampleManager {
                         if(string.contains("Size")){
                             String[] tokens=string.split(":");
                             //单位MB
-                            size=Long.parseLong(tokens[1]);
+                            size=Long.parseLong(tokens[1].trim());
+                            continue;
                         }
                         if(string.contains("Model")){
                             String[] tokens=string.split(":");
-                            Model=tokens[1];
+                            Model=tokens[1].trim();
+                            continue;
                         }
                         if(string.contains("Is SSD")){
                             String[] tokens=string.split(":");
-                            isSSD=Boolean.parseBoolean(tokens[1]);
+                            isSSD=Boolean.parseBoolean(tokens[1].trim());
+                            continue;
                         }
                     }
                     if(!devsName.equals("unknown")) {
                         sampleData.getJSONArray("diskInfoList").add(getDisk(devsName,Model,size,isSSD,hostConfigData));
                         totalsize += size;
                     }
-                    sampleData.put("allDiskTotalSize", LinuxDataProcess.doubleTo2bits_double(totalsize * 1.0 / 1024 / 1024 / 1024));
+                    sampleData.put("allDiskTotalSize", LinuxDataProcess.doubleTo2bits_double(totalsize * 1.0 / 1024 ));
             }
             //cpuInfoList
             {
                 List<String> cmdResult = cmdExecutor.runCommand("esxcli hardware cpu list", hostConfigData, false,0);
                 for (String rowData : cmdResult) {
+                    if(rowData.length()>0&&rowData.charAt(0)==' '){
+                        continue;
+                    }
                     if (rowData.contains("CPU")) {
                         JSONObject newCpuInfo = configDataManager.getSampleFormat("cpuInfo");
                         {
@@ -562,10 +574,7 @@ public class DataSampleManager {
                         newDiskInfo.put("diskName", devsName + ":" + rawData[1]);
                         continue;
                     }
-                    if (rawData[0].contains("Rotation Rate")) {
-                        newDiskInfo.put("type", isSSD ? 1 : 0);
-                        break;
-                    }
+
                 }
             }
             //获取Serial
@@ -577,8 +586,8 @@ public class DataSampleManager {
             }
             newDiskInfo.put("diskName", completeDiskName);
             newDiskInfo.put("diskModel", Model.trim());
-            newDiskInfo.put("diskTotalSize", LinuxDataProcess.doubleTo2bits_double(size * 1.0f / 1024 / 1024 / 1024));
-            newDiskInfo.put("type", 0);
+            newDiskInfo.put("diskTotalSize", LinuxDataProcess.doubleTo2bits_double(size * 1.0f / 1024));
+            newDiskInfo.put("type", isSSD);
         }
         return newDiskInfo;
     }
@@ -1111,6 +1120,7 @@ public class DataSampleManager {
             List<String> cmdResult = cmdExecutor.runCommand("esxtop -b -n 1", hostConfigData,false,0);
             String[] fields=cmdResult.get(0).split(",");
             String[] values=cmdResult.get(1).split(",");
+            assert(fields.length== values.length);
             HashMap<String,vmwareDiskInfo> diskIndexMap=new HashMap<String,vmwareDiskInfo>();
             LinuxPeriodRecord record=new LinuxPeriodRecord();
             {   //提取有效值
@@ -1118,21 +1128,32 @@ public class DataSampleManager {
 
                 for(int i=0;i<fields.length;i++){
                     if(fields[i].contains("Physical Cpu")&&fields[i].contains("Util Time")){
-                        record.getCPUUtil().add(Double.parseDouble(values[i].trim()));
+                        if(values[i].contains("nan")){
+                            continue;
+                        }
+                        record.getCPUUtil().add(Double.parseDouble(values[i].substring(1,values[i].length()-1).trim()));
                         continue;
                     }
                     if(fields[i].contains("Free MBytes")&&!fields[i].contains("Kernel MinFree Mbytes")){
-
-                        record.setMemFree(Long.parseLong(values[i].trim()));
+                        if(values[i].contains("nan")){
+                            continue;
+                        }
+                        record.setMemFree(Long.parseLong(values[i].substring(1,values[i].length()-1).trim()));
                         continue;
                     }
                     if(fields[i].contains("MBits Transmitted")){
+                        if(values[i].contains("nan")){
+                            continue;
+                        }
                         //bits
-                        record.setNetSend(record.getNetSend()+Double.parseDouble(values[i].trim()));
+                        record.setNetSend(record.getNetSend()+Double.parseDouble(values[i].substring(1,values[i].length()-1).trim()));
                         continue;
                     }
                     if(fields[i].contains("MBits Received")){
-                        record.setNetReceive(record.getNetReceive()+Double.parseDouble(values[i].trim()));
+                        if(values[i].contains("nan")){
+                            continue;
+                        }
+                        record.setNetReceive(record.getNetReceive()+Double.parseDouble(values[i].substring(1,values[i].length()-1).trim()));
                         continue;
                     }
                     if(fields[i].contains("Physical Disk")&&!fields[i].contains("Adapter")&&!fields[i].contains("Device")&&!fields[i].contains("SCSI")&&!fields[i].contains("Path")){
@@ -1163,18 +1184,68 @@ public class DataSampleManager {
                             continue;
                         }
                         if(fields[i].contains("MBytes Read")){
-                            diskIndexMap.get(deviceName).readSpeed=Double.parseDouble(values[i]);
+                            if(values[i].contains("nan")){
+                                continue;
+                            }
+                            diskIndexMap.get(deviceName).readSpeed=Double.parseDouble(values[i].substring(1,values[i].length()-1).trim());
                         }
                         else if(fields[i].contains("Mbytes Write")){
-                            diskIndexMap.get(deviceName).writeSpeed=Double.parseDouble(values[i]);
+                            if(values[i].contains("nan")){
+                                continue;
+                            }
+                            diskIndexMap.get(deviceName).writeSpeed=Double.parseDouble(values[i].substring(1,values[i].length()-1).trim());
                         }
                         else if(fields[i].contains("Reads")){
-                            diskIndexMap.get(deviceName).reads=Double.parseDouble(values[i]);
+                            if(values[i].contains("nan")){
+                                continue;
+                            }
+                            diskIndexMap.get(deviceName).reads=Double.parseDouble(values[i].substring(1,values[i].length()-1).trim());
                         }
                         else if(fields[i].contains("Writes")){
-                            diskIndexMap.get(deviceName).writes=Double.parseDouble(values[i]);
+                            if(values[i].contains("nan")){
+                                continue;
+                            }
+                            diskIndexMap.get(deviceName).writes=Double.parseDouble(values[i].substring(1,values[i].length()-1).trim());
                         }
 
+                    }
+                }
+            }
+            HashMap<String,String> volumeToDevice=new HashMap<>();
+            {
+                //建立卷与物理盘的逻辑映射
+                List<String> partitionResult = cmdExecutor.runCommand("esxcli storage vmfs extent list -b", hostConfigData,false,0);
+                for(int i=2;i< partitionResult.size();i++){
+                    String[] tokens=partitionResult.get(i).split("\\s+");
+                    //tokens[0]   volume name
+                    //tokens[1]   vmfs uuid
+                    //tokens[2]   extent number
+                    //tokens[3]   device name
+                    //tokens[4]   partition
+                    volumeToDevice.put(tokens[0],tokens[3]);
+                }
+                //磁盘使用量的计算
+                //diskIndexMap的key形如 vmhba0:C0:T0:L0
+                //volumeToDevice中的device形如 mpx.vmhba0:C0:T0:L0
+                //df命令的结果单位是KB
+                List<String> dfResult = cmdExecutor.runCommand("df", hostConfigData,false,0);
+                for(int i=1;i<dfResult.size();i++){
+                    String[] tokens =dfResult.get(i).split("\\s+");
+                    Long usedKB=Long.parseLong(tokens[2]);
+                    String[] tempTokens=tokens[5].split("/");
+                    String Mounted=tempTokens[tempTokens.length-1];
+                    String device=null;
+                    if(volumeToDevice.containsKey(Mounted)){
+                        device=volumeToDevice.get(Mounted);
+                    }
+                    if(device==null){
+                        continue;
+                    }
+                    //根据mpx.vmhba0:C0:T0:L0到diskIndexMap里面去找
+                    for(String string: diskIndexMap.keySet()){
+                        if(device.contains(string)){
+                            diskIndexMap.get(string).usedKB+=usedKB;
+                        }
                     }
                 }
             }
@@ -1197,41 +1268,31 @@ public class DataSampleManager {
                 sampleData.put("memoryUsage",memoryUsage);
             }
             {
-                //磁盘IO
+                //磁盘IO以及磁盘使用量变化
                 long totalUsedSize=0;
                 for(String string:diskIndexMap.keySet()){
-                    vmwareDiskInfo tempObejct=diskIndexMap.get(string);
-                    sampleData.getJSONArray("diskInfoList").getJSONObject(tempObejct.index).put("diskRead",tempObejct.reads);
-                    sampleData.getJSONArray("diskInfoList").getJSONObject(tempObejct.index).put("diskWrite",tempObejct.writes);
+                    vmwareDiskInfo tempObject=diskIndexMap.get(string);
+                    sampleData.getJSONArray("diskInfoList").getJSONObject(tempObject.index).put("diskRead",tempObject.reads);
+                    sampleData.getJSONArray("diskInfoList").getJSONObject(tempObject.index).put("diskWrite",tempObject.writes);
                     //单位是MB/S
-                    sampleData.getJSONArray("diskInfoList").getJSONObject(tempObejct.index).put("diskReadSpeed",tempObejct.readSpeed);
-                    sampleData.getJSONArray("diskInfoList").getJSONObject(tempObejct.index).put("diskWriteSpeed",tempObejct.writeSpeed);
-                    sampleData.getJSONArray("diskInfoList").getJSONObject(tempObejct.index).put("diskIOPS",tempObejct.reads+tempObejct.writes);
+                    sampleData.getJSONArray("diskInfoList").getJSONObject(tempObject.index).put("diskReadSpeed",tempObject.readSpeed);
+                    sampleData.getJSONArray("diskInfoList").getJSONObject(tempObject.index).put("diskWriteSpeed",tempObject.writeSpeed);
+                    sampleData.getJSONArray("diskInfoList").getJSONObject(tempObject.index).put("diskIOPS",tempObject.reads+tempObject.writes);
+
+                    //计算使用率
+                    double singleTotalSize=sampleData.getJSONArray("diskInfoList").getJSONObject(tempObject.index).getDouble("diskTotalSize");
+                    double singleUsedSize= tempObject.usedKB*1.0f/1024/1024;
+                    double usage2bits=0.0;
+                    try {
+                        usage2bits = LinuxDataProcess.doubleTo2bits_double(singleUsedSize/singleTotalSize);
+                    } catch (Exception e) {
+                        System.out.println("usage2bitsError");
+                    }
+                    sampleData.getJSONArray("diskInfoList").getJSONObject(tempObject.index).put("diskUsage",usage2bits);
+                    sampleData.getJSONArray("diskInfoList").getJSONObject(tempObject.index).put("diskTotalFreeSize",LinuxDataProcess.doubleTo2bits_double(singleTotalSize-singleUsedSize));
+                    totalUsedSize+=singleUsedSize;
                 }
-                //还差总容量变化
-//                for(int j=0;j<DiskStoreList.size();j++){
-//                    DiskInfo tempDiskInfo=DiskStoreList.get(j);
-//                    int i=findDiskIndex(tempDiskInfo.diskName,sampleData);
-//                    if(i==-1){
-//                        double singleUsedSize=tempDiskInfo.diskFSUsageAmount*1.0f/1024/1024;
-//                        totalUsedSize+=singleUsedSize;
-//                        continue;
-//                    }
-//                    double usage2bits=0.0;
-//                    try {
-//                        usage2bits = LinuxDataProcess.doubleTo2bits_double(tempDiskInfo.diskUsedRadio);
-//                    } catch (Exception e) {
-//                        System.out.println("usage2bitsError");
-//                    }
-//
-//                    double singleTotalSize=sampleData.getJSONArray("diskInfoList").getJSONObject(i).getDouble("diskTotalSize");
-//                    double singleUsedSize=tempDiskInfo.diskFSUsageAmount*1.0f/1024/1024;
-//
-//                    totalUsedSize+=singleUsedSize;
-//                    sampleData.getJSONArray("diskInfoList").getJSONObject(i).put("diskUsage",usage2bits);
-//                    sampleData.getJSONArray("diskInfoList").getJSONObject(i).put("diskTotalFreeSize",LinuxDataProcess.doubleTo2bits_double((singleTotalSize-singleUsedSize)));
-//                }
-//                sampleData.put("allDiskTotalFreeSize",LinuxDataProcess.doubleTo2bits_double(sampleData.getDouble("allDiskTotalSize")-totalUsedSize));
+                sampleData.put("allDiskTotalFreeSize",LinuxDataProcess.doubleTo2bits_double(sampleData.getDouble("allDiskTotalSize")-totalUsedSize));
             }
             {
                 //网络IO
@@ -1253,7 +1314,6 @@ public class DataSampleManager {
         }
         return -1;
     }
-
     //节点进程采样
     public void sampleHostProcess(HostConfigData hostConfigData,JSONObject sampleData){
         if(!sampleData.getBoolean("connected")){
@@ -1392,11 +1452,17 @@ public class DataSampleManager {
                     continue;
                 }
                 if(field.contains("Group Cpu")&&field.contains("Used")){
-                    double cpuUsage=Double.parseDouble(values[i]);
+                    if(values[i].contains("nan")){
+                        continue;
+                    }
+                    double cpuUsage=Double.parseDouble(values[i].substring(1,values[i].length()-1).trim());
                     data.get(pid).put("cpuUsage",cpuUsage);
                 }
                 if(field.contains("Group Memory")&&field.contains("Memory Size MBytes")){
-                    double memoryUsage=Double.parseDouble(values[i])*1024*1024/sampleData.getLong("totalMemory");
+                    if(values[i].contains("nan")){
+                        continue;
+                    }
+                    double memoryUsage=Double.parseDouble(values[i].substring(1,values[i].length()-1).trim())*1024*1024/sampleData.getLong("totalMemory");
                     data.get(pid).put("memoryUsage",memoryUsage);
                 }
             }
@@ -1649,7 +1715,7 @@ public class DataSampleManager {
             }
         }
         else if(osType.equals(OSType.VMWARE)){
-
+            //
         }
         return ioTestData;
     }
@@ -1661,13 +1727,12 @@ public class DataSampleManager {
 
     public static void main(String[] args) {
         DataSampleManager dataSampleManager = DataSampleManager.getInstance();
-        dataSampleManager.setLocalOSType(OSType.WINDOWS);
-        JSONObject sampleData = dataSampleManager.sampleHostHardwareData(null);
-        //System.out.println(sampleData);
-        dataSampleManager.sampleHostData(null,sampleData);
-        //dataSampleManager.sampleHostProcess(null,sampleData);
-        System.out.println(sampleData);
+        dataSampleManager.setLocalOSType(OSType.VMWARE);
+        HostConfigData testConfig=new HostConfigData("192.168.10.132","root","lAxUs1019",null,OSType.VMWARE,"");
+        JSONObject sampleData = dataSampleManager.sampleHostHardwareData(testConfig);
+        dataSampleManager.sampleHostData(testConfig,sampleData);
+        dataSampleManager.sampleHostProcess(testConfig,sampleData);
+        dataSampleManager.sampleHostSmart(testConfig);
         JSONObject ioTestData = dataSampleManager.ioTest(null);
-        System.out.println(ioTestData);
     }
 }

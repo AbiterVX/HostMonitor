@@ -6,4 +6,5 @@ public class vmwareDiskInfo {
     public double readSpeed;
     public double reads;
     public double writes;
+    public double usedKB=0;
 }
