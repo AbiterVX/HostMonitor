@@ -554,7 +554,7 @@ public class DataSampleManager {
         JSONObject newDiskInfo = configDataManager.getSampleFormat("diskInfo");
         {
             //获取相应盘的smart信息，并且更新
-            List<String> cmdResult = cmdExecutor.runCommand("/opt/smartmontools/smartctl -i /vmfs/devices/disks/" + devsName, hostConfigData, true,0);
+            List<String> cmdResult = cmdExecutor.runCommand("/opt/smartmontools/smartctl -d sat -i /vmfs/devices/disks/" + devsName+" -T permissive", hostConfigData, true,0);
             String Serial="unknown";
             if(cmdResult.size()>=4)
             {
@@ -587,8 +587,11 @@ public class DataSampleManager {
             newDiskInfo.put("diskName", completeDiskName);
             newDiskInfo.put("diskModel", Model.trim());
             newDiskInfo.put("diskTotalSize", LinuxDataProcess.doubleTo2bits_double(size * 1.0f / 1024));
-            newDiskInfo.put("type", isSSD);
+            newDiskInfo.put("type", isSSD? 1:0);
         }
+        devsName="devsName";
+        Model="devsName";
+        isSSD=false;
         return newDiskInfo;
     }
     private String readFile(String filePath){
@@ -1156,7 +1159,7 @@ public class DataSampleManager {
                         record.setNetReceive(record.getNetReceive()+Double.parseDouble(values[i].substring(1,values[i].length()-1).trim()));
                         continue;
                     }
-                    if(fields[i].contains("Physical Disk")&&!fields[i].contains("Adapter")&&!fields[i].contains("Device")&&!fields[i].contains("SCSI")&&!fields[i].contains("Path")){
+                    if(fields[i].contains("Physical Disk")&&!fields[i].contains("Adapter")&&!fields[i].contains("Device")&&!fields[i].contains("SCSI")&&!fields[i].contains("Path")&&!fields[i].contains("Partition")){
                         String deviceName;
                         int leftColon=fields[i].indexOf('(');
                         int rightColon=fields[i].indexOf(')');
@@ -1172,7 +1175,7 @@ public class DataSampleManager {
                         }
 
                         if(!diskIndexMap.containsKey(deviceName)){
-                            for(int index=0;i<sampleData.getJSONArray("diskInfoList").size();i++){
+                            for(int index=0;index<sampleData.getJSONArray("diskInfoList").size();index++){
                                 if(sampleData.getJSONArray("diskInfoList").getJSONObject(index).getString("diskName").contains(deviceName)){
                                     diskIndexMap.put(deviceName,new vmwareDiskInfo());
                                     diskIndexMap.get(deviceName).index=index;
@@ -1214,7 +1217,7 @@ public class DataSampleManager {
             HashMap<String,String> volumeToDevice=new HashMap<>();
             {
                 //建立卷与物理盘的逻辑映射
-                List<String> partitionResult = cmdExecutor.runCommand("esxcli storage vmfs extent list -b", hostConfigData,false,0);
+                List<String> partitionResult = cmdExecutor.runCommand("esxcli storage vmfs extent list", hostConfigData,false,0);
                 for(int i=2;i< partitionResult.size();i++){
                     String[] tokens=partitionResult.get(i).split("\\s+");
                     //tokens[0]   volume name
@@ -1231,7 +1234,7 @@ public class DataSampleManager {
                 List<String> dfResult = cmdExecutor.runCommand("df", hostConfigData,false,0);
                 for(int i=1;i<dfResult.size();i++){
                     String[] tokens =dfResult.get(i).split("\\s+");
-                    Long usedKB=Long.parseLong(tokens[2]);
+                    Long usedB=Long.parseLong(tokens[2]);
                     String[] tempTokens=tokens[5].split("/");
                     String Mounted=tempTokens[tempTokens.length-1];
                     String device=null;
@@ -1244,7 +1247,7 @@ public class DataSampleManager {
                     //根据mpx.vmhba0:C0:T0:L0到diskIndexMap里面去找
                     for(String string: diskIndexMap.keySet()){
                         if(device.contains(string)){
-                            diskIndexMap.get(string).usedKB+=usedKB;
+                            diskIndexMap.get(string).usedB+=usedB;
                         }
                     }
                 }
@@ -1269,7 +1272,7 @@ public class DataSampleManager {
             }
             {
                 //磁盘IO以及磁盘使用量变化
-                long totalUsedSize=0;
+                double totalUsedSize=0;
                 for(String string:diskIndexMap.keySet()){
                     vmwareDiskInfo tempObject=diskIndexMap.get(string);
                     sampleData.getJSONArray("diskInfoList").getJSONObject(tempObject.index).put("diskRead",tempObject.reads);
@@ -1281,7 +1284,9 @@ public class DataSampleManager {
 
                     //计算使用率
                     double singleTotalSize=sampleData.getJSONArray("diskInfoList").getJSONObject(tempObject.index).getDouble("diskTotalSize");
-                    double singleUsedSize= tempObject.usedKB*1.0f/1024/1024;
+                    System.out.println(singleTotalSize);
+                    System.out.println(tempObject.usedB);
+                    double singleUsedSize= tempObject.usedB*1.0f/1024/1024/1024;
                     double usage2bits=0.0;
                     try {
                         usage2bits = LinuxDataProcess.doubleTo2bits_double(singleUsedSize/singleTotalSize);
@@ -1290,8 +1295,11 @@ public class DataSampleManager {
                     }
                     sampleData.getJSONArray("diskInfoList").getJSONObject(tempObject.index).put("diskUsage",usage2bits);
                     sampleData.getJSONArray("diskInfoList").getJSONObject(tempObject.index).put("diskTotalFreeSize",LinuxDataProcess.doubleTo2bits_double(singleTotalSize-singleUsedSize));
+                    System.out.println("!"+singleUsedSize);
                     totalUsedSize+=singleUsedSize;
+
                 }
+                System.out.println("?"+totalUsedSize);
                 sampleData.put("allDiskTotalFreeSize",LinuxDataProcess.doubleTo2bits_double(sampleData.getDouble("allDiskTotalSize")-totalUsedSize));
             }
             {
@@ -1431,7 +1439,11 @@ public class DataSampleManager {
             JSONArray processInfoList=new JSONArray();
             HashMap<String,JSONObject> data=new HashMap<>();
             for(int i=0;i< fields.length;i++){
+
                 String field=fields[i];
+                if(!(field.contains("Group Cpu")&&field.contains("Used"))&&!(field.contains("Group Memory")&&field.contains("Memory Size MBytes"))){
+                    continue;
+                }
                 String pid;
                 String pName;
                 int leftColon=field.indexOf('(');
@@ -1446,23 +1458,31 @@ public class DataSampleManager {
                         tempObject.put("processId",pid);
                         tempObject.put("processName",pName);
                         tempObject.put("startTime",new Timestamp(new Date().getTime()));
+                        tempObject.put("cpuUsage",0.0);
+                        tempObject.put("memoryUsage",0.0);
+                        data.put(pid,tempObject);
                     }
                 }
                 else{
                     continue;
                 }
                 if(field.contains("Group Cpu")&&field.contains("Used")){
+                    double cpuUsage=0;
                     if(values[i].contains("nan")){
-                        continue;
+                        cpuUsage=0;
                     }
-                    double cpuUsage=Double.parseDouble(values[i].substring(1,values[i].length()-1).trim());
+                    else {
+                        cpuUsage = Double.parseDouble(values[i].substring(1, values[i].length() - 1).trim());
+                    }
                     data.get(pid).put("cpuUsage",cpuUsage);
                 }
                 if(field.contains("Group Memory")&&field.contains("Memory Size MBytes")){
+                    double memoryUsage=0;
                     if(values[i].contains("nan")){
-                        continue;
+                        memoryUsage=0;
+                    }else {
+                        memoryUsage = Double.parseDouble(values[i].substring(1, values[i].length() - 1).trim()) * 1024 * 1024 / sampleData.getLong("totalMemory");
                     }
-                    double memoryUsage=Double.parseDouble(values[i].substring(1,values[i].length()-1).trim())*1024*1024/sampleData.getLong("totalMemory");
                     data.get(pid).put("memoryUsage",memoryUsage);
                 }
             }
@@ -1476,6 +1496,7 @@ public class DataSampleManager {
                     processInfoList.add(data.get(pid));
                 }
             }
+            System.out.println(processInfoList.toJSONString());
             sampleData.put("processInfoList",processInfoList);
         }
         sampleData.put("connected",true);
@@ -1524,20 +1545,25 @@ public class DataSampleManager {
                             continue;
                         }
                         diskList.add("/vmfs/devices/disks/"+cmdResult.get(i));
+                        i+=44;
                     }
                 }
             }
             //以Json格式存数据
             String smartDiskInfoCmd = "smartctl -i ";
             String smartDataSampleCmd = "smartctl -A ";
+            String postfix="";
+
             if(osType.equals(OSType.VMWARE)){
-                smartDiskInfoCmd = "/opt/smartmontools/smartctl -i ";
-                smartDataSampleCmd = "/opt/smartmontools/smartctl -A ";
+                smartDiskInfoCmd = "/opt/smartmontools/smartctl -d sat -i ";
+                smartDataSampleCmd = "/opt/smartmontools/smartctl -d sat -A ";
+                postfix=" -T permissive";
+
             }
             for(String currentDiskName: diskList){
                 JSONObject currentDiskData = new JSONObject();
                 {
-                    List<String> cmdResult = cmdExecutor.runCommand(smartDiskInfoCmd + currentDiskName,hostConfigData,true,0);
+                    List<String> cmdResult = cmdExecutor.runCommand(smartDiskInfoCmd + currentDiskName+postfix,hostConfigData,true,0);
                     if(cmdResult.get(3).contains("Unable to")){
                         continue;
                     }
@@ -1562,10 +1588,15 @@ public class DataSampleManager {
                     diskData.put(serialNumber,currentDiskData);
                     JSONObject smartData = new JSONObject();
                     {
-                        List<String> cmdResult = cmdExecutor.runCommand(smartDataSampleCmd + currentDiskName,hostConfigData,true,0);
-                        for (int i = 0; i < 7; i++) {
-                            if(cmdResult.size()==0){
-                                continue;
+                        List<String> cmdResult = cmdExecutor.runCommand(smartDataSampleCmd + currentDiskName+postfix,hostConfigData,true,0);
+                        int i=0;
+                        while(cmdResult.size()>0){
+                            //删除 直到第一个token为数字为止
+                            String[] tokens=cmdResult.get(0).trim().split("\\s+");
+                            if(tokens.length>0){
+                                if(tokens[0].matches("[0-9]+")){
+                                    break;
+                                }
                             }
                             cmdResult.remove(0);
                         }
@@ -1660,11 +1691,12 @@ public class DataSampleManager {
                         rowData.add(hostConfigData.ip);
                         rowData.add("0");
                         //是否为SSD
-                        if(currentDiskData.getString("Rotation Rate").equals("Solid State Device")){
-                            rowData.add("1");
-                        }
-                        else{
-                            rowData.add("0");
+                        if(currentDiskData.containsKey("Rotation Rate")) {
+                            if (currentDiskData.getString("Rotation Rate").equals("Solid State Device")) {
+                                rowData.add("1");
+                            } else {
+                                rowData.add("0");
+                            }
                         }
                         rowData.add(pt_d);
                         JSONObject smartData = currentDiskData.getJSONObject("SmartData");
@@ -1728,7 +1760,7 @@ public class DataSampleManager {
     public static void main(String[] args) {
         DataSampleManager dataSampleManager = DataSampleManager.getInstance();
         dataSampleManager.setLocalOSType(OSType.VMWARE);
-        HostConfigData testConfig=new HostConfigData("192.168.10.132","root","lAxUs1019",null,OSType.VMWARE,"");
+        HostConfigData testConfig=new HostConfigData("192.168.6.131","root","wnlob511521...",null,OSType.VMWARE,"");
         JSONObject sampleData = dataSampleManager.sampleHostHardwareData(testConfig);
         dataSampleManager.sampleHostData(testConfig,sampleData);
         dataSampleManager.sampleHostProcess(testConfig,sampleData);

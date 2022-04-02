@@ -4,9 +4,9 @@ spring:
   profiles:
       active: test
       # 数据库表结构以笔记本达梦数据库为准
-      # dev 阿里云mysql数据库 配置文件改 0
+      # dev 阿里云mysql数据库 配置文件改 0 贵州农商行
       # test 本地达梦数据库 配置文件改 1
-      # prod 701达梦数据库 配置文件改 1
+      # prod 701达梦数据库
   application:
     name: hostmonitor-data-collector
   mail:
@@ -30,6 +30,6 @@ sms_config:
   tpl-id-1: 234103
   key: a1a2f8b334adea73c4de5c848848959b
 
-UseEnv: CSDDC
+UseEnv: YIYAO
   #CSDDC 701
   #YIYAO 医药

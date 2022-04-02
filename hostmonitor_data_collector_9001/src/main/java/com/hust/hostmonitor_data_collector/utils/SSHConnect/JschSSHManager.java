@@ -74,7 +74,7 @@ public class JschSSHManager implements SSHManager {
             //打开通道，设置通道类型，和执行的命令
             Channel channel = session.openChannel("exec");
             channelExec = (ChannelExec)channel;
-            if(isSudo){
+            if(isSudo&&!hostConfigInfo.userName.equals("root")){
                 String passwordPrefix="echo '";
                 passwordPrefix+= hostConfigInfo.password;
                 passwordPrefix+="' |sudo -S ";

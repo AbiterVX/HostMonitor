@@ -46,6 +46,7 @@ public class LinuxPeriodRecord {
     public LinuxPeriodRecord() {
         CPUtotal=new ArrayList<>();
         CPUused=new ArrayList<>();
+        CPUUtil=new ArrayList<>();
         disks=new ArrayList<>();
     }
 

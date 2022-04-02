@@ -209,12 +209,12 @@ public class DiskFailureProvider {
         if(dataSourceSelect==0){
             SQL="select a.diskSerial,b.hostName,b.isSSd,a.timestamp,a.predictProbability,a.modelName" +
                     " from (diskDFPInfo a join diskHardwareInfo b on a.diskSerial=b.diskSerial) " +
-                    "join (select max(timestamp)maxtimestamp from diskDFPInfo where timestamp>=#{lowbound} group by diskSerial)c on c.maxtimestamp=a.timestamp";
+                    "join (select max(timestamp)maxtimestamp from diskDFPInfo where PREDICTTIME>=#{lowbound} group by diskSerial)c on c.maxtimestamp=a.timestamp";
         }
         else if(dataSourceSelect==1){
             SQL="select a.diskSerial,b.hostName,b.isSSd,a.timestamp,a.predictProbability,a.modelName" +
                     " from (storagedevicemonitor.diskDFPInfo a join storagedevicemonitor.diskHardwareInfo b on a.diskSerial=b.diskSerial) " +
-                    "join (select max(timestamp)maxtimestamp from storagedevicemonitor.diskDFPInfo where timestamp>=#{lowbound} group by diskSerial)c on c.maxtimestamp=a.timestamp";
+                    "join (select max(timestamp)maxtimestamp from storagedevicemonitor.diskDFPInfo where PREDICTTIME>=#{lowbound} group by diskSerial)c on c.maxtimestamp=a.timestamp";
         }
         return SQL;
     }

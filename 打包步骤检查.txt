@@ -1,0 +1,9 @@
+1.检查ConfigDataManager里的节点信息文件是否正常
+2.检查application.yml里的信息是否正确
+	数据库
+	useEnv
+3.检查脚本文件以及其他配置文件是否是最新
+4.检查数据库表是否完全相同
+5.检查被监控节点依赖是否完全
+	smartmontools
+	sysstat
